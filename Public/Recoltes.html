@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Récoltes — Jardin Vivant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f7f4ef;
+  --bg2: #ede8e0;
+  --surface: #fff;
+  --border: #ddd8ce;
+  --border2: #ccc5b8;
+  --text: #2a2520;
+  --text-dim: #6b6259;
+  --text-muted: #9e9488;
+  --green: #3d7a4f;
+  --green-light: #e8f2ec;
+  --green-mid: #7ab990;
+  --amber: #c47c2b;
+  --amber-light: #fdf3e4;
+  --red: #b84040;
+  --red-light: #faeaea;
+  --blue: #3a6ea5;
+  --blue-light: #e8f0f8;
+  --accent: #5a8f3c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Karla', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Grain texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* HEADER */
+header {
+  background: var(--green);
+  color: #fff;
+  padding: 20px 20px 16px;
+  position: relative;
+  z-index: 10;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.back-btn {
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Karla', sans-serif;
+  font-size: .72rem;
+  cursor: pointer;
+  letter-spacing: .05em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: .01em;
+}
+
+.header-sub {
+  font-size: .72rem;
+  opacity: .7;
+  letter-spacing: .05em;
+}
+
+.header-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.hstat {
+  text-align: center;
+}
+
+.hstat-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  display: block;
+  line-height: 1;
+}
+
+.hstat-lbl {
+  font-size: .62rem;
+  opacity: .7;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* MAIN */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* SECTION TITLES */
+.stitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stitle::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.section { margin-bottom: 28px; }
+
+/* SAISIE RAPIDE */
+.saisie-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+.saisie-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+@media(max-width: 500px) {
+  .saisie-grid { grid-template-columns: 1fr; }
+}
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+
+.field-label {
+  font-size: .62rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.field input, .field select {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: 'Karla', sans-serif;
+  font-size: .88rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none;
+}
+
+.field input:focus, .field select:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(61,122,79,.12);
+}
+
+.field-full { grid-column: 1 / -1; }
+
+.add-btn {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 20px;
+  font-family: 'Karla', sans-serif;
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  letter-spacing: .03em;
+  transition: all .2s;
+}
+
+.add-btn:hover { background: #2e6040; }
+.add-btn:active { transform: scale(.98); }
+
+/* Suggestions */
+.suggestions {
+  position: absolute;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  z-index: 100;
+  max-height: 180px;
+  overflow-y: auto;
+  width: 100%;
+  left: 0;
+  top: 100%;
+  margin-top: 2px;
+}
+
+.suggestion-item {
+  padding: 8px 12px;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: background .15s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.suggestion-item:hover { background: var(--green-light); }
+.suggestion-item .fam { font-size: .65rem; color: var(--text-muted); }
+
+.field-wrap { position: relative; }
+
+/* RÉSUMÉ STATS */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-align: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,.04);
+}
+
+.stat-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--green);
+  display: block;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-lbl {
+  font-size: .62rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* CHARTS */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media(max-width:560px) { .charts-grid { grid-template-columns: 1fr; } }
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.04);
+}
+
+.chart-card.wide { grid-column: 1 / -1; }
+
+.chart-title {
+  font-size: .65rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.chart-wrap { position: relative; height: 160px; }
+.chart-wrap.tall { height: 200px; }
+
+/* TABLEAU */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,.04);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+
+thead tr {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+th:hover { color: var(--green); }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .15s;
+  cursor: pointer;
+}
+
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--green-light); }
+
+td {
+  padding: 10px 12px;
+  color: var(--text-dim);
+}
+
+td:first-child { color: var(--text); font-weight: 500; }
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: .65rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-serre { background: var(--blue-light); color: var(--blue); }
+.badge-bacs { background: var(--amber-light); color: var(--amber); }
+.badge-jardin { background: var(--green-light); color: var(--green); }
+
+.stars { color: var(--amber); font-size: .75rem; }
+
+/* ROW DETAIL (expand) */
+.row-detail {
+  display: none;
+  background: var(--bg);
+  border-top: 1px dashed var(--border2);
+}
+
+.row-detail.open { display: table-row; }
+
+.detail-inner {
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.detail-item { }
+.detail-key { font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
+.detail-val { font-size: .82rem; color: var(--text); }
+
+/* TOP PLANTS */
+.top-list { display: flex; flex-direction: column; gap: 6px; }
+
+.top-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-rank {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.top-rank.gold { color: #c9a227; }
+.top-rank.silver { color: #8a8a9a; }
+.top-rank.bronze { color: #a0673a; }
+
+.top-name { flex: 1; font-weight: 500; font-size: .85rem; }
+.top-sub { font-size: .65rem; color: var(--text-muted); }
+
+.top-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  color: var(--green);
+  font-weight: 700;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.bar-wrap {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--green-mid);
+  border-radius: 2px;
+  transition: width .6s ease;
+}
+
+/* Tabs */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  background: var(--bg2);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.tnav {
+  flex: 1;
+  padding: 7px 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Karla', sans-serif;
+  font-size: .68rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all .2s;
+  font-weight: 500;
+}
+
+.tnav.active {
+  background: var(--surface);
+  color: var(--green);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.tab-section { display: none; }
+.tab-section.active { display: block; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--green);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: .82rem;
+  font-weight: 500;
+  z-index: 1000;
+  transition: transform .3s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 30px;
+  color: var(--text-muted);
+  font-size: .82rem;
+}
+
+/* Responsive */
+@media(max-width:480px) {
+  .header-stats { gap: 10px; }
+  .hstat-val { font-size: 1.1rem; }
+  th:nth-child(n+4), td:nth-child(n+4) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<header>
+  <div class="header-top">
+    <a href="/" class="back-btn">← Dashboard</a>
+    <div style="font-size:.65rem;opacity:.6;letter-spacing:.08em">SAISON 2025–2026</div>
+  </div>
+  <div class="header-title">🌿 Récoltes</div>
+  <div class="header-sub">Potager · Bacs · Serre aquaponique</div>
+  <div class="header-stats" id="headerStats">
+    <div class="hstat"><span class="hstat-val" id="hTotalKg">—</span><span class="hstat-lbl">kg récoltés</span></div>
+    <div class="hstat"><span class="hstat-val" id="hNbRecoltes">—</span><span class="hstat-lbl">récoltes</span></div>
+    <div class="hstat"><span class="hstat-val" id="hNbVarietes">—</span><span class="hstat-lbl">variétés</span></div>
+    <div class="hstat"><span class="hstat-val" id="hMeilleur">—</span><span class="hstat-lbl">meilleur rendement</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- SAISIE RAPIDE -->
+  <div class="section">
+    <div class="stitle">✚ Nouvelle récolte</div>
+    <div class="saisie-card">
+      <div class="saisie-grid">
+        <div class="field field-full">
+          <label class="field-label">Végétal récolté</label>
+          <div class="field-wrap">
+            <input type="text" id="inp-vegetal" placeholder="ex: Pak choï, Tomate cerise…" autocomplete="off" oninput="showSuggestions(this.value)" onblur="hideSuggestions()">
+            <div class="suggestions" id="suggestions" style="display:none"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Lieu de récolte</label>
+          <select id="inp-lieu">
+            <option value="serre">🏠 Serre aquaponique</option>
+            <option value="bacs">🪴 Bacs surélevés</option>
+            <option value="jardin">🌳 Potager extérieur</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Poids récolté (g)</label>
+          <input type="number" id="inp-poids" placeholder="ex: 450" min="1" step="1">
+        </div>
+        <div class="field">
+          <label class="field-label">Date</label>
+          <input type="date" id="inp-date">
+        </div>
+        <div class="field">
+          <label class="field-label">Note (1–5)</label>
+          <select id="inp-note">
+            <option value="">— Sans note</option>
+            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+            <option value="4">⭐⭐⭐⭐ Bien</option>
+            <option value="3">⭐⭐⭐ Correct</option>
+            <option value="2">⭐⭐ Moyen</option>
+            <option value="1">⭐ Déçu</option>
+          </select>
+        </div>
+      </div>
+      <button class="add-btn" onclick="addRecolte()">Ajouter cette récolte</button>
+    </div>
+  </div>
+
+  <!-- STATS RÉSUMÉ -->
+  <div class="section">
+    <div class="stitle">📊 Vue d'ensemble</div>
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card"><span class="stat-val" id="s1">—</span><span class="stat-lbl">Total récolté (kg)</span></div>
+      <div class="stat-card"><span class="stat-val" id="s2">—</span><span class="stat-lbl">Serre (kg)</span></div>
+      <div class="stat-card"><span class="stat-val" id="s3">—</span><span class="stat-lbl">Bacs (kg)</span></div>
+      <div class="stat-card"><span class="stat-val" id="s4">—</span><span class="stat-lbl">Jardin (kg)</span></div>
+    </div>
+
+    <!-- Onglets graphiques -->
+    <div class="tab-nav">
+      <button class="tnav active" onclick="showAnalyse('famille',this)">Par famille</button>
+      <button class="tnav" onclick="showAnalyse('lieu',this)">Par lieu</button>
+      <button class="tnav" onclick="showAnalyse('mois',this)">Par mois</button>
+      <button class="tnav" onclick="showAnalyse('rendement',this)">Rendement</button>
+    </div>
+
+    <div class="tab-section active" id="analyse-famille">
+      <div class="chart-card">
+        <div class="chart-title">Récoltes par famille (g)</div>
+        <div class="chart-wrap tall"><canvas id="chartFamille"></canvas></div>
+      </div>
+    </div>
+
+    <div class="tab-section" id="analyse-lieu">
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Répartition par lieu</div>
+          <div class="chart-wrap"><canvas id="chartLieu"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Évolution des récoltes</div>
+          <div class="chart-wrap"><canvas id="chartEvolution"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-section" id="analyse-mois">
+      <div class="chart-card">
+        <div class="chart-title">Récoltes par mois (g)</div>
+        <div class="chart-wrap"><canvas id="chartMois"></canvas></div>
+      </div>
+    </div>
+
+    <div class="tab-section" id="analyse-rendement">
+      <div class="chart-card">
+        <div class="chart-title">Top rendement poids/pied (g)</div>
+        <div class="chart-wrap tall"><canvas id="chartRendement"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP PLANTES -->
+  <div class="section">
+    <div class="stitle">🏆 Top rendement</div>
+    <div class="top-list" id="topList"></div>
+  </div>
+
+  <!-- JOURNAL RÉCOLTES -->
+  <div class="section">
+    <div class="stitle">📋 Journal des récoltes</div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px;gap:6px">
+      <select id="filterLieu" onchange="renderTable()" style="font-family:'Karla',sans-serif;font-size:.75rem;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text)">
+        <option value="">Tous les lieux</option>
+        <option value="serre">Serre</option>
+        <option value="bacs">Bacs</option>
+        <option value="jardin">Jardin</option>
+      </select>
+      <select id="filterFam" onchange="renderTable()" style="font-family:'Karla',sans-serif;font-size:.75rem;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text)">
+        <option value="">Toutes familles</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table id="recolteTable">
+        <thead>
+          <tr>
+            <th onclick="sortBy('vegetal')">Végétal ↕</th>
+            <th onclick="sortBy('lieu')">Lieu ↕</th>
+            <th onclick="sortBy('poids')">Poids ↕</th>
+            <th onclick="sortBy('date')">Date ↕</th>
+            <th onclick="sortBy('note')">Note ↕</th>
+          </tr>
+        </thead>
+        <tbody id="tablebody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── DONNÉES HISTORIQUES (depuis le PDF) ────────────────────
+const FAMILLES = {
+  'Feuille chêne rouge perez':'SALADES','Batavia verte perez':'SALADES','Batavia rouge perez':'SALADES',
+  'Rougette de Montpellier perez':'SALADES','Oseille':'SALADES','Mizuna':'SALADES','Roquette':'SALADES',
+  'Mâche perez':'SALADES','Laitue romaine d\'Avignon':'SALADES','Sucrine perez':'SALADES','Pourpier doré':'SALADES',
+  'Blette perez':'BLETTES & ÉPINARDS','Poirée rubis char':'BLETTES & ÉPINARDS','Blette lucullus':'BLETTES & ÉPINARDS',
+  'Nero di toscana':'BLETTES & ÉPINARDS','Épinards malabar':'BLETTES & ÉPINARDS','Épinards perez bac':'BLETTES & ÉPINARDS',
+  'Chou pak choï perez':'CHOUX','Chou pe tsaï perez':'CHOUX','Chou rave perez':'CHOUX',
+  'Chou fleur précoce perez':'CHOUX','Chou tatsoï':'CHOUX','Brocoli perez':'CHOUX','Brocoli jet sessantina':'CHOUX',
+  'Betterave chiogga':'LÉGUMES RACINES','Betterave perez':'LÉGUMES RACINES','Fenouil perez':'LÉGUMES RACINES',
+  'Céleri perez':'LÉGUMES RACINES','Radis noirs':'LÉGUMES RACINES','Carotte Toulon':'LÉGUMES RACINES',
+  'Tomate cerise sweet baby':'TOMATES','Tomate cerise poire rouge':'TOMATES','Tomate matt\'s wild':'TOMATES',
+  'Tomate green zebra':'TOMATES','Tomate cœur de bœuf':'TOMATES','Tomate rose de Berne 19':'TOMATES',
+  'Tomate cerise poire jaune':'TOMATES','Tomate cerise poivron':'TOMATES',
+  'Aubergine Barbentane':'AUBERGINES','Aubergine slimjim':'AUBERGINES','Aubergine pickling':'AUBERGINES',
+  'Aubergine blanche dourga':'AUBERGINES',
+  'Poivron balconi':'POIVRONS & PIMENTS','Poivron Padrón perez':'POIVRONS & PIMENTS',
+  'Piment biquinho rouge':'POIVRONS & PIMENTS','Piment cherry bomb':'POIVRONS & PIMENTS',
+  'Courgette zuboda':'COURGETTES','Courgette ronde de nice':'COURGETTES','Potimarron bright summer':'COURGETTES',
+  'Butternut':'COURGETTES','Chayote':'COURGETTES',
+  'Concombre F1 Citaro':'CONCOMBRES','Concombre généreux':'CONCOMBRES','Cornichon diamant':'CONCOMBRES',
+  'Melon artemis':'MELONS','Pastèque baby sugar':'MELONS',
+  'Mange-tout norli':'LÉGUMES D\'ÉTÉ','Artichaut impérial':'LÉGUMES D\'ÉTÉ',
+  'Basilic prospéra':'AROMATIQUES','Basilic perpétuel':'AROMATIQUES','Persil perez':'AROMATIQUES',
+  'Persil géant d\'Italie':'AROMATIQUES','Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
+};
+
+const RENDEMENTS_PDF = [
+  { vegetal:'Blette perez', poids_pied:1173, lieu:'serre', note:5 },
+  { vegetal:'Chou pak choï perez', poids_pied:782, lieu:'serre', note:5 },
+  { vegetal:'Chou pe tsaï perez', poids_pied:678, lieu:'serre', note:4 },
+  { vegetal:'Chou rave perez', poids_pied:235, lieu:'serre', note:4 },
+  { vegetal:'Céleri perez', poids_pied:217, lieu:'serre', note:4 },
+  { vegetal:'Feuille chêne rouge perez', poids_pied:194, lieu:'serre', note:4 },
+  { vegetal:'Fenouil perez', poids_pied:145, lieu:'serre', note:5 },
+  { vegetal:'Blette lucullus', poids_pied:190, lieu:'serre', note:4 },
+  { vegetal:'Épinards perez bac', poids_pied:73, lieu:'serre', note:4 },
+  { vegetal:'Persil perez', poids_pied:120, lieu:'serre', note:4 },
+];
+
+// Récoltes historiques du PDF
+const RECOLTES_INITIALES = [
+  { id:'h1', vegetal:'Feuille chêne rouge perez', lieu:'serre', poids:1748, date:'2026-01-15', note:4, famille:'SALADES' },
+  { id:'h2', vegetal:'Mâche perez', lieu:'serre', poids:498, date:'2026-01-20', note:4, famille:'SALADES' },
+  { id:'h3', vegetal:'Oseille', lieu:'serre', poids:137, date:'2026-05-21', note:3, famille:'SALADES' },
+  { id:'h4', vegetal:'Mizuna', lieu:'serre', poids:35, date:'2026-02-01', note:null, famille:'SALADES' },
+  { id:'h5', vegetal:'Mizuna', lieu:'jardin', poids:64, date:'2026-03-01', note:null, famille:'SALADES' },
+  { id:'h6', vegetal:'Laitue romaine d\'Avignon', lieu:'serre', poids:406, date:'2026-05-17', note:null, famille:'SALADES' },
+  { id:'h7', vegetal:'Blette perez', lieu:'serre', poids:2346, date:'2026-02-15', note:5, famille:'BLETTES & ÉPINARDS' },
+  { id:'h8', vegetal:'Poirée rubis char', lieu:'serre', poids:362, date:'2026-05-21', note:4, famille:'BLETTES & ÉPINARDS' },
+  { id:'h9', vegetal:'Blette lucullus', lieu:'serre', poids:569, date:'2026-02-20', note:4, famille:'BLETTES & ÉPINARDS' },
+  { id:'h10', vegetal:'Nero di toscana', lieu:'serre', poids:80, date:'2026-02-10', note:3, famille:'BLETTES & ÉPINARDS' },
+  { id:'h11', vegetal:'Épinards malabar', lieu:'serre', poids:54, date:'2026-05-21', note:null, famille:'BLETTES & ÉPINARDS' },
+  { id:'h12', vegetal:'Épinards perez bac', lieu:'serre', poids:2183, date:'2026-01-10', note:4, famille:'BLETTES & ÉPINARDS' },
+  { id:'h13', vegetal:'Chou pak choï perez', lieu:'serre', poids:4691, date:'2026-01-20', note:5, famille:'CHOUX' },
+  { id:'h14', vegetal:'Chou pe tsaï perez', lieu:'serre', poids:1355, date:'2026-02-01', note:4, famille:'CHOUX' },
+  { id:'h15', vegetal:'Chou rave perez', lieu:'serre', poids:705, date:'2026-02-10', note:4, famille:'CHOUX' },
+  { id:'h16', vegetal:'Chou fleur précoce perez', lieu:'serre', poids:155, date:'2026-03-01', note:3, famille:'CHOUX' },
+  { id:'h17', vegetal:'Chou tatsoï', lieu:'serre', poids:173, date:'2026-02-15', note:3, famille:'CHOUX' },
+  { id:'h18', vegetal:'Brocoli perez', lieu:'serre', poids:130, date:'2026-01-15', note:3, famille:'CHOUX' },
+  { id:'h19', vegetal:'Brocoli jet sessantina', lieu:'serre', poids:18, date:'2026-02-01', note:2, famille:'CHOUX' },
+  { id:'h20', vegetal:'Betterave chiogga', lieu:'serre', poids:300, date:'2026-03-15', note:4, famille:'LÉGUMES RACINES' },
+  { id:'h21', vegetal:'Fenouil perez', lieu:'serre', poids:436, date:'2026-02-01', note:5, famille:'LÉGUMES RACINES' },
+  { id:'h22', vegetal:'Céleri perez', lieu:'serre', poids:433, date:'2026-05-14', note:4, famille:'LÉGUMES RACINES' },
+  { id:'h23', vegetal:'Céleri perez', lieu:'jardin', poids:152, date:'2026-05-14', note:4, famille:'LÉGUMES RACINES' },
+  { id:'h24', vegetal:'Radis noirs', lieu:'serre', poids:306, date:'2026-02-01', note:3, famille:'LÉGUMES RACINES' },
+  { id:'h25', vegetal:'Piment biquinho rouge', lieu:'serre', poids:3, date:'2026-05-15', note:null, famille:'POIVRONS & PIMENTS' },
+  { id:'h26', vegetal:'Courgette zuboda', lieu:'bacs', poids:629, date:'2026-05-15', note:null, famille:'COURGETTES' },
+  { id:'h27', vegetal:'Cornichon diamant', lieu:'serre', poids:76, date:'2026-05-15', note:null, famille:'CONCOMBRES' },
+  { id:'h28', vegetal:'Mange-tout norli', lieu:'jardin', poids:75, date:'2026-05-15', note:3, famille:'LÉGUMES D\'ÉTÉ' },
+  { id:'h29', vegetal:'Basilic prospéra', lieu:'serre', poids:60, date:'2026-05-14', note:null, famille:'AROMATIQUES' },
+  { id:'h30', vegetal:'Basilic prospéra', lieu:'bacs', poids:10, date:'2026-05-14', note:null, famille:'AROMATIQUES' },
+  { id:'h31', vegetal:'Persil perez', lieu:'serre', poids:240, date:'2026-02-01', note:4, famille:'AROMATIQUES' },
+  { id:'h32', vegetal:'Livèche', lieu:'bacs', poids:10, date:'2026-05-14', note:null, famille:'AROMATIQUES' },
+];
+
+// ── STORAGE ────────────────────────────────────────────────
+const STORAGE_KEY = 'jardin_recoltes_v2';
+
+function loadRecoltes() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (saved && saved.length > 0) return saved;
+  } catch(e) {}
+  // Première fois: charger les données du PDF
+  saveRecoltes(RECOLTES_INITIALES);
+  return [...RECOLTES_INITIALES];
+}
+
+function saveRecoltes(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+let recoltes = loadRecoltes();
+let sortField = 'date';
+let sortAsc = false;
+
+// ── VÉGÉTAUX CONNUS (pour autocomplete) ─────────────────────
+const VEGETAUX_CONNUS = [...new Set([
+  ...Object.keys(FAMILLES),
+  ...recoltes.map(r => r.vegetal)
+])].sort();
+
+// ── SUGGESTIONS ─────────────────────────────────────────────
+function showSuggestions(val) {
+  const el = document.getElementById('suggestions');
+  if (!val || val.length < 2) { el.style.display='none'; return; }
+  const matches = VEGETAUX_CONNUS.filter(v => v.toLowerCase().includes(val.toLowerCase())).slice(0,8);
+  if (!matches.length) { el.style.display='none'; return; }
+  el.innerHTML = matches.map(v => {
+    const fam = FAMILLES[v] || '';
+    return `<div class="suggestion-item" onmousedown="selectSuggestion('${v.replace(/'/g,"\\'")}')">
+      <span>${v}</span><span class="fam">${fam}</span>
+    </div>`;
+  }).join('');
+  el.style.display = 'block';
+}
+
+function selectSuggestion(val) {
+  document.getElementById('inp-vegetal').value = val;
+  document.getElementById('suggestions').style.display = 'none';
+  // Auto-détecter le lieu si connu
+  const rec = recoltes.find(r => r.vegetal === val);
+  if (rec) document.getElementById('inp-lieu').value = rec.lieu;
+}
+
+function hideSuggestions() {
+  setTimeout(() => document.getElementById('suggestions').style.display='none', 200);
+}
+
+// ── AJOUTER RÉCOLTE ──────────────────────────────────────────
+function addRecolte() {
+  const vegetal = document.getElementById('inp-vegetal').value.trim();
+  const lieu    = document.getElementById('inp-lieu').value;
+  const poids   = parseInt(document.getElementById('inp-poids').value);
+  const date    = document.getElementById('inp-date').value;
+  const note    = document.getElementById('inp-note').value;
+
+  if (!vegetal) { alert('Indique le végétal récolté.'); return; }
+  if (!poids || poids <= 0) { alert('Indique un poids valide.'); return; }
+  if (!date) { alert('Indique une date.'); return; }
+
+  const famille = FAMILLES[vegetal] || 'AUTRE';
+  const newRec = {
+    id: 'r' + Date.now(),
+    vegetal, lieu, poids, date,
+    note: note ? parseInt(note) : null,
+    famille
+  };
+
+  recoltes.unshift(newRec);
+  saveRecoltes(recoltes);
+
+  // Reset form
+  document.getElementById('inp-vegetal').value = '';
+  document.getElementById('inp-poids').value = '';
+  document.getElementById('inp-note').value = '';
+
+  renderAll();
+  showToast('✓ Récolte ajoutée — ' + poids + 'g de ' + vegetal);
+}
+
+function deleteRecolte(id, e) {
+  e.stopPropagation();
+  if (!confirm('Supprimer cette récolte ?')) return;
+  recoltes = recoltes.filter(r => r.id !== id);
+  saveRecoltes(recoltes);
+  renderAll();
+}
+
+// ── TOAST ────────────────────────────────────────────────────
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── FORMAT ───────────────────────────────────────────────────
+function fmtDate(d) {
+  if (!d) return '—';
+  const [y,m,j] = d.split('-');
+  return j+'/'+m+'/'+y;
+}
+
+function fmtKg(g) {
+  if (g >= 1000) return (g/1000).toFixed(2) + ' kg';
+  return g + ' g';
+}
+
+function stars(n) {
+  if (!n) return '';
+  return '★'.repeat(n) + '☆'.repeat(5-n);
+}
+
+function lieuBadge(l) {
+  const map = { serre:'badge-serre', bacs:'badge-bacs', jardin:'badge-jardin' };
+  const lbl = { serre:'🏠 Serre', bacs:'🪴 Bacs', jardin:'🌳 Jardin' };
+  return `<span class="badge ${map[l]||''}">${lbl[l]||l}</span>`;
+}
+
+// ── STATS ────────────────────────────────────────────────────
+function computeStats() {
+  const total = recoltes.reduce((s,r)=>s+r.poids,0);
+  const serre = recoltes.filter(r=>r.lieu==='serre').reduce((s,r)=>s+r.poids,0);
+  const bacs  = recoltes.filter(r=>r.lieu==='bacs').reduce((s,r)=>s+r.poids,0);
+  const jardin= recoltes.filter(r=>r.lieu==='jardin').reduce((s,r)=>s+r.poids,0);
+  const varietes = new Set(recoltes.map(r=>r.vegetal)).size;
+  return { total, serre, bacs, jardin, varietes };
+}
+
+function renderStats() {
+  const s = computeStats();
+  document.getElementById('s1').textContent = (s.total/1000).toFixed(2);
+  document.getElementById('s2').textContent = (s.serre/1000).toFixed(2);
+  document.getElementById('s3').textContent = (s.bacs/1000).toFixed(2);
+  document.getElementById('s4').textContent = (s.jardin/1000).toFixed(2);
+
+  // Header
+  document.getElementById('hTotalKg').textContent = (s.total/1000).toFixed(1);
+  document.getElementById('hNbRecoltes').textContent = recoltes.length;
+  document.getElementById('hNbVarietes').textContent = s.varietes;
+
+  // Meilleur rendement/pied
+  const best = RENDEMENTS_PDF[0];
+  document.getElementById('hMeilleur').textContent = best.vegetal.split(' ')[0];
+}
+
+// ── CHARTS ───────────────────────────────────────────────────
+const chartInstances = {};
+
+function destroyChart(id) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+const PALETTE = ['#3d7a4f','#7ab990','#c47c2b','#3a6ea5','#b84040','#8a6a3a','#6a3a8a','#3a8a8a','#8a3a6a','#5a8a3a'];
+
+function renderChartFamille() {
+  const byFam = {};
+  recoltes.forEach(r => { byFam[r.famille] = (byFam[r.famille]||0) + r.poids; });
+  const sorted = Object.entries(byFam).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  destroyChart('chartFamille');
+  const ctx = document.getElementById('chartFamille').getContext('2d');
+  chartInstances['chartFamille'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(([k])=>k),
+      datasets: [{ data: sorted.map(([,v])=>v), backgroundColor: PALETTE, borderRadius: 6 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => fmtKg(c.parsed.y) } } },
+      scales:{
+        x:{ ticks:{color:'#9e9488',font:{size:9}}, grid:{display:false} },
+        y:{ ticks:{color:'#9e9488',font:{size:9}, callback:v=>fmtKg(v)}, grid:{color:'rgba(0,0,0,.06)'} }
+      }
+    }
+  });
+}
+
+function renderChartLieu() {
+  const s = computeStats();
+  destroyChart('chartLieu');
+  const ctx = document.getElementById('chartLieu').getContext('2d');
+  chartInstances['chartLieu'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Serre','Bacs','Jardin'],
+      datasets: [{ data:[s.serre,s.bacs,s.jardin], backgroundColor:['#3a6ea5','#c47c2b','#3d7a4f'], borderWidth:0 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{ position:'bottom', labels:{color:'#6b6259',font:{size:10}} }, tooltip:{ callbacks:{ label: c => c.label+': '+fmtKg(c.parsed) } } }
+    }
+  });
+}
+
+function renderChartEvolution() {
+  const byMonth = {};
+  recoltes.forEach(r => {
+    const m = r.date.substring(0,7);
+    byMonth[m] = (byMonth[m]||0) + r.poids;
+  });
+  const months = Object.keys(byMonth).sort();
+  destroyChart('chartEvolution');
+  const ctx = document.getElementById('chartEvolution').getContext('2d');
+  chartInstances['chartEvolution'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: months.map(m=>{ const [y,mo]=m.split('-'); return ['','Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][parseInt(mo)]; }),
+      datasets: [{
+        data: months.map(m=>byMonth[m]),
+        borderColor:'#3d7a4f', backgroundColor:'rgba(61,122,79,.1)',
+        borderWidth:2, fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:'#3d7a4f'
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>fmtKg(c.parsed.y) } } },
+      scales:{
+        x:{ ticks:{color:'#9e9488',font:{size:9}}, grid:{display:false} },
+        y:{ ticks:{color:'#9e9488',font:{size:9}, callback:v=>fmtKg(v)}, grid:{color:'rgba(0,0,0,.06)'} }
+      }
+    }
+  });
+}
+
+function renderChartMois() {
+  const byMonth = {};
+  recoltes.forEach(r => {
+    const m = r.date.substring(0,7);
+    if (!byMonth[m]) byMonth[m] = { serre:0, bacs:0, jardin:0 };
+    byMonth[m][r.lieu] = (byMonth[m][r.lieu]||0) + r.poids;
+  });
+  const months = Object.keys(byMonth).sort();
+  const lbls = months.map(m=>{ const [,mo]=m.split('-'); return ['','Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][parseInt(mo)]; });
+  destroyChart('chartMois');
+  const ctx = document.getElementById('chartMois').getContext('2d');
+  chartInstances['chartMois'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:lbls,
+      datasets:[
+        { label:'Serre', data:months.map(m=>byMonth[m].serre), backgroundColor:'#3a6ea5', borderRadius:4 },
+        { label:'Bacs',  data:months.map(m=>byMonth[m].bacs),  backgroundColor:'#c47c2b', borderRadius:4 },
+        { label:'Jardin',data:months.map(m=>byMonth[m].jardin),backgroundColor:'#3d7a4f', borderRadius:4 },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{position:'bottom', labels:{color:'#6b6259',font:{size:10}}}, tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+fmtKg(c.parsed.y) } } },
+      scales:{
+        x:{stacked:true, ticks:{color:'#9e9488',font:{size:9}}, grid:{display:false}},
+        y:{stacked:true, ticks:{color:'#9e9488',font:{size:9}, callback:v=>fmtKg(v)}, grid:{color:'rgba(0,0,0,.06)'}}
+      }
+    }
+  });
+}
+
+function renderChartRendement() {
+  const top = RENDEMENTS_PDF.slice(0,8);
+  destroyChart('chartRendement');
+  const ctx = document.getElementById('chartRendement').getContext('2d');
+  chartInstances['chartRendement'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: top.map(r=>r.vegetal.replace(' perez','').replace(' char','').replace(' sessantina','')),
+      datasets:[{ data:top.map(r=>r.poids_pied), backgroundColor:PALETTE, borderRadius:6 }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.x+'g/pied' } } },
+      scales:{
+        x:{ ticks:{color:'#9e9488',font:{size:9}}, grid:{color:'rgba(0,0,0,.06)'} },
+        y:{ ticks:{color:'#6b6259',font:{size:10}}, grid:{display:false} }
+      }
+    }
+  });
+}
+
+// ── TOP PLANTES ──────────────────────────────────────────────
+function renderTop() {
+  const byVeg = {};
+  recoltes.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
+  const sorted = Object.entries(byVeg).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const max = sorted[0]?.[1] || 1;
+  const ranks = ['gold','silver','bronze','',''];
+  document.getElementById('topList').innerHTML = sorted.map(([v,p],i) => {
+    const fam = FAMILLES[v] || '';
+    return `<div class="top-item">
+      <div class="top-rank ${ranks[i]}">${i+1}</div>
+      <div style="flex:1">
+        <div class="top-name">${v}</div>
+        <div class="top-sub">${fam}</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${(p/max*100).toFixed(0)}%"></div></div>
+      </div>
+      <div class="top-val">${fmtKg(p)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── TABLEAU ──────────────────────────────────────────────────
+function sortBy(field) {
+  if (sortField === field) sortAsc = !sortAsc;
+  else { sortField = field; sortAsc = false; }
+  renderTable();
+}
+
+function renderTable() {
+  const filterLieu = document.getElementById('filterLieu').value;
+  const filterFam  = document.getElementById('filterFam').value;
+
+  let data = [...recoltes];
+  if (filterLieu) data = data.filter(r=>r.lieu===filterLieu);
+  if (filterFam)  data = data.filter(r=>r.famille===filterFam);
+
+  data.sort((a,b)=>{
+    let va=a[sortField], vb=b[sortField];
+    if (sortField==='poids') { va=+va; vb=+vb; }
+    if (sortField==='note') { va=va||0; vb=vb||0; }
+    if (va<vb) return sortAsc?-1:1;
+    if (va>vb) return sortAsc?1:-1;
+    return 0;
+  });
+
+  const tbody = document.getElementById('tablebody');
+  tbody.innerHTML = data.map(r => `
+    <tr onclick="toggleDetail('${r.id}')">
+      <td>${r.vegetal}</td>
+      <td>${lieuBadge(r.lieu)}</td>
+      <td>${fmtKg(r.poids)}</td>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="stars">${stars(r.note)}</span></td>
+    </tr>
+    <tr class="row-detail" id="detail-${r.id}">
+      <td colspan="5">
+        <div class="detail-inner">
+          <div class="detail-item"><div class="detail-key">Famille</div><div class="detail-val">${r.famille||'—'}</div></div>
+          <div class="detail-item"><div class="detail-key">Poids</div><div class="detail-val">${r.poids} g</div></div>
+          <div class="detail-item"><div class="detail-key">Lieu</div><div class="detail-val">${r.lieu}</div></div>
+          <div class="detail-item"><div class="detail-key">Date</div><div class="detail-val">${fmtDate(r.date)}</div></div>
+          ${r.note?`<div class="detail-item"><div class="detail-key">Note</div><div class="detail-val stars">${stars(r.note)} (${r.note}/5)</div></div>`:''}
+          <div class="detail-item">
+            <div class="detail-key">Action</div>
+            <div class="detail-val"><button onclick="deleteRecolte('${r.id}',event)" style="background:var(--red-light);border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer">Supprimer</button></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  if (!data.length) tbody.innerHTML = '<tr><td colspan="5"><div class="empty">Aucune récolte pour ces filtres.</div></td></tr>';
+}
+
+function toggleDetail(id) {
+  const el = document.getElementById('detail-'+id);
+  el.classList.toggle('open');
+}
+
+// ── FILTRE FAMILLES ──────────────────────────────────────────
+function populateFamFilter() {
+  const fams = [...new Set(recoltes.map(r=>r.famille).filter(Boolean))].sort();
+  const sel = document.getElementById('filterFam');
+  sel.innerHTML = '<option value="">Toutes familles</option>' +
+    fams.map(f=>`<option value="${f}">${f}</option>`).join('');
+}
+
+// ── ONGLETS GRAPHIQUES ───────────────────────────────────────
+function showAnalyse(name, btn) {
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tnav').forEach(t=>t.classList.remove('active'));
+  document.getElementById('analyse-'+name).classList.add('active');
+  btn.classList.add('active');
+  // Render le bon chart
+  if (name==='famille') renderChartFamille();
+  else if (name==='lieu') { renderChartLieu(); renderChartEvolution(); }
+  else if (name==='mois') renderChartMois();
+  else if (name==='rendement') renderChartRendement();
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+function renderAll() {
+  renderStats();
+  renderChartFamille();
+  renderTop();
+  populateFamFilter();
+  renderTable();
+}
+
+// Date par défaut = aujourd'hui
+document.getElementById('inp-date').valueAsDate = new Date();
+
+renderAll();
+</script>
+</body>
+</html>
