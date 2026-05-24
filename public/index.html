@@ -104,6 +104,16 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .err{text-align:center;padding:30px;color:var(--text-muted);font-size:.72rem;line-height:1.8}
 .err strong{color:var(--red);display:block;margin-bottom:6px}
 .ts{font-size:.58rem;color:var(--text-muted)}
+.theme-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);padding:7px 12px;border-radius:20px;font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;letter-spacing:.04em;transition:all .2s;white-space:nowrap}
+.theme-btn.active,.theme-btn:hover{background:var(--green-dark);border-color:var(--green);color:var(--green)}
+.conseils-section{margin-bottom:20px}
+.conseils-section h3{font-family:'Fraunces',serif;font-size:1rem;font-weight:300;font-style:italic;color:var(--accent);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.conseils-item{padding:8px 0;border-bottom:1px solid rgba(42,64,48,.3);font-size:.82rem;line-height:1.7;color:var(--text-dim)}
+.conseils-item:last-child{border-bottom:none}
+.conseils-tag{display:inline-block;padding:2px 7px;border-radius:10px;font-size:.6rem;letter-spacing:.06em;margin-right:6px;font-weight:500}
+.tag-urgent{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+.tag-semaine{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+.tag-info{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
 
 .mb{margin-bottom:16px}
 
@@ -127,6 +137,7 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
     <button class="tab active" onclick="showTab('dashboard',this)">Dashboard</button>
     <button class="tab" onclick="showTab('appareils',this)">Appareils</button>
     <button class="tab" onclick="goRecoltes()">Récoltes</button>
+    <button class="tab" onclick="showTab('conseils',this)">Conseils</button>
   </div>
 
   <!-- DASHBOARD -->
@@ -199,6 +210,49 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
     <div style="text-align:center;padding:50px 16px">
       <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-style:italic;color:var(--text-dim);margin-bottom:16px">Journal des récoltes</div>
       <a href="/recoltes.html" style="display:inline-block;background:var(--green-dark);color:var(--green);border:1px solid var(--green);padding:12px 24px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.8rem;text-decoration:none;letter-spacing:.05em">Ouvrir le journal →</a>
+    </div>
+  </div>
+
+  <!-- CONSEILS -->
+  <div class="section" id="tab-conseils">
+    <div class="stitle">Conseils personnalisés <span>IA · Météo · Récoltes</span></div>
+
+    <!-- Thèmes -->
+    <div id="conseilsThemes" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="theme-btn active" onclick="selectTheme(this,'general')">🌿 Général</button>
+      <button class="theme-btn" onclick="selectTheme(this,'semis')">🌱 Semis & plantations</button>
+      <button class="theme-btn" onclick="selectTheme(this,'maladies')">🍄 Maladies & traitements</button>
+      <button class="theme-btn" onclick="selectTheme(this,'arrosage')">💧 Arrosage & fertilisation</button>
+      <button class="theme-btn" onclick="selectTheme(this,'verger')">🍑 Arbres fruitiers</button>
+      <button class="theme-btn" onclick="selectTheme(this,'serre')">🏠 Serre aquaponique</button>
+    </div>
+
+    <!-- Zone de réponse IA -->
+    <div id="conseilsCard" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;min-height:200px;position:relative;overflow:hidden">
+      <div id="conseilsContent" style="padding:20px;font-size:.85rem;line-height:1.8;color:var(--text-dim)">
+        <div style="text-align:center;padding:30px 0;color:var(--text-muted)">
+          <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-style:italic;margin-bottom:8px;color:var(--text-dim)">Prêt à te conseiller</div>
+          Choisis un thème ci-dessus ou pose une question personnalisée.
+        </div>
+      </div>
+      <div id="conseilsLoading" style="display:none;position:absolute;inset:0;background:rgba(10,18,11,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+        <div class="loading-ring"></div>
+        <div style="font-size:.72rem;color:var(--text-dim);letter-spacing:.08em">Analyse en cours…</div>
+      </div>
+    </div>
+
+    <!-- Question libre -->
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <input type="text" id="conseilsInput" placeholder="Ex: Quand planter mes tomates en serre ?" 
+        style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text);outline:none"
+        onkeydown="if(event.key==='Enter') askConseils()"
+        onfocus="this.style.borderColor='var(--green-dark)'"
+        onblur="this.style.borderColor='var(--border)'">
+      <button onclick="askConseils()" style="background:var(--green-dark);border:1px solid var(--green);color:var(--green);padding:10px 16px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.75rem;cursor:pointer;white-space:nowrap;flex-shrink:0">Envoyer →</button>
+    </div>
+
+    <div style="margin-top:8px;font-size:.6rem;color:var(--text-muted);letter-spacing:.05em">
+      Les conseils tiennent compte de ta météo actuelle, tes données capteurs et tes récoltes.
     </div>
   </div>
 </main>
@@ -609,6 +663,101 @@ async function refreshAll() {
 
 function goRecoltes() {
   window.location.href = '/recoltes.html';
+}
+
+// ── Conseils IA ───────────────────────────────────────────────
+let currentTheme = 'general';
+
+const THEMES = {
+  general: 'Donne-moi une vue d'ensemble des conseils les plus importants pour mon jardin en ce moment.',
+  semis: 'Quels semis et plantations dois-je faire maintenant ou dans les 2-3 prochaines semaines, compte tenu de la saison et de ma situation géographique à Montpellier ?',
+  maladies: 'Quelles maladies et ravageurs dois-je surveiller en ce moment ? Quels traitements préventifs recommandes-tu, notamment contre l'oïdium et les autres maladies fréquentes dans le sud de la France ?',
+  arrosage: 'Quels sont mes besoins en arrosage et fertilisation actuellement ? Tiens compte de mes capteurs d'humidité sol et de la météo.',
+  verger: 'Quelles interventions dois-je faire sur mes arbres fruitiers en ce moment ? Taille, traitement, fertilisation, récolte imminente ?',
+  serre: 'Donne-moi des conseils spécifiques pour ma serre aquaponique : paramètres à surveiller, ajustements à faire, cultures à privilégier en ce moment.',
+};
+
+function selectTheme(btn, theme) {
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTheme = theme;
+  askConseils(THEMES[theme]);
+}
+
+async function askConseils(questionOverride) {
+  const question = questionOverride || document.getElementById('conseilsInput').value.trim();
+  if (!question && !questionOverride) return;
+
+  // Show loading
+  const loading = document.getElementById('conseilsLoading');
+  const content = document.getElementById('conseilsContent');
+  loading.style.display = 'flex';
+
+  // Build context
+  const sensor = getSerreTHSensor();
+  const temp = sensor ? getStat(sensor, 'va_temperature') : null;
+  const hum  = sensor ? getStat(sensor, 'va_humidity') : null;
+  const waterTimer = getDeviceById(DEVICE_WATER_TIMER_ID);
+  const rhoneOn = waterTimer ? getStat(waterTimer, 'switch_2') : null;
+
+  // Load harvest data from localStorage
+  let recoltesSummary = '';
+  try {
+    const rec = JSON.parse(localStorage.getItem('jardin_recoltes_v2') || '[]');
+    const byFam = {};
+    rec.forEach(r => { byFam[r.famille||'Autre'] = (byFam[r.famille||'Autre']||0) + r.poids; });
+    const top = Object.entries(byFam).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    recoltesSummary = top.map(([f,p])=>`${f}: ${(p/1000).toFixed(1)}kg`).join(', ');
+  } catch(e) {}
+
+  const today = new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+  const month = new Date().getMonth() + 1; // 1-12
+  const season = month >= 3 && month <= 5 ? 'printemps' : month >= 6 && month <= 8 ? 'été' : month >= 9 && month <= 11 ? 'automne' : 'hiver';
+
+  const systemPrompt = `Tu es un expert en maraîchage, permaculture et aquaponie, qui conseille un jardinier passionné basé à Montpellier (sud de la France, zone méditerranéenne, USDA zone 9b).
+
+Son système comprend :
+- Une serre aquaponique MyFood City (tours de culture, bassin de poissons)
+- Des bacs surélevés (substrat enrichi : terre criblée, compost, fumier, terreau)
+- Un potager extérieur en pleine terre
+- Des capteurs connectés SmartLife/Tuya
+- Un arrosage automatisé (Bas Rhône)
+- Des arbres fruitiers : abricotier, 2 figuiers, 2 pommiers colonnaires, noisetier, amandier, pêchers, nectarinier, mandarinier, citronnier, poivrier de Sichuan, kiwai, 3 bananiers
+- Des petits fruits : framboisiers, groseillier, baie de goji
+
+Données en temps réel :
+- Date : ${today} (${season})
+- Température serre : ${temp !== null ? temp + '°C' : 'non disponible'}
+- Humidité serre : ${hum !== null ? hum + '%' : 'non disponible'}
+- Arrosage Bas Rhône : ${rhoneOn !== null ? (rhoneOn ? 'actif' : 'inactif') : 'inconnu'}
+- Principales récoltes saison : ${recoltesSummary || 'non disponible'}
+
+Variétés cultivées (extraits) : Pak choï, blettes, choux, salades diverses, fenouil, betteraves, tomates cerises et grosses, aubergines, courgettes, poivrons, piments, concombres, melons, pastèques, basilic, persil, aromatiques variées.
+
+Réponds en français, de manière pratique et actionnable. Organise ta réponse en sections claires avec des titres HTML <h3>. Pour chaque conseil, indique l'urgence avec une balise <span class="conseils-tag tag-urgent">URGENT</span>, <span class="conseils-tag tag-semaine">CETTE SEMAINE</span>, ou <span class="conseils-tag tag-info">INFO</span>. Sois précis, concret, adapté à la saison et au climat méditerranéen. Maximum 400 mots.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: question }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || 'Erreur lors de la génération des conseils.';
+
+    content.innerHTML = '<div style="padding:20px;font-size:.83rem;line-height:1.8;color:var(--text-dim)">' + text + '</div>';
+    if (!questionOverride) document.getElementById('conseilsInput').value = '';
+  } catch(e) {
+    content.innerHTML = '<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur de connexion à l'IA. Vérifie ta connexion internet.</div>';
+  }
+
+  loading.style.display = 'none';
 }
 
 // ── Init ──────────────────────────────────────────────────────
