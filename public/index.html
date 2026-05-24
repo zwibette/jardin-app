@@ -126,7 +126,7 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
   <div class="nav-tabs">
     <button class="tab active" onclick="showTab('dashboard',this)">Dashboard</button>
     <button class="tab" onclick="showTab('appareils',this)">Appareils</button>
-    <button class="tab" onclick="showTab('potager',this)">Potager</button>
+    <button class="tab" onclick="goRecoltes()">Récoltes</button>
   </div>
 
   <!-- DASHBOARD -->
@@ -196,10 +196,9 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 
   <!-- POTAGER -->
   <div class="section" id="tab-potager">
-    <div class="stitle">Journal de culture <span>Potager & bacs</span></div>
-    <div style="text-align:center;padding:50px 16px;color:var(--text-muted);font-size:.78rem;line-height:2">
-      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-style:italic;color:var(--text-dim);margin-bottom:12px">Bientôt disponible</div>
-      Suivi des plantations, récoltes,<br>rotations et journal de culture.
+    <div style="text-align:center;padding:50px 16px">
+      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-style:italic;color:var(--text-dim);margin-bottom:16px">Journal des récoltes</div>
+      <a href="/recoltes.html" style="display:inline-block;background:var(--green-dark);color:var(--green);border:1px solid var(--green);padding:12px 24px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.8rem;text-decoration:none;letter-spacing:.05em">Ouvrir le journal →</a>
     </div>
   </div>
 </main>
@@ -308,30 +307,8 @@ function fmtTime(dateStr) {
 
 // ── Alertes ──────────────────────────────────────────────────
 function renderAlerts() {
-  const el = document.getElementById('alertBanners');
-  const alerts = [];
-
-  // Détecteur fuite d'eau
-  devices.forEach(d => {
-    if (getCat(d) === 'water') {
-      const state = getStat(d, 'watersensor_state');
-      if (state === 'alarm') alerts.push({ type:'err', msg:'⚠ Fuite d\'eau détectée — ' + d.name });
-    }
-  });
-
-  // Batterie faible
-  devices.forEach(d => {
-    const bat = getStat(d, 'battery_percentage') ?? getStat(d, 'battery_state');
-    if (typeof bat === 'number' && bat <= 5 && bat >= 0) {
-      alerts.push({ type:'warn', msg:'🔋 Batterie critique (' + bat + '%) — ' + d.name });
-    } else if (bat === 'low') {
-      alerts.push({ type:'warn', msg:'🔋 Batterie faible — ' + d.name });
-    }
-  });
-
-  el.innerHTML = alerts.map(a =>
-    `<div class="alert-banner ${a.type==='warn'?'warn':''}">${a.msg}</div>`
-  ).join('');
+  // Alertes désactivées sur le dashboard
+  document.getElementById('alertBanners').innerHTML = '';
 }
 
 // ── Dashboard métriques ──────────────────────────────────────
@@ -346,15 +323,14 @@ function renderSerreMetrics() {
 
   const temp = getStat(sensor, 'va_temperature');
   const hum  = getStat(sensor, 'va_humidity');
-  const tempC = temp !== null ? (temp / 10).toFixed(1) : '—';
+  const tempC = temp !== null ? Number(temp).toFixed(1) : '—';
   const humV  = hum  !== null ? hum : '—';
 
   // Couleur température
   let tempDot = 'dot-green';
   if (temp !== null) {
-    const t = temp / 10;
-    if (t < 15 || t > 35) tempDot = 'dot-red';
-    else if (t < 18 || t > 30) tempDot = 'dot-amber';
+    if (temp < 15 || temp > 35) tempDot = 'dot-red';
+    else if (temp < 18 || temp > 30) tempDot = 'dot-amber';
   }
 
   // Couleur humidité
@@ -629,6 +605,10 @@ async function refreshAll() {
   }
 
   btn.classList.remove('spinning');
+}
+
+function goRecoltes() {
+  window.location.href = '/recoltes.html';
 }
 
 // ── Init ──────────────────────────────────────────────────────
