@@ -1,0 +1,737 @@
+Aucun élément sélectionné 
+
+Aller au contenu
+Utiliser Gmail avec un lecteur d'écran
+1 sur 921
+Html a editer
+Boîte de réception
+
+V <zwibette@gmail.com>
+Pièces jointes
+09:18 (il y a 28 minutes)
+À moi
+
+ Une pièce jointe
+  •  Analysé par Gmail
+
+V
+09:44 (il y a 2 minutes)
+À moi
+
+
+Aucun élément sélectionné 
+
+Aller au contenu
+Utiliser Gmail avec un lecteur d'écran
+
+
+1 sur 921
+
+Html a editer
+
+Boîte de réception
+
+V <zwibette@gmail.com>
+Pièces jointes
+09:18 (il y a 25 minutes)
+
+
+
+À moi
+
+ Une pièce jointe
+  •  Analysé par Gmail
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d1a0f">
+<title>Jardin Vivant</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,200&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a120b;--bg3:#142016;--surface:#1a2e1c;--border:#2a4030;--green:#4ade80;--green-dark:#166534;--amber:#fbbf24;--red:#f87171;--text:#e8f5ea;--text-dim:#8fb898;--text-muted:#4a6b52;--accent:#a3e635}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(74,222,128,.05) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(163,230,53,.04) 0%,transparent 50%);pointer-events:none;z-index:0}
+header{position:sticky;top:0;z-index:100;background:rgba(10,18,11,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 16px}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:var(--accent);display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.header-status{font-size:.65rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;text-align:center;flex:1;padding:0 8px}
+.status-ok{color:var(--green)}.status-err{color:var(--red)}.status-warn{color:var(--amber)}
+.refresh-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:36px;height:36px;border-radius:8px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.refresh-btn.spinning{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{max-width:1200px;margin:0 auto;padding:16px;position:relative;z-index:1}
+.nav-tabs{display:flex;gap:3px;margin-bottom:20px;background:var(--surface);padding:3px;border-radius:10px;border:1px solid var(--border)}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
+.tab.active{background:var(--bg3);color:var(--accent);border:1px solid var(--border)}
+.section{display:none}.section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.mb{margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green-dark),transparent);opacity:.6}
+.card-label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.card-value{font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;color:var(--text);line-height:1;margin-bottom:2px}
+.card-unit{font-size:.75rem;color:var(--text-muted)}
+.card-sub{font-size:.65rem;color:var(--text-muted);margin-top:6px}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-green{background:var(--green);box-shadow:0 0 5px var(--green)}
+.dot-amber{background:var(--amber);box-shadow:0 0 5px var(--amber)}
+.dot-red{background:var(--red);box-shadow:0 0 5px var(--red)}
+.dot-gray{background:var(--text-muted)}
+.stitle{font-family:'Fraunces',serif;font-size:1rem;font-weight:300;font-style:italic;color:var(--text-dim);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.stitle span{font-size:.6rem;letter-spacing:.1em;font-style:normal;font-family:'DM Mono',monospace;color:var(--text-muted)}
+.device-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.device-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.device-name{font-size:.75rem;color:var(--text);line-height:1.3;flex:1}
+.device-type{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-top:2px}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--bg3);border:1px solid var(--border);border-radius:22px;cursor:pointer;transition:all .3s}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:var(--text-muted);border-radius:50%;transition:all .3s}
+.toggle input:checked+.toggle-slider{background:var(--green-dark);border-color:var(--green)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:var(--green);box-shadow:0 0 6px var(--green)}
+.ph-bar{height:5px;background:var(--bg3);border-radius:3px;margin-top:6px;position:relative;overflow:hidden}
+.ph-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#f87171,#fbbf24,#4ade80,#60a5fa,#818cf8);width:100%}
+.ph-marker{position:absolute;top:-2px;width:2px;height:9px;background:white;border-radius:1px;transform:translateX(-50%)}
+.ph-labels{display:flex;justify-content:space-between;font-size:.55rem;color:var(--text-muted);margin-top:3px}
+.loading{display:flex;align-items:center;justify-content:center;padding:50px 20px;flex-direction:column;gap:14px;color:var(--text-muted);font-size:.72rem}
+.loading-ring{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite}
+.err{text-align:center;padding:30px 16px;color:var(--text-muted);font-size:.72rem;line-height:1.8}
+.err strong{color:var(--red);display:block;margin-bottom:6px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.65rem;color:var(--text-dim);display:flex;align-items:center;gap:5px}
+.ch-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+.ch-btn{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 4px;text-align:center;font-size:.62rem;color:var(--text-muted);cursor:pointer;transition:all .2s;font-family:'DM Mono',monospace;line-height:1.4}
+.ch-btn.on{background:rgba(74,222,128,.1);border-color:var(--green-dark);color:var(--green)}
+.ts{font-size:.58rem;color:var(--text-muted)}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo"><div class="logo-dot"></div>Jardin Vivant</div>
+    <div class="header-status" id="hs">— démarrage</div>
+    <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()">↻</button>
+  </div>
+</header>
+<main>
+  <div class="nav-tabs">
+    <button class="tab active" onclick="showTab('dashboard',this)">Dashboard</button>
+    <button class="tab" onclick="showTab('serre',this)">Serre</button>
+    <button class="tab" onclick="showTab('appareils',this)">Appareils</button>
+    <button class="tab" onclick="showTab('potager',this)">Potager</button>
+  </div>
+
+  <div class="section active" id="tab-dashboard">
+    <div class="pills" id="pills"><div class="pill"><span class="dot dot-gray"></span>Chargement…</div></div>
+    <div class="stitle">Capteurs <span>SmartLife / Tuya</span></div>
+    <div class="grid mb" id="dashCards"><div class="loading"><div class="loading-ring"></div>Connexion…</div></div>
+    <div class="stitle">Serre aquaponique <span>MyFood #703</span></div>
+    <div class="grid" id="dashSerre"><div class="loading"><div class="loading-ring"></div>Lecture MyFood…</div></div>
+  </div>
+
+  <div class="section" id="tab-serre">
+    <div class="stitle">Serre aquaponique <span>MyFood City — #703</span></div>
+    <div class="grid mb" id="serreCards"><div class="loading"><div class="loading-ring"></div></div></div>
+    <div class="stitle">Historique <span>Dernières mesures</span></div>
+    <div id="serreHist"></div>
+  </div>
+
+  <div class="section" id="tab-appareils">
+    <div class="stitle">Appareils connectés <span>SmartLife / Tuya</span></div>
+    <div class="pills" id="devPills"></div>
+    <div class="grid" id="devGrid"><div class="loading"><div class="loading-ring"></div>Chargement…</div></div>
+  </div>
+
+  <div class="section" id="tab-potager">
+    <div class="stitle">Journal de culture <span>Potager & bacs</span></div>
+    <div style="text-align:center;padding:50px 16px;color:var(--text-muted);font-size:.78rem;line-height:2">
+      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-style:italic;color:var(--text-dim);margin-bottom:12px">Bientôt disponible</div>
+      Suivi des plantations, récoltes,<br>rotations et journal de culture.
+    </div>
+  </div>
+</main>
+
+<script>
+// Les appels API passent par /api/tuya et /api/myfood (notre serveur Vercel)
+// Plus de problème CORS - tout est fait côté serveur
+
+let devices = [];
+let mfData = [];
+let lastRefresh = null;
+
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── API calls vers notre proxy Vercel ───────────────────────
+async function fetchDevices() {
+  const r = await fetch('/api/tuya?action=devices');
+  const d = await r.json();
+  if (!d.success) throw new Error(d.error || 'Erreur Tuya');
+  devices = d.devices;
+}
+
+async function fetchMyFood() {
+  const r = await fetch('/api/myfood');
+  const d = await r.json();
+  if (!d.success) throw new Error(d.error || 'Erreur MyFood');
+  mfData = d.data;
+}
+
+async function controlDevice(deviceId, code, value) {
+  const r = await fetch('/api/tuya', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({action:'control', deviceId, code, value})
+  });
+  return r.json();
+}
+
+// ── Helpers ─────────────────────────────────────────────────
+function getStat(d, code) {
+  return d.status_list?.find(x=>x.code===code)?.value ?? null;
+}
+
+function getCat(d) {
+  const n=(d.name||'').toLowerCase(), c=(d.category||'').toLowerCase();
+  if (n.includes('commutateur')||n.includes('switch')||n.includes('canal')||c==='kg') return 'switch';
+  if (n.includes('temp')||n.includes('humid')||c==='wk') return 'sensor';
+  return 'other';
+}
+
+function fmt(dateStr) {
+  if (!dateStr) return '';
+  try { return new Date(dateStr).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+  catch(e){return '';}
+}
+
+function fmtType(t) {
+  const m={AirTemperature:'Temp. air',WaterTemperature:'Temp. eau',Humidity:'Humidité',Ph:'pH',PH:'pH',WaterLevel:'Niveau eau',Luminosity:'Luminosité'};
+  return m[t]||t;
+}
+
+function unit(t) {
+  const l=t.toLowerCase();
+  if(l.includes('temp')) return '°C';
+  if(l.includes('ph')) return 'pH';
+  if(l.includes('humid')) return '%';
+  if(l.includes('level')||l.includes('eau')) return 'cm';
+  if(l.includes('lumi')) return 'lux';
+  return '';
+}
+
+function phDot(type, val) {
+  if (!type.toLowerCase().includes('ph')) return 'dot-green';
+  if (val>=6&&val<=7.5) return 'dot-green';
+  if (val>=5.5) return 'dot-amber';
+  return 'dot-red';
+}
+
+// ── Render MyFood ───────────────────────────────────────────
+function renderMF(elId) {
+  const el=document.getElementById(elId);
+  if (!mfData?.length) { el.innerHTML='<div class="err"><strong>MyFood non disponible</strong>Vérification en cours…</div>'; return; }
+  const types={};
+  mfData.forEach(m=>{
+    const t=m.captorType||m.measureType||m.type||'?';
+    if(!types[t]) types[t]=[];
+    types[t].push(m);
+  });
+  el.innerHTML=Object.entries(types).map(([type,arr])=>{
+    const m=arr.sort((a,b)=>new Date(b.logTime||b.date||0)-new Date(a.logTime||a.date||0))[0];
+    const val=m.value!==undefined?m.value:m.mesure;
+    const num=val!=null?Number(val):null;
+    const isPh=type.toLowerCase().includes('ph');
+    return `<div class="card">
+      <div class="card-label"><span class="dot ${phDot(type,num)}"></span>${fmtType(type)}</div>
+      <div class="card-value">${num!=null?num.toFixed(1):'—'}</div>
+      <div class="card-unit">${unit(type)}</div>
+      ${isPh&&num!=null?`<div class="ph-bar"><div class="ph-fill"></div><div class="ph-marker" style="left:${Math.min(100,Math.max(0,(num/14)*100))}%"></div></div><div class="ph-labels"><span>0</span><span>7</span><span>14</span></div>`:''}
+      <div class="card-sub ts">${fmt(m.logTime||m.date)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render Devices ──────────────────────────────────────────
+function renderDevCard(d) {
+  const cat=getCat(d);
+  if (cat==='switch') {
+    const chs=['switch_1','switch_2','switch_3','switch_4'].filter(c=>d.status_list?.some(x=>x.code===c));
+    const onCount=chs.filter(c=>getStat(d,c)).length;
+    return `<div class="device-card">
+      <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Commutateur ${chs.length} canaux</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
+      <div class="ch-row">${chs.map((c,i)=>{const on=getStat(d,c);return`<div class="ch-btn ${on?'on':''}" onclick="toggleCh('${d.id}','${c}',${!on})">C${i+1}<br>${on?'●':'○'}</div>`;}).join('')}</div>
+      <div class="card-sub">${onCount}/${chs.length} actifs</div>
+    </div>`;
+  }
+  if (cat==='sensor') {
+    const temp=getStat(d,'va_temperature')??getStat(d,'temp_current');
+    const hum=getStat(d,'va_humidity')??getStat(d,'humidity_value');
+    return `<div class="device-card">
+      <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Capteur</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
+      <div style="display:flex;gap:14px;margin-top:4px">
+        ${temp!=null?`<div><div style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:300">${(temp/10).toFixed(1)}°</div><div style="font-size:.58rem;color:var(--text-muted);letter-spacing:.1em">TEMP</div></div>`:''}
+        ${hum!=null?`<div><div style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:300">${hum}%</div><div style="font-size:.58rem;color:var(--text-muted);letter-spacing:.1em">HUMID</div></div>`:''}
+      </div>
+    </div>`;
+  }
+  const sw=getStat(d,'switch')??getStat(d,'switch_1');
+  return `<div class="device-card">
+    <div class="device-header">
+      <div><div class="device-name">${d.name}</div><div class="device-type">${d.category||'appareil'}</div></div>
+      ${sw!=null?`<label class="toggle"><input type="checkbox" ${sw?'checked':''} onchange="toggleDev('${d.id}','switch',this.checked)"><span class="toggle-slider"></span></label>`:`<span class="dot ${d.online?'dot-green':'dot-gray'}"></span>`}
+    </div>
+    <div class="card-sub">${d.online?'<span class="status-ok">En ligne</span>':'<span class="status-err">Hors ligne</span>'}</div>
+  </div>`;
+}
+
+function renderDevices() {
+  const el=document.getElementById('devGrid');
+  if (!devices.length) { el.innerHTML='<div class="err"><strong>Aucun appareil</strong>Vérification en cours…</div>'; return; }
+  el.innerHTML=devices.map(renderDevCard).join('');
+  const online=devices.filter(d=>d.online).length;
+  document.getElementById('devPills').innerHTML=`
+    <div class="pill"><span class="dot dot-green"></span>${online} en ligne</div>
+    <div class="pill"><span class="dot dot-gray"></span>${devices.length-online} hors ligne</div>
+    <div class="pill">${devices.length} appareils</div>`;
+}
+
+function renderDashboard() {
+  const online=devices.filter(d=>d.online).length;
+  document.getElementById('pills').innerHTML=`
+    <div class="pill"><span class="dot dot-green"></span>${online}/${devices.length} appareils en ligne</div>
+    <div class="pill ts">↻ ${lastRefresh?fmt(lastRefresh):'—'}</div>`;
+  const dc=document.getElementById('dashCards');
+  if (!devices.length) { dc.innerHTML='<div class="err"><strong>Non connecté</strong>Vérification en cours…</div>'; }
+  else {
+    const show=[...devices.filter(d=>getCat(d)==='sensor'),...devices.filter(d=>getCat(d)==='switch')].slice(0,6);
+    dc.innerHTML=show.map(d=>{
+      const cat=getCat(d);
+      if (cat==='sensor') {
+        const temp=getStat(d,'va_temperature')??getStat(d,'temp_current');
+        const hum=getStat(d,'va_humidity')??getStat(d,'humidity_value');
+        return `<div class="card"><div class="card-label"><span class="dot ${d.online?'dot-green':'dot-gray'}"></span>${d.name}</div>${temp!=null?`<div class="card-value">${(temp/10).toFixed(1)}°</div><div class="card-unit">°C</div>`:''} ${hum!=null?`<div class="card-sub">${hum}% humidité</div>`:''}</div>`;
+      }
+      const chs=['switch_1','switch_2','switch_3','switch_4'].filter(c=>d.status_list?.some(x=>x.code===c));
+      const onCount=chs.filter(c=>getStat(d,c)).length;
+      return `<div class="card"><div class="card-label"><span class="dot ${d.online?'dot-green':'dot-gray'}"></span>${d.name}</div><div class="card-value" style="font-size:1.5rem">${onCount}<span style="font-size:.9rem;color:var(--text-muted)">/${chs.length}</span></div><div class="card-unit">canaux actifs</div></div>`;
+    }).join('');
+  }
+  renderMF('dashSerre');
+}
+
+function renderSerre() {
+  renderMF('serreCards');
+  const el=document.getElementById('serreHist');
+  if (!mfData?.length) { el.innerHTML=''; return; }
+  const recent=[...mfData].sort((a,b)=>new Date(b.logTime||b.date||0)-new Date(a.logTime||a.date||0)).slice(0,20);
+  el.innerHTML=`<div class="card" style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:.68rem">
+    <thead><tr style="color:var(--text-muted);border-bottom:1px solid var(--border)">
+      <th style="text-align:left;padding:7px 4px;font-weight:400">TYPE</th>
+      <th style="text-align:right;padding:7px 4px;font-weight:400">VALEUR</th>
+      <th style="text-align:right;padding:7px 4px;font-weight:400">DATE</th>
+    </tr></thead>
+    <tbody>${recent.map(m=>`<tr style="border-bottom:1px solid rgba(42,64,48,.3)">
+      <td style="padding:7px 4px;color:var(--text-dim)">${fmtType(m.captorType||m.measureType||m.type||'—')}</td>
+      <td style="padding:7px 4px;text-align:right;font-family:'Fraunces',serif;font-size:.95rem">${m.value!=null?Number(m.value).toFixed(2):'—'}</td>
+      <td style="padding:7px 4px;text-align:right;color:var(--text-muted)">${fmt(m.logTime||m.date)}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ── Commandes ────────────────────────────────────────────────
+async function toggleCh(id, code, val) {
+  try {
+    await controlDevice(id, code, val);
+    const d=devices.find(x=>x.id===id);
+    if (d?.status_list){const s=d.status_list.find(x=>x.code===code);if(s)s.value=val;}
+    renderDevices(); renderDashboard();
+  } catch(e){console.error(e);}
+}
+async function toggleDev(id, code, val) {
+  try { await controlDevice(id, code, val); } catch(e){console.error(e);}
+}
+
+// ── Refresh ──────────────────────────────────────────────────
+async function refreshAll() {
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  document.getElementById('hs').innerHTML='<span class="status-ok">Actualisation…</span>';
+  let tOk=false, mOk=false;
+  try { await fetchDevices(); tOk=true; } catch(e){console.error('Tuya:',e);}
+  try { await fetchMyFood(); mOk=true; } catch(e){console.error('MF:',e);}
+  lastRefresh=new Date().toISOString();
+  renderDashboard(); renderDevices(); renderSerre();
+  const online=devices.filter(d=>d.online).length;
+  if (tOk&&mOk) document.getElementById('hs').innerHTML=`<span class="status-ok">↑ ${online}/${devices.length} appareils</span>`;
+  else if (tOk) document.getElementById('hs').innerHTML=`<span class="status-warn">Tuya OK · MyFood hors ligne</span>`;
+  else if (mOk) document.getElementById('hs').innerHTML=`<span class="status-warn">MyFood OK · Tuya hors ligne</span>`;
+  else document.getElementById('hs').innerHTML='<span class="status-err">Erreur de connexion</span>';
+  btn.classList.remove('spinning');
+}
+
+refreshAll();
+setInterval(refreshAll, 5*60*1000);
+</script>
+</body>
+</html>
+index (1).html
+Affichage de index (1).html en cours...
+
+Le dim. 24 mai 2026 à 09:18, V <zwibette@gmail.com> a écrit :
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d1a0f">
+<title>Jardin Vivant</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,200&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a120b;--bg3:#142016;--surface:#1a2e1c;--border:#2a4030;--green:#4ade80;--green-dark:#166534;--amber:#fbbf24;--red:#f87171;--text:#e8f5ea;--text-dim:#8fb898;--text-muted:#4a6b52;--accent:#a3e635}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(74,222,128,.05) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(163,230,53,.04) 0%,transparent 50%);pointer-events:none;z-index:0}
+header{position:sticky;top:0;z-index:100;background:rgba(10,18,11,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 16px}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:var(--accent);display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.header-status{font-size:.65rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;text-align:center;flex:1;padding:0 8px}
+.status-ok{color:var(--green)}.status-err{color:var(--red)}.status-warn{color:var(--amber)}
+.refresh-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:36px;height:36px;border-radius:8px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.refresh-btn.spinning{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{max-width:1200px;margin:0 auto;padding:16px;position:relative;z-index:1}
+.nav-tabs{display:flex;gap:3px;margin-bottom:20px;background:var(--surface);padding:3px;border-radius:10px;border:1px solid var(--border)}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
+.tab.active{background:var(--bg3);color:var(--accent);border:1px solid var(--border)}
+.section{display:none}.section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.mb{margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green-dark),transparent);opacity:.6}
+.card-label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.card-value{font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;color:var(--text);line-height:1;margin-bottom:2px}
+.card-unit{font-size:.75rem;color:var(--text-muted)}
+.card-sub{font-size:.65rem;color:var(--text-muted);margin-top:6px}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-green{background:var(--green);box-shadow:0 0 5px var(--green)}
+.dot-amber{background:var(--amber);box-shadow:0 0 5px var(--amber)}
+.dot-red{background:var(--red);box-shadow:0 0 5px var(--red)}
+.dot-gray{background:var(--text-muted)}
+.stitle{font-family:'Fraunces',serif;font-size:1rem;font-weight:300;font-style:italic;color:var(--text-dim);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.stitle span{font-size:.6rem;letter-spacing:.1em;font-style:normal;font-family:'DM Mono',monospace;color:var(--text-muted)}
+.device-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.device-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.device-name{font-size:.75rem;color:var(--text);line-height:1.3;flex:1}
+.device-type{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-top:2px}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--bg3);border:1px solid var(--border);border-radius:22px;cursor:pointer;transition:all .3s}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:var(--text-muted);border-radius:50%;transition:all .3s}
+.toggle input:checked+.toggle-slider{background:var(--green-dark);border-color:var(--green)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:var(--green);box-shadow:0 0 6px var(--green)}
+.ph-bar{height:5px;background:var(--bg3);border-radius:3px;margin-top:6px;position:relative;overflow:hidden}
+.ph-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#f87171,#fbbf24,#4ade80,#60a5fa,#818cf8);width:100%}
+.ph-marker{position:absolute;top:-2px;width:2px;height:9px;background:white;border-radius:1px;transform:translateX(-50%)}
+.ph-labels{display:flex;justify-content:space-between;font-size:.55rem;color:var(--text-muted);margin-top:3px}
+.loading{display:flex;align-items:center;justify-content:center;padding:50px 20px;flex-direction:column;gap:14px;color:var(--text-muted);font-size:.72rem}
+.loading-ring{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite}
+.err{text-align:center;padding:30px 16px;color:var(--text-muted);font-size:.72rem;line-height:1.8}
+.err strong{color:var(--red);display:block;margin-bottom:6px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.65rem;color:var(--text-dim);display:flex;align-items:center;gap:5px}
+.ch-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+.ch-btn{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 4px;text-align:center;font-size:.62rem;color:var(--text-muted);cursor:pointer;transition:all .2s;font-family:'DM Mono',monospace;line-height:1.4}
+.ch-btn.on{background:rgba(74,222,128,.1);border-color:var(--green-dark);color:var(--green)}
+.ts{font-size:.58rem;color:var(--text-muted)}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo"><div class="logo-dot"></div>Jardin Vivant</div>
+    <div class="header-status" id="hs">— démarrage</div>
+    <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()">↻</button>
+  </div>
+</header>
+<main>
+  <div class="nav-tabs">
+    <button class="tab active" onclick="showTab('dashboard',this)">Dashboard</button>
+    <button class="tab" onclick="showTab('serre',this)">Serre</button>
+    <button class="tab" onclick="showTab('appareils',this)">Appareils</button>
+    <button class="tab" onclick="showTab('potager',this)">Potager</button>
+  </div>
+
+  <div class="section active" id="tab-dashboard">
+    <div class="pills" id="pills"><div class="pill"><span class="dot dot-gray"></span>Chargement…</div></div>
+    <div class="stitle">Capteurs <span>SmartLife / Tuya</span></div>
+    <div class="grid mb" id="dashCards"><div class="loading"><div class="loading-ring"></div>Connexion…</div></div>
+    <div class="stitle">Serre aquaponique <span>MyFood #703</span></div>
+    <div class="grid" id="dashSerre"><div class="loading"><div class="loading-ring"></div>Lecture MyFood…</div></div>
+  </div>
+
+  <div class="section" id="tab-serre">
+    <div class="stitle">Serre aquaponique <span>MyFood City — #703</span></div>
+    <div class="grid mb" id="serreCards"><div class="loading"><div class="loading-ring"></div></div></div>
+    <div class="stitle">Historique <span>Dernières mesures</span></div>
+    <div id="serreHist"></div>
+  </div>
+
+  <div class="section" id="tab-appareils">
+    <div class="stitle">Appareils connectés <span>SmartLife / Tuya</span></div>
+    <div class="pills" id="devPills"></div>
+    <div class="grid" id="devGrid"><div class="loading"><div class="loading-ring"></div>Chargement…</div></div>
+  </div>
+
+  <div class="section" id="tab-potager">
+    <div class="stitle">Journal de culture <span>Potager & bacs</span></div>
+    <div style="text-align:center;padding:50px 16px;color:var(--text-muted);font-size:.78rem;line-height:2">
+      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-style:italic;color:var(--text-dim);margin-bottom:12px">Bientôt disponible</div>
+      Suivi des plantations, récoltes,<br>rotations et journal de culture.
+    </div>
+  </div>
+</main>
+
+<script>
+// Les appels API passent par /api/tuya et /api/myfood (notre serveur Vercel)
+// Plus de problème CORS - tout est fait côté serveur
+
+let devices = [];
+let mfData = [];
+let lastRefresh = null;
+
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── API calls vers notre proxy Vercel ───────────────────────
+async function fetchDevices() {
+  const r = await fetch('/api/tuya?action=devices');
+  const d = await r.json();
+  if (!d.success) throw new Error(d.error || 'Erreur Tuya');
+  devices = d.devices;
+}
+
+async function fetchMyFood() {
+  const r = await fetch('/api/myfood');
+  const d = await r.json();
+  if (!d.success) throw new Error(d.error || 'Erreur MyFood');
+  mfData = d.data;
+}
+
+async function controlDevice(deviceId, code, value) {
+  const r = await fetch('/api/tuya', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({action:'control', deviceId, code, value})
+  });
+  return r.json();
+}
+
+// ── Helpers ─────────────────────────────────────────────────
+function getStat(d, code) {
+  return d.status_list?.find(x=>x.code===code)?.value ?? null;
+}
+
+function getCat(d) {
+  const n=(d.name||'').toLowerCase(), c=(d.category||'').toLowerCase();
+  if (n.includes('commutateur')||n.includes('switch')||n.includes('canal')||c==='kg') return 'switch';
+  if (n.includes('temp')||n.includes('humid')||c==='wk') return 'sensor';
+  return 'other';
+}
+
+function fmt(dateStr) {
+  if (!dateStr) return '';
+  try { return new Date(dateStr).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+  catch(e){return '';}
+}
+
+function fmtType(t) {
+  const m={AirTemperature:'Temp. air',WaterTemperature:'Temp. eau',Humidity:'Humidité',Ph:'pH',PH:'pH',WaterLevel:'Niveau eau',Luminosity:'Luminosité'};
+  return m[t]||t;
+}
+
+function unit(t) {
+  const l=t.toLowerCase();
+  if(l.includes('temp')) return '°C';
+  if(l.includes('ph')) return 'pH';
+  if(l.includes('humid')) return '%';
+  if(l.includes('level')||l.includes('eau')) return 'cm';
+  if(l.includes('lumi')) return 'lux';
+  return '';
+}
+
+function phDot(type, val) {
+  if (!type.toLowerCase().includes('ph')) return 'dot-green';
+  if (val>=6&&val<=7.5) return 'dot-green';
+  if (val>=5.5) return 'dot-amber';
+  return 'dot-red';
+}
+
+// ── Render MyFood ───────────────────────────────────────────
+function renderMF(elId) {
+  const el=document.getElementById(elId);
+  if (!mfData?.length) { el.innerHTML='<div class="err"><strong>MyFood non disponible</strong>Vérification en cours…</div>'; return; }
+  const types={};
+  mfData.forEach(m=>{
+    const t=m.captorType||m.measureType||m.type||'?';
+    if(!types[t]) types[t]=[];
+    types[t].push(m);
+  });
+  el.innerHTML=Object.entries(types).map(([type,arr])=>{
+    const m=arr.sort((a,b)=>new Date(b.logTime||b.date||0)-new Date(a.logTime||a.date||0))[0];
+    const val=m.value!==undefined?m.value:m.mesure;
+    const num=val!=null?Number(val):null;
+    const isPh=type.toLowerCase().includes('ph');
+    return `<div class="card">
+      <div class="card-label"><span class="dot ${phDot(type,num)}"></span>${fmtType(type)}</div>
+      <div class="card-value">${num!=null?num.toFixed(1):'—'}</div>
+      <div class="card-unit">${unit(type)}</div>
+      ${isPh&&num!=null?`<div class="ph-bar"><div class="ph-fill"></div><div class="ph-marker" style="left:${Math.min(100,Math.max(0,(num/14)*100))}%"></div></div><div class="ph-labels"><span>0</span><span>7</span><span>14</span></div>`:''}
+      <div class="card-sub ts">${fmt(m.logTime||m.date)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render Devices ──────────────────────────────────────────
+function renderDevCard(d) {
+  const cat=getCat(d);
+  if (cat==='switch') {
+    const chs=['switch_1','switch_2','switch_3','switch_4'].filter(c=>d.status_list?.some(x=>x.code===c));
+    const onCount=chs.filter(c=>getStat(d,c)).length;
+    return `<div class="device-card">
+      <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Commutateur ${chs.length} canaux</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
+      <div class="ch-row">${chs.map((c,i)=>{const on=getStat(d,c);return`<div class="ch-btn ${on?'on':''}" onclick="toggleCh('${d.id}','${c}',${!on})">C${i+1}<br>${on?'●':'○'}</div>`;}).join('')}</div>
+      <div class="card-sub">${onCount}/${chs.length} actifs</div>
+    </div>`;
+  }
+  if (cat==='sensor') {
+    const temp=getStat(d,'va_temperature')??getStat(d,'temp_current');
+    const hum=getStat(d,'va_humidity')??getStat(d,'humidity_value');
+    return `<div class="device-card">
+      <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Capteur</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
+      <div style="display:flex;gap:14px;margin-top:4px">
+        ${temp!=null?`<div><div style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:300">${(temp/10).toFixed(1)}°</div><div style="font-size:.58rem;color:var(--text-muted);letter-spacing:.1em">TEMP</div></div>`:''}
+        ${hum!=null?`<div><div style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:300">${hum}%</div><div style="font-size:.58rem;color:var(--text-muted);letter-spacing:.1em">HUMID</div></div>`:''}
+      </div>
+    </div>`;
+  }
+  const sw=getStat(d,'switch')??getStat(d,'switch_1');
+  return `<div class="device-card">
+    <div class="device-header">
+      <div><div class="device-name">${d.name}</div><div class="device-type">${d.category||'appareil'}</div></div>
+      ${sw!=null?`<label class="toggle"><input type="checkbox" ${sw?'checked':''} onchange="toggleDev('${d.id}','switch',this.checked)"><span class="toggle-slider"></span></label>`:`<span class="dot ${d.online?'dot-green':'dot-gray'}"></span>`}
+    </div>
+    <div class="card-sub">${d.online?'<span class="status-ok">En ligne</span>':'<span class="status-err">Hors ligne</span>'}</div>
+  </div>`;
+}
+
+function renderDevices() {
+  const el=document.getElementById('devGrid');
+  if (!devices.length) { el.innerHTML='<div class="err"><strong>Aucun appareil</strong>Vérification en cours…</div>'; return; }
+  el.innerHTML=devices.map(renderDevCard).join('');
+  const online=devices.filter(d=>d.online).length;
+  document.getElementById('devPills').innerHTML=`
+    <div class="pill"><span class="dot dot-green"></span>${online} en ligne</div>
+    <div class="pill"><span class="dot dot-gray"></span>${devices.length-online} hors ligne</div>
+    <div class="pill">${devices.length} appareils</div>`;
+}
+
+function renderDashboard() {
+  const online=devices.filter(d=>d.online).length;
+  document.getElementById('pills').innerHTML=`
+    <div class="pill"><span class="dot dot-green"></span>${online}/${devices.length} appareils en ligne</div>
+    <div class="pill ts">↻ ${lastRefresh?fmt(lastRefresh):'—'}</div>`;
+  const dc=document.getElementById('dashCards');
+  if (!devices.length) { dc.innerHTML='<div class="err"><strong>Non connecté</strong>Vérification en cours…</div>'; }
+  else {
+    const show=[...devices.filter(d=>getCat(d)==='sensor'),...devices.filter(d=>getCat(d)==='switch')].slice(0,6);
+    dc.innerHTML=show.map(d=>{
+      const cat=getCat(d);
+      if (cat==='sensor') {
+        const temp=getStat(d,'va_temperature')??getStat(d,'temp_current');
+        const hum=getStat(d,'va_humidity')??getStat(d,'humidity_value');
+        return `<div class="card"><div class="card-label"><span class="dot ${d.online?'dot-green':'dot-gray'}"></span>${d.name}</div>${temp!=null?`<div class="card-value">${(temp/10).toFixed(1)}°</div><div class="card-unit">°C</div>`:''} ${hum!=null?`<div class="card-sub">${hum}% humidité</div>`:''}</div>`;
+      }
+      const chs=['switch_1','switch_2','switch_3','switch_4'].filter(c=>d.status_list?.some(x=>x.code===c));
+      const onCount=chs.filter(c=>getStat(d,c)).length;
+      return `<div class="card"><div class="card-label"><span class="dot ${d.online?'dot-green':'dot-gray'}"></span>${d.name}</div><div class="card-value" style="font-size:1.5rem">${onCount}<span style="font-size:.9rem;color:var(--text-muted)">/${chs.length}</span></div><div class="card-unit">canaux actifs</div></div>`;
+    }).join('');
+  }
+  renderMF('dashSerre');
+}
+
+function renderSerre() {
+  renderMF('serreCards');
+  const el=document.getElementById('serreHist');
+  if (!mfData?.length) { el.innerHTML=''; return; }
+  const recent=[...mfData].sort((a,b)=>new Date(b.logTime||b.date||0)-new Date(a.logTime||a.date||0)).slice(0,20);
+  el.innerHTML=`<div class="card" style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:.68rem">
+    <thead><tr style="color:var(--text-muted);border-bottom:1px solid var(--border)">
+      <th style="text-align:left;padding:7px 4px;font-weight:400">TYPE</th>
+      <th style="text-align:right;padding:7px 4px;font-weight:400">VALEUR</th>
+      <th style="text-align:right;padding:7px 4px;font-weight:400">DATE</th>
+    </tr></thead>
+    <tbody>${recent.map(m=>`<tr style="border-bottom:1px solid rgba(42,64,48,.3)">
+      <td style="padding:7px 4px;color:var(--text-dim)">${fmtType(m.captorType||m.measureType||m.type||'—')}</td>
+      <td style="padding:7px 4px;text-align:right;font-family:'Fraunces',serif;font-size:.95rem">${m.value!=null?Number(m.value).toFixed(2):'—'}</td>
+      <td style="padding:7px 4px;text-align:right;color:var(--text-muted)">${fmt(m.logTime||m.date)}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ── Commandes ────────────────────────────────────────────────
+async function toggleCh(id, code, val) {
+  try {
+    await controlDevice(id, code, val);
+    const d=devices.find(x=>x.id===id);
+    if (d?.status_list){const s=d.status_list.find(x=>x.code===code);if(s)s.value=val;}
+    renderDevices(); renderDashboard();
+  } catch(e){console.error(e);}
+}
+async function toggleDev(id, code, val) {
+  try { await controlDevice(id, code, val); } catch(e){console.error(e);}
+}
+
+// ── Refresh ──────────────────────────────────────────────────
+async function refreshAll() {
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  document.getElementById('hs').innerHTML='<span class="status-ok">Actualisation…</span>';
+  let tOk=false, mOk=false;
+  try { await fetchDevices(); tOk=true; } catch(e){console.error('Tuya:',e);}
+  try { await fetchMyFood(); mOk=true; } catch(e){console.error('MF:',e);}
+  lastRefresh=new Date().toISOString();
+  renderDashboard(); renderDevices(); renderSerre();
+  const online=devices.filter(d=>d.online).length;
+  if (tOk&&mOk) document.getElementById('hs').innerHTML=`<span class="status-ok">↑ ${online}/${devices.length} appareils</span>`;
+  else if (tOk) document.getElementById('hs').innerHTML=`<span class="status-warn">Tuya OK · MyFood hors ligne</span>`;
+  else if (mOk) document.getElementById('hs').innerHTML=`<span class="status-warn">MyFood OK · Tuya hors ligne</span>`;
+  else document.getElementById('hs').innerHTML='<span class="status-err">Erreur de connexion</span>';
+  btn.classList.remove('spinning');
+}
+
+refreshAll();
+setInterval(refreshAll, 5*60*1000);
+</script>
+</body>
+</html>
+index (1).html
+Affichage de index (1).html en cours...
