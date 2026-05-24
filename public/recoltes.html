@@ -1057,7 +1057,7 @@ function renderTop() {
   const ranks = ['gold','silver','bronze','',''];
   document.getElementById('topList').innerHTML = sorted.map(([v,p],i) => {
     const fam = FAMILLES[v] || '';
-    return `<div class="top-item">
+    return `<div class="top-item" onclick="window.location='/variete.html?v='+encodeURIComponent(v)" style="cursor:pointer">
       <div class="top-rank ${ranks[i]}">${i+1}</div>
       <div style="flex:1">
         <div class="top-name">${v}</div>
@@ -1096,7 +1096,7 @@ function renderTable() {
   const tbody = document.getElementById('tablebody');
   tbody.innerHTML = data.map(r => `
     <tr onclick="toggleDetail('${r.id}')">
-      <td>${r.vegetal}</td>
+      <td><a href="/variete.html?v=${encodeURIComponent(r.vegetal)}" onclick="event.stopPropagation()" style="color:var(--green);text-decoration:none;font-weight:500;border-bottom:1px dashed var(--green-mid)">${r.vegetal}</a></td>
       <td>${lieuBadge(r.lieu)}</td>
       <td>${fmtKg(r.poids)}</td>
       <td>${fmtDate(r.date)}</td>
