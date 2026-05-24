@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Détail variété — Jardin Vivant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#f7f4ef;--bg2:#ede8e0;--surface:#fff;--border:#ddd8ce;--border2:#ccc5b8;
+  --text:#2a2520;--text-dim:#6b6259;--text-muted:#9e9488;
+  --green:#3d7a4f;--green-light:#e8f2ec;--green-mid:#7ab990;
+  --amber:#c47c2b;--amber-light:#fdf3e4;
+  --red:#b84040;--blue:#3a6ea5;--blue-light:#e8f0f8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Karla',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.6}
+
+header{background:var(--green);color:#fff;padding:16px 20px;position:relative;z-index:10}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.back-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 12px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer;letter-spacing:.05em;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.header-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:400;margin-top:6px}
+.header-famille{font-size:.7rem;opacity:.7;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+
+main{max-width:900px;margin:0 auto;padding:20px 16px 40px;position:relative;z-index:1}
+
+.stitle{font-family:'Playfair Display',serif;font-size:1rem;font-weight:400;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border)}
+.section{margin-bottom:28px}
+
+/* TOTAL BANNER */
+.total-banner{background:var(--green);color:#fff;border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.total-val{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;line-height:1}
+.total-lbl{font-size:.7rem;opacity:.7;letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.total-meta{display:flex;gap:20px;flex-wrap:wrap}
+.tmeta{text-align:center}
+.tmeta-val{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;display:block}
+.tmeta-lbl{font-size:.62rem;opacity:.7;letter-spacing:.08em;text-transform:uppercase}
+
+/* LIEUX CARDS */
+.lieux-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.lieu-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.lieu-icon{font-size:1.5rem;margin-bottom:6px}
+.lieu-val{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;line-height:1;margin-bottom:2px}
+.lieu-val.serre{color:var(--blue)}
+.lieu-val.bacs{color:var(--amber)}
+.lieu-val.jardin{color:var(--green)}
+.lieu-lbl{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+.lieu-pct{font-size:.75rem;color:var(--text-muted);margin-top:4px}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+@media(max-width:560px){.charts-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.chart-title{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;font-weight:500}
+.chart-wrap{position:relative;height:160px}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);position:relative}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.tl-dot.serre{background:var(--blue)}
+.tl-dot.bacs{background:var(--amber)}
+.tl-dot.jardin{background:var(--green)}
+.tl-content{flex:1}
+.tl-date{font-size:.65rem;color:var(--text-muted);letter-spacing:.05em}
+.tl-poids{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--text);line-height:1}
+.tl-lieu{font-size:.7rem;color:var(--text-muted);margin-top:2px}
+.tl-note{font-size:.72rem;color:var(--amber)}
+
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.65rem;font-weight:500}
+.badge-serre{background:var(--blue-light);color:var(--blue)}
+.badge-bacs{background:var(--amber-light);color:var(--amber)}
+.badge-jardin{background:var(--green-light);color:var(--green)}
+
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead tr{background:var(--bg2);border-bottom:1px solid var(--border)}
+th{padding:10px 12px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--green-light)}
+td{padding:10px 12px;color:var(--text-dim)}
+.stars{color:var(--amber);font-size:.75rem}
+
+.empty{text-align:center;padding:40px;color:var(--text-muted);font-size:.82rem}
+.no-data{text-align:center;padding:60px 20px;color:var(--text-muted)}
+.no-data div{font-family:'Playfair Display',serif;font-size:1.2rem;font-style:italic;margin-bottom:8px;color:var(--text-dim)}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-top">
+    <a href="/recoltes.html" class="back-btn">← Récoltes</a>
+  </div>
+  <div class="header-title" id="headerTitle">—</div>
+  <div class="header-famille" id="headerFamille">—</div>
+</header>
+
+<main id="mainContent">
+  <div class="no-data"><div>Chargement…</div></div>
+</main>
+
+<script>
+const STORAGE_KEY = 'jardin_recoltes_v2';
+const FAMILLES = {
+  'Feuille chêne rouge perez':'SALADES','Batavia verte perez':'SALADES','Batavia rouge perez':'SALADES',
+  'Rougette de Montpellier perez':'SALADES','Oseille':'SALADES','Mizuna':'SALADES',
+  'Mâche perez':'SALADES','Laitue romaine d\'Avignon':'SALADES','Sucrine perez':'SALADES','Pourpier doré':'SALADES',
+  'Blette perez':'BLETTES & ÉPINARDS','Poirée rubis char':'BLETTES & ÉPINARDS','Blette lucullus':'BLETTES & ÉPINARDS',
+  'Nero di toscana':'BLETTES & ÉPINARDS','Épinards malabar':'BLETTES & ÉPINARDS','Épinards perez bac':'BLETTES & ÉPINARDS',
+  'Chou pak choï perez':'CHOUX','Chou pe tsaï perez':'CHOUX','Chou rave perez':'CHOUX',
+  'Chou fleur précoce perez':'CHOUX','Chou tatsoï':'CHOUX','Brocoli perez':'CHOUX','Brocoli jet sessantina':'CHOUX',
+  'Betterave chiogga':'LÉGUMES RACINES','Betterave perez':'LÉGUMES RACINES','Fenouil perez':'LÉGUMES RACINES',
+  'Céleri perez':'LÉGUMES RACINES','Radis noirs':'LÉGUMES RACINES',
+  'Courgette zuboda':'COURGETTES','Cornichon diamant':'CONCOMBRES',
+  'Mange-tout norli':'LÉGUMES D\'ÉTÉ',
+  'Basilic prospéra':'AROMATIQUES','Basilic perpétuel':'AROMATIQUES','Persil perez':'AROMATIQUES',
+  'Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
+  'Piment biquinho rouge':'POIVRONS & PIMENTS',
+};
+
+function loadRecoltes() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function fmtKg(g) {
+  if (g >= 1000) return (g/1000).toFixed(2) + ' kg';
+  return g + ' g';
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const [y,m,j] = d.split('-');
+  return j+'/'+m+'/'+y;
+}
+
+function stars(n) {
+  if (!n) return '';
+  return '★'.repeat(n) + '☆'.repeat(5-n);
+}
+
+function lieuLabel(l) {
+  return { serre:'🏠 Serre', bacs:'🪴 Bacs', jardin:'🌳 Jardin' }[l] || l;
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const vegetal = decodeURIComponent(params.get('v') || '');
+
+if (!vegetal) {
+  document.getElementById('mainContent').innerHTML = '<div class="no-data"><div>Variété non spécifiée</div><a href="/recoltes.html">← Retour</a></div>';
+} else {
+  const allRecoltes = loadRecoltes();
+  const recoltes = allRecoltes.filter(r => r.vegetal === vegetal).sort((a,b) => b.date.localeCompare(a.date));
+  const famille = FAMILLES[vegetal] || recoltes[0]?.famille || '';
+
+  document.getElementById('headerTitle').textContent = vegetal;
+  document.getElementById('headerFamille').textContent = famille;
+  document.title = vegetal + ' — Jardin Vivant';
+
+  if (!recoltes.length) {
+    document.getElementById('mainContent').innerHTML = '<div class="no-data"><div>Aucune récolte enregistrée</div><p>pour cette variété.</p></div>';
+  } else {
+    render(recoltes, vegetal);
+  }
+}
+
+function render(recoltes, vegetal) {
+  const total = recoltes.reduce((s,r)=>s+r.poids,0);
+  const bySerre  = recoltes.filter(r=>r.lieu==='serre').reduce((s,r)=>s+r.poids,0);
+  const byBacs   = recoltes.filter(r=>r.lieu==='bacs').reduce((s,r)=>s+r.poids,0);
+  const byJardin = recoltes.filter(r=>r.lieu==='jardin').reduce((s,r)=>s+r.poids,0);
+  const nbRecoltes = recoltes.length;
+  const avgNote = recoltes.filter(r=>r.note).reduce((s,r,_,a)=>s+r.note/a.length,0);
+  const lieux = [...new Set(recoltes.map(r=>r.lieu))];
+  const multiLieu = lieux.length > 1;
+
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `
+    <!-- TOTAL BANNER -->
+    <div class="total-banner">
+      <div>
+        <div class="total-val">${fmtKg(total)}</div>
+        <div class="total-lbl">Total récolté</div>
+      </div>
+      <div class="total-meta">
+        <div class="tmeta"><span class="tmeta-val">${nbRecoltes}</span><span class="tmeta-lbl">récoltes</span></div>
+        ${avgNote ? `<div class="tmeta"><span class="tmeta-val">${avgNote.toFixed(1)}</span><span class="tmeta-lbl">note moy.</span></div>` : ''}
+        <div class="tmeta"><span class="tmeta-val">${lieux.length}</span><span class="tmeta-lbl">${lieux.length>1?'lieux':'lieu'}</span></div>
+      </div>
+    </div>
+
+    <!-- LIEUX -->
+    ${multiLieu ? `
+    <div class="section">
+      <div class="stitle">Répartition par lieu</div>
+      <div class="lieux-grid">
+        ${bySerre>0?`<div class="lieu-card"><div class="lieu-icon">🏠</div><div class="lieu-val serre">${fmtKg(bySerre)}</div><div class="lieu-lbl">Serre</div><div class="lieu-pct">${(bySerre/total*100).toFixed(0)}% du total</div></div>`:''}
+        ${byBacs>0?`<div class="lieu-card"><div class="lieu-icon">🪴</div><div class="lieu-val bacs">${fmtKg(byBacs)}</div><div class="lieu-lbl">Bacs</div><div class="lieu-pct">${(byBacs/total*100).toFixed(0)}% du total</div></div>`:''}
+        ${byJardin>0?`<div class="lieu-card"><div class="lieu-icon">🌳</div><div class="lieu-val jardin">${fmtKg(byJardin)}</div><div class="lieu-lbl">Jardin</div><div class="lieu-pct">${(byJardin/total*100).toFixed(0)}% du total</div></div>`:''}
+      </div>
+    </div>` : ''}
+
+    <!-- GRAPHIQUES -->
+    <div class="section">
+      <div class="stitle">Graphiques</div>
+      <div class="charts-grid">
+        ${multiLieu ? `
+        <div class="chart-card">
+          <div class="chart-title">Répartition par lieu</div>
+          <div class="chart-wrap"><canvas id="chartDonut"></canvas></div>
+        </div>` : ''}
+        <div class="chart-card ${multiLieu?'':''}">
+          <div class="chart-title">Évolution des récoltes</div>
+          <div class="chart-wrap"><canvas id="chartEvol"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLEAU DÉTAIL -->
+    <div class="section">
+      <div class="stitle">Détail des récoltes</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Lieu</th>
+              <th>Poids</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${recoltes.map(r=>`
+              <tr>
+                <td>${fmtDate(r.date)}</td>
+                <td><span class="badge badge-${r.lieu}">${lieuLabel(r.lieu)}</span></td>
+                <td style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700">${fmtKg(r.poids)}</td>
+                <td><span class="stars">${stars(r.note)}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // ── DONUT par lieu ───────────────────────────────────────
+  if (multiLieu) {
+    const ctxD = document.getElementById('chartDonut').getContext('2d');
+    const lieuxData = [];
+    const lieuxLabels = [];
+    const lieuxColors = [];
+    if (bySerre>0)  { lieuxData.push(bySerre);  lieuxLabels.push('Serre');  lieuxColors.push('#3a6ea5'); }
+    if (byBacs>0)   { lieuxData.push(byBacs);   lieuxLabels.push('Bacs');   lieuxColors.push('#c47c2b'); }
+    if (byJardin>0) { lieuxData.push(byJardin); lieuxLabels.push('Jardin'); lieuxColors.push('#3d7a4f'); }
+    new Chart(ctxD, {
+      type:'doughnut',
+      data:{ labels:lieuxLabels, datasets:[{ data:lieuxData, backgroundColor:lieuxColors, borderWidth:0 }] },
+      options:{
+        responsive:true, maintainAspectRatio:false, animation:false,
+        plugins:{ legend:{ position:'bottom', labels:{color:'#6b6259',font:{size:10}} },
+          tooltip:{ callbacks:{ label:c=>c.label+': '+fmtKg(c.parsed) } } }
+      }
+    });
+  }
+
+  // ── ÉVOLUTION dans le temps ──────────────────────────────
+  const ctxE = document.getElementById('chartEvol').getContext('2d');
+  const sorted = [...recoltes].sort((a,b)=>a.date.localeCompare(b.date));
+
+  if (multiLieu) {
+    // Lignes séparées par lieu
+    const datasets = [];
+    const lieuxCfg = [
+      { key:'serre',  label:'Serre',  color:'#3a6ea5' },
+      { key:'bacs',   label:'Bacs',   color:'#c47c2b' },
+      { key:'jardin', label:'Jardin', color:'#3d7a4f' },
+    ];
+    const labels = [...new Set(sorted.map(r=>r.date))];
+    lieuxCfg.forEach(lc => {
+      const byLieu = sorted.filter(r=>r.lieu===lc.key);
+      if (!byLieu.length) return;
+      const data = labels.map(d => {
+        const match = byLieu.find(r=>r.date===d);
+        return match ? match.poids : null;
+      });
+      datasets.push({
+        label:lc.label, data,
+        borderColor:lc.color, backgroundColor:lc.color+'20',
+        borderWidth:2, pointRadius:4, pointBackgroundColor:lc.color,
+        fill:false, tension:0.3, spanGaps:true
+      });
+    });
+    new Chart(ctxE, {
+      type:'line',
+      data:{ labels:labels.map(d=>{ const [,m,j]=d.split('-'); return j+'/'+m; }), datasets },
+      options:{
+        responsive:true, maintainAspectRatio:false, animation:false,
+        plugins:{ legend:{ position:'bottom', labels:{color:'#6b6259',font:{size:10}} },
+          tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+fmtKg(c.parsed.y) } } },
+        scales:{
+          x:{ ticks:{color:'#9e9488',font:{size:9}}, grid:{display:false} },
+          y:{ ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)}, grid:{color:'rgba(0,0,0,.06)'} }
+        }
+      }
+    });
+  } else {
+    // Ligne simple
+    new Chart(ctxE, {
+      type:'bar',
+      data:{
+        labels: sorted.map(r=>{ const [,m,j]=r.date.split('-'); return j+'/'+m; }),
+        datasets:[{
+          data: sorted.map(r=>r.poids),
+          backgroundColor: lieux[0]==='serre'?'#3a6ea5':lieux[0]==='bacs'?'#c47c2b':'#3d7a4f',
+          borderRadius:6
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, animation:false,
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>fmtKg(c.parsed.y) } } },
+        scales:{
+          x:{ ticks:{color:'#9e9488',font:{size:9}}, grid:{display:false} },
+          y:{ ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)}, grid:{color:'rgba(0,0,0,.06)'} }
+        }
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>
