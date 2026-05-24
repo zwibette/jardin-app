@@ -785,16 +785,18 @@ let sortField = 'date';
 let sortAsc = false;
 
 // ── VÉGÉTAUX CONNUS (pour autocomplete) ─────────────────────
-const VEGETAUX_CONNUS = [...new Set([
-  ...Object.keys(FAMILLES),
-  ...recoltes.map(r => r.vegetal)
-])].sort();
+function getVegetauxConnus() {
+  return [...new Set([
+    ...Object.keys(FAMILLES),
+    ...recoltes.map(r => r.vegetal)
+  ])].sort();
+}
 
 // ── SUGGESTIONS ─────────────────────────────────────────────
 function showSuggestions(val) {
   const el = document.getElementById('suggestions');
   if (!val || val.length < 2) { el.style.display='none'; return; }
-  const matches = VEGETAUX_CONNUS.filter(v => v.toLowerCase().includes(val.toLowerCase())).slice(0,8);
+  const matches = getVegetauxConnus().filter(v => v.toLowerCase().includes(val.toLowerCase())).slice(0,8);
   if (!matches.length) { el.style.display='none'; return; }
   el.innerHTML = matches.map(v => {
     const fam = FAMILLES[v] || '';
