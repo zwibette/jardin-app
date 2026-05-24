@@ -857,6 +857,42 @@ function deleteRecolte(id, e) {
   renderAll();
 }
 
+function showEdit(id, e) {
+  e.stopPropagation();
+  document.getElementById('view-'+id).style.display = 'none';
+  document.getElementById('edit-'+id).style.display = 'block';
+}
+
+function cancelEdit(id, e) {
+  e.stopPropagation();
+  document.getElementById('edit-'+id).style.display = 'none';
+  document.getElementById('view-'+id).style.display = 'grid';
+}
+
+function saveEdit(id, e) {
+  e.stopPropagation();
+  const vegetal = document.getElementById('e-veg-'+id).value.trim();
+  const poids   = parseInt(document.getElementById('e-poids-'+id).value);
+  const lieu    = document.getElementById('e-lieu-'+id).value;
+  const date    = document.getElementById('e-date-'+id).value;
+  const note    = document.getElementById('e-note-'+id).value;
+  if (!vegetal || !poids || !date) { alert('Remplis tous les champs obligatoires.'); return; }
+  const idx = recoltes.findIndex(r => r.id === id);
+  if (idx === -1) return;
+  recoltes[idx] = {
+    ...recoltes[idx],
+    vegetal,
+    poids,
+    lieu,
+    date,
+    note: note ? parseInt(note) : null,
+    famille: FAMILLES[vegetal] || recoltes[idx].famille || 'AUTRE'
+  };
+  saveRecoltes(recoltes);
+  renderAll();
+  showToast('✓ Récolte modifiée — ' + vegetal);
+}
+
 // ── TOAST ────────────────────────────────────────────────────
 function showToast(msg) {
   const el = document.getElementById('toast');
@@ -1104,15 +1140,54 @@ function renderTable() {
     </tr>
     <tr class="row-detail" id="detail-${r.id}">
       <td colspan="5">
-        <div class="detail-inner">
+        <div class="detail-inner" id="view-${r.id}">
           <div class="detail-item"><div class="detail-key">Famille</div><div class="detail-val">${r.famille||'—'}</div></div>
           <div class="detail-item"><div class="detail-key">Poids</div><div class="detail-val">${r.poids} g</div></div>
           <div class="detail-item"><div class="detail-key">Lieu</div><div class="detail-val">${r.lieu}</div></div>
           <div class="detail-item"><div class="detail-key">Date</div><div class="detail-val">${fmtDate(r.date)}</div></div>
           ${r.note?`<div class="detail-item"><div class="detail-key">Note</div><div class="detail-val stars">${stars(r.note)} (${r.note}/5)</div></div>`:''}
-          <div class="detail-item">
-            <div class="detail-key">Action</div>
-            <div class="detail-val"><button onclick="deleteRecolte('${r.id}',event)" style="background:var(--red-light);border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer">Supprimer</button></div>
+          <div class="detail-item" style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
+            <button onclick="showEdit('${r.id}',event)" style="background:var(--green-light);border:1px solid var(--green);color:var(--green);padding:4px 10px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer">✏ Modifier</button>
+            <button onclick="deleteRecolte('${r.id}',event)" style="background:var(--red-light);border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer">Supprimer</button>
+          </div>
+        </div>
+        <div class="edit-form" id="edit-${r.id}" style="display:none;padding:12px 16px;background:var(--bg);border-top:1px dashed var(--border2)">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div>
+              <div class="detail-key" style="margin-bottom:4px">Végétal</div>
+              <input id="e-veg-${r.id}" value="${r.vegetal.replace(/"/g,'&quot;')}" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text)">
+            </div>
+            <div>
+              <div class="detail-key" style="margin-bottom:4px">Poids (g)</div>
+              <input id="e-poids-${r.id}" type="number" value="${r.poids}" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text)">
+            </div>
+            <div>
+              <div class="detail-key" style="margin-bottom:4px">Lieu</div>
+              <select id="e-lieu-${r.id}" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text);-webkit-appearance:none">
+                <option value="serre" ${r.lieu==='serre'?'selected':''}>🏠 Serre</option>
+                <option value="bacs" ${r.lieu==='bacs'?'selected':''}>🪴 Bacs</option>
+                <option value="jardin" ${r.lieu==='jardin'?'selected':''}>🌳 Jardin</option>
+              </select>
+            </div>
+            <div>
+              <div class="detail-key" style="margin-bottom:4px">Date</div>
+              <input id="e-date-${r.id}" type="date" value="${r.date}" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text)">
+            </div>
+            <div>
+              <div class="detail-key" style="margin-bottom:4px">Note</div>
+              <select id="e-note-${r.id}" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text);-webkit-appearance:none">
+                <option value="">— Sans note</option>
+                <option value="5" ${r.note===5?'selected':''}>⭐⭐⭐⭐⭐</option>
+                <option value="4" ${r.note===4?'selected':''}>⭐⭐⭐⭐</option>
+                <option value="3" ${r.note===3?'selected':''}>⭐⭐⭐</option>
+                <option value="2" ${r.note===2?'selected':''}>⭐⭐</option>
+                <option value="1" ${r.note===1?'selected':''}>⭐</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="saveEdit('${r.id}',event)" style="background:var(--green);border:none;color:#fff;padding:7px 16px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;flex:1">Enregistrer</button>
+            <button onclick="cancelEdit('${r.id}',event)" style="background:var(--surface);border:1px solid var(--border2);color:var(--text-muted);padding:7px 12px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.78rem;cursor:pointer">Annuler</button>
           </div>
         </div>
       </td>
