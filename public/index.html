@@ -669,12 +669,12 @@ function goRecoltes() {
 let currentTheme = 'general';
 
 const THEMES = {
-  general: 'Donne-moi une vue d'ensemble des conseils les plus importants pour mon jardin en ce moment.',
-  semis: 'Quels semis et plantations dois-je faire maintenant ou dans les 2-3 prochaines semaines, compte tenu de la saison et de ma situation géographique à Montpellier ?',
-  maladies: 'Quelles maladies et ravageurs dois-je surveiller en ce moment ? Quels traitements préventifs recommandes-tu, notamment contre l'oïdium et les autres maladies fréquentes dans le sud de la France ?',
-  arrosage: 'Quels sont mes besoins en arrosage et fertilisation actuellement ? Tiens compte de mes capteurs d'humidité sol et de la météo.',
-  verger: 'Quelles interventions dois-je faire sur mes arbres fruitiers en ce moment ? Taille, traitement, fertilisation, récolte imminente ?',
-  serre: 'Donne-moi des conseils spécifiques pour ma serre aquaponique : paramètres à surveiller, ajustements à faire, cultures à privilégier en ce moment.',
+  general: `Donne-moi une vue d'ensemble des conseils les plus importants pour mon jardin en ce moment.`,
+  semis: `Quels semis et plantations dois-je faire maintenant ou dans les 2-3 prochaines semaines, compte tenu de la saison et de ma situation géographique à Montpellier ?`,
+  maladies: `Quelles maladies et ravageurs dois-je surveiller en ce moment ? Quels traitements préventifs recommandes-tu, notamment contre l'oïdium et les autres maladies fréquentes dans le sud de la France ?`,
+  arrosage: `Quels sont mes besoins en arrosage et fertilisation actuellement ? Tiens compte de mes capteurs d'humidité sol et de la météo.`,
+  verger: `Quelles interventions dois-je faire sur mes arbres fruitiers en ce moment ? Taille, traitement, fertilisation, récolte imminente ?`,
+  serre: `Donne-moi des conseils spécifiques pour ma serre aquaponique : paramètres à surveiller, ajustements à faire, cultures à privilégier en ce moment.`,
 };
 
 function selectTheme(btn, theme) {
@@ -754,7 +754,7 @@ Réponds en français, de manière pratique et actionnable. Organise ta réponse
     content.innerHTML = '<div style="padding:20px;font-size:.83rem;line-height:1.8;color:var(--text-dim)">' + text + '</div>';
     if (!questionOverride) document.getElementById('conseilsInput').value = '';
   } catch(e) {
-    content.innerHTML = '<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur de connexion à l'IA. Vérifie ta connexion internet.</div>';
+    content.innerHTML = `<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur de connexion. Vérifie ta connexion internet.</div>`;
   }
 
   loading.style.display = 'none';
