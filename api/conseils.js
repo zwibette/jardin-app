@@ -16,7 +16,7 @@ module.exports = async function handler(req, res) {
     // Pour les recos JSON, on force le responseType JSON
     const requestBody = {
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 1500, temperature: 0.7 }
+      generationConfig: { maxOutputTokens: 2048, temperature: 0.7 }
     };
 
     // Si mode JSON, forcer la réponse JSON
