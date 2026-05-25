@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
   try {
     const prompt = system + '\n\nQuestion : ' + question;
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=' + GEMINI_KEY,
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=' + GEMINI_KEY,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
