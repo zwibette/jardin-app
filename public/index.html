@@ -261,7 +261,7 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
     </div>
 
     <!-- Zone de réponse IA -->
-    <div id="conseilsCard" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;min-height:200px;position:relative;overflow:hidden">
+    <div id="conseilsCard" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;min-height:200px;max-height:60vh;overflow-y:auto;position:relative">
       <div id="conseilsContent" style="padding:20px;font-size:.85rem;line-height:1.8;color:var(--text-dim)">
         <div style="text-align:center;padding:30px 0;color:var(--text-muted)">
           <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-style:italic;margin-bottom:8px;color:var(--text-dim)">Prêt à te conseiller</div>
@@ -749,21 +749,10 @@ Données temps réel :
 - Arrosage Bas Rhône : ${rhoneOn !== null ? (rhoneOn?'actif':'inactif') : 'inconnu'}
 - Dernières récoltes : ${recoltesSummary || 'aucune récente'}`;
 
-  const question = `Génère exactement 4 recommandations ultra-personnalisées et actionnables pour ce jardinier MAINTENANT (${today}, ${momentJournee}, ${season} à Montpellier).
-
-Réponds UNIQUEMENT en JSON valide, sans markdown, sans backticks, sans explication. Format exact :
-[
-  {
-    "emoji": "🌡️",
-    "urgence": "urgent",
-    "titre": "Titre court (max 8 mots)",
-    "description": "Description concrète et actionnable en 1-2 phrases."
-  }
-]
-
-Les valeurs de urgence possibles : "urgent", "semaine", "info".
-Varie les emojis et les domaines : serre, potager, bacs, arbres fruitiers, maladies, arrosage, semis, récolte imminente, etc.
-Sois très précis et spécifique au contexte donné. Pas de conseils génériques.`;
+  const question = `Génère 4 recommandations JSON pour ce jardinier (${today}, ${momentJournee}, ${season}, Montpellier).
+Réponds UNIQUEMENT avec un tableau JSON valide, rien d'autre avant ou après.
+Format : [{"emoji":"🌡️","urgence":"urgent","titre":"Titre max 6 mots","description":"1 phrase concrète."},...]
+urgence = urgent | semaine | info. Domaines variés : serre, potager, bacs, arbres, maladies, arrosage, semis.`;
 
   try {
     const response = await fetch('/api/conseils', {
