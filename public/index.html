@@ -737,24 +737,19 @@ Variétés cultivées (extraits) : Pak choï, blettes, choux, salades diverses, 
 Réponds en français, de manière pratique et actionnable. Organise ta réponse en sections claires avec des titres HTML <h3>. Pour chaque conseil, indique l'urgence avec une balise <span class="conseils-tag tag-urgent">URGENT</span>, <span class="conseils-tag tag-semaine">CETTE SEMAINE</span>, ou <span class="conseils-tag tag-info">INFO</span>. Sois précis, concret, adapté à la saison et au climat méditerranéen. Maximum 400 mots.`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/api/conseils', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: question }]
-      })
+      body: JSON.stringify({ system: systemPrompt, question })
     });
 
     const data = await response.json();
-    const text = data.content?.[0]?.text || 'Erreur lors de la génération des conseils.';
+    if (!data.success) throw new Error(data.error || 'Erreur inconnue');
 
-    content.innerHTML = '<div style="padding:20px;font-size:.83rem;line-height:1.8;color:var(--text-dim)">' + text + '</div>';
+    content.innerHTML = '<div style="padding:20px;font-size:.83rem;line-height:1.8;color:var(--text-dim)">' + data.text + '</div>';
     if (!questionOverride) document.getElementById('conseilsInput').value = '';
   } catch(e) {
-    content.innerHTML = `<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur de connexion. Vérifie ta connexion internet.</div>`;
+    content.innerHTML = '<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur : ' + e.message + '</div>';
   }
 
   loading.style.display = 'none';
