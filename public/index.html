@@ -776,17 +776,31 @@ urgence = urgent | semaine | info. Domaines variés : serre, potager, bacs, arbr
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ system: systemPrompt, question, mode: 'json' })
     });
-    const data = await response.json();
-    if (!data.success) throw new Error(data.error);
+    let data;
+    try {
+      const text = await response.text();
+      if (!text || !text.trim()) throw new Error('Réponse vide du serveur');
+      data = JSON.parse(text);
+    } catch(e) {
+      throw new Error('Réponse invalide: ' + e.message);
+    }
+    if (!data.success) throw new Error(data.error || 'Erreur inconnue');
 
-    // Parse JSON from response - Gemini retourne directement du JSON valide avec responseMimeType
     let recos;
     try {
-      recos = JSON.parse(data.text);
+      // Nettoyer la réponse Gemini et extraire le JSON
+      const raw = data.text.trim()
+        .replace(/^```json\s*/i, '').replace(/\s*```$/, '')
+        .replace(/^[^[{]*/, '').replace(/[^\]|}][^]*$/, m => m[0]);
+      recos = JSON.parse(data.text.trim());
     } catch(e) {
-      // Fallback: essayer de nettoyer le texte
-      const raw = data.text.trim().replace(/^[^[]*/, '').replace(/[^\]]*$/, '');
-      recos = JSON.parse(raw);
+      try {
+        const match = data.text.match(/\[[\s\S]*\]/);
+        if (!match) throw new Error('JSON introuvable');
+        recos = JSON.parse(match[0]);
+      } catch(e2) {
+        throw new Error('Réponse IA invalide: ' + e2.message);
+      }
     }
 
     container.className = 'reco-grid';
@@ -803,8 +817,17 @@ urgence = urgent | semaine | info. Domaines variés : serre, potager, bacs, arbr
 
     recosGenerees = true;
   } catch(e) {
+    const msg = e.message || '';
+    const surcharge = msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('high demand');
     container.className = 'reco-grid';
-    container.innerHTML = `<div class="reco-card info" style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.75rem">Impossible de générer les recommandations : ${e.message}</div>`;
+    container.innerHTML = `<div class="reco-card info" style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.75rem;padding:20px">
+      ${surcharge
+        ? '⏳ Gemini est temporairement surchargé.<br><span style="font-size:.65rem">Nouvel essai dans 15 secondes…</span>'
+        : '❌ ' + msg}
+    </div>`;
+    if (surcharge) {
+      setTimeout(() => genererRecos(), 15000);
+    }
   }
 
   btn.classList.remove('spinning');
@@ -886,7 +909,12 @@ Réponds en français, de manière pratique et actionnable. Organise ta réponse
       body: JSON.stringify({ system: systemPrompt, question })
     });
 
-    const data = await response.json();
+    let data;
+    try {
+      const txt = await response.text();
+      if (!txt || !txt.trim()) throw new Error('Réponse vide');
+      data = JSON.parse(txt);
+    } catch(e) { throw new Error('Réponse invalide: ' + e.message); }
     if (!data.success) throw new Error(data.error || 'Erreur inconnue');
     const text = data.text || 'Aucune réponse reçue.';
     // Convertir le markdown basique en HTML
