@@ -298,4 +298,629 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 
 <script>
 // ── IDs des appareils clés ──────────────────────────────────
-const DEVIC
+const DEVICE_SERRE_TH = null;    // sera détecté automatiquement
+const DEVICE_WATER_TIMER_ID = 'bf1ba1c9452ce49ca6umal'; // Smart Water Timer
+const DEVICE_PROG_LED_ID    = 'bf2de5244b7a2128ean6nq';  // Prog LED Ventil Serre
+
+// ── État global ─────────────────────────────────────────────
+let devices = [];
+let lastRefresh = null;
+let charts = { temp: null, hum: null };
+
+// ── Historique local (stockage en mémoire, persisté dans localStorage) ──
+const HISTORY_KEY = 'jardin_history_v1';
+const MAX_POINTS = 48; // 24h à 30min d'intervalle
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveHistory(history) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
+  catch(e) {}
+}
+
+function addHistoryPoint(temp, hum) {
+  const history = loadHistory();
+  const now = new Date().toISOString();
+  history.push({ t: now, temp, hum });
+  // Garder seulement les 48 derniers points (24h)
+  while (history.length > MAX_POINTS) history.shift();
+  saveHistory(history);
+  return history;
+}
+
+// ── Navigation ───────────────────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'conseils' && !recosGenerees) genererRecos();
+}
+
+// ── API calls ────────────────────────────────────────────────
+async function fetchDevices() {
+  const r = await fetch('/api/tuya?action=devices');
+  const d = await r.json();
+  if (!d.success) throw new Error(d.error || 'Erreur Tuya');
+  devices = d.devices;
+}
+
+async function controlDevice(deviceId, code, value) {
+  const r = await fetch('/api/tuya', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({action:'control', deviceId, code, value})
+  });
+  return r.json();
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+function getStat(d, code) {
+  return d.status_list?.find(x=>x.code===code)?.value ?? null;
+}
+
+function getDeviceById(id) {
+  return devices.find(d=>d.id===id);
+}
+
+function getSerreTHSensor() {
+  // Cherche le capteur temp/humidité de la serre
+  return devices.find(d =>
+    d.status_list?.some(x=>x.code==='va_temperature') &&
+    d.status_list?.some(x=>x.code==='va_humidity')
+  );
+}
+
+function getCat(d) {
+  const n=(d.name||'').toLowerCase(), c=(d.category||'').toLowerCase();
+  if (n.includes('commutateur')||n.includes('switch')||n.includes('canal')||c==='kg') return 'switch';
+  if (n.includes('temp')||n.includes('humid')||c==='wk'||c==='wsdcg') return 'sensor';
+  if (c==='zwjcy') return 'soil';
+  if (c==='ldcg') return 'light';
+  if (c==='sj') return 'water';
+  if (c==='mcs') return 'door';
+  if (c==='cz') return 'plug';
+  if (c==='ggq') return 'valve';
+  return 'other';
+}
+
+function fmt(dateStr) {
+  if (!dateStr) return '—';
+  try { return new Date(dateStr).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+  catch(e){return '—';}
+}
+
+function fmtTime(dateStr) {
+  if (!dateStr) return '';
+  try { return new Date(dateStr).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
+  catch(e){return '';}
+}
+
+// ── Alertes ──────────────────────────────────────────────────
+function renderAlerts() {
+  // Alertes désactivées sur le dashboard
+  document.getElementById('alertBanners').innerHTML = '';
+}
+
+// ── Dashboard métriques ──────────────────────────────────────
+function renderSerreMetrics() {
+  const el = document.getElementById('serreMetrics');
+  const sensor = getSerreTHSensor();
+
+  if (!sensor) {
+    el.innerHTML = '<div class="err" style="grid-column:1/-1"><strong>Capteur serre introuvable</strong></div>';
+    return;
+  }
+
+  const temp = getStat(sensor, 'va_temperature');
+  const hum  = getStat(sensor, 'va_humidity');
+  const tempC = temp !== null ? Math.round(temp) + '°C' : '—';
+  const humV  = hum  !== null ? hum + '%' : '—';
+
+  let tempDot = 'dot-green';
+  if (temp !== null) {
+    if (temp < 15 || temp > 35) tempDot = 'dot-red';
+    else if (temp < 18 || temp > 30) tempDot = 'dot-amber';
+  }
+  let humDot = 'dot-green';
+  if (hum !== null) {
+    if (hum < 40 || hum > 90) humDot = 'dot-red';
+    else if (hum < 50 || hum > 80) humDot = 'dot-amber';
+  }
+
+  el.innerHTML = `
+    <div class="metric-card" style="padding:12px 14px">
+      <div class="metric-label"><span class="dot ${tempDot}"></span>🌡️ Temp. air</div>
+      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text);margin:6px 0 2px">${tempC}°</div>
+      <div class="metric-unit">°C — serre</div>
+    </div>
+    <div class="metric-card" style="padding:12px 14px">
+      <div class="metric-label"><span class="dot ${humDot}"></span>💧 Humidité</div>
+      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text);margin:6px 0 2px">${humV}%</div>
+      <div class="metric-unit">% — serre</div>
+    </div>
+    <div class="metric-card" style="padding:12px 14px;opacity:.45;border-style:dashed">
+      <div class="metric-label"><span class="dot dot-gray"></span>🐟 pH eau</div>
+      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text-muted);margin:6px 0 2px">—</div>
+      <div class="metric-unit" style="color:var(--text-muted)">MyFood bientôt</div>
+    </div>
+    <div class="metric-card" style="padding:12px 14px;opacity:.45;border-style:dashed">
+      <div class="metric-label"><span class="dot dot-gray"></span>🌊 Temp. eau</div>
+      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text-muted);margin:6px 0 2px">—</div>
+      <div class="metric-unit" style="color:var(--text-muted)">MyFood bientôt</div>
+    </div>
+  `;
+}
+
+// ── Graphiques ───────────────────────────────────────────────
+function renderCharts() {
+  const history = loadHistory();
+  const labels = history.map(p => fmtTime(p.t));
+  const temps  = history.map(p => p.temp);
+  const hums   = history.map(p => p.hum);
+
+  const chartOpts = (color, unit) => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    plugins: { legend: { display: false }, tooltip: {
+      backgroundColor: '#1a2e1c',
+      borderColor: '#2a4030',
+      borderWidth: 1,
+      titleColor: '#8fb898',
+      bodyColor: '#e8f5ea',
+      callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + unit }
+    }},
+    scales: {
+      x: { ticks: { color:'#4a6b52', font:{size:9}, maxTicksLimit:8 }, grid: { color:'rgba(42,64,48,.4)' } },
+      y: { ticks: { color:'#4a6b52', font:{size:9}, callback: v => v.toFixed(1) + unit }, grid: { color:'rgba(42,64,48,.4)' } }
+    }
+  });
+
+  const datasetStyle = (data, color) => ({
+    data,
+    borderColor: color,
+    backgroundColor: color + '18',
+    borderWidth: 2,
+    pointRadius: 2,
+    pointBackgroundColor: color,
+    fill: true,
+    tension: 0.4,
+  });
+
+  // Temp chart
+  const ctxT = document.getElementById('chartTemp').getContext('2d');
+  if (charts.temp) charts.temp.destroy();
+  charts.temp = new Chart(ctxT, {
+    type: 'line',
+    data: { labels, datasets: [datasetStyle(temps, '#4ade80')] },
+    options: chartOpts('°C', '°C')
+  });
+
+  // Hum chart
+  const ctxH = document.getElementById('chartHum').getContext('2d');
+  if (charts.hum) charts.hum.destroy();
+  charts.hum = new Chart(ctxH, {
+    type: 'line',
+    data: { labels, datasets: [datasetStyle(hums, '#60a5fa')] },
+    options: chartOpts('%', '%')
+  });
+
+  const lastUpdate = history.length ? fmt(history[history.length-1].t) : '—';
+  document.getElementById('chartLastUpdate').textContent = lastUpdate;
+}
+
+// ── Commandes dashboard ──────────────────────────────────────
+function updateCommandStates() {
+  const waterTimer = getDeviceById(DEVICE_WATER_TIMER_ID);
+  const progLed    = getDeviceById(DEVICE_PROG_LED_ID);
+
+  // Bas Rhône = switch_2 du water timer
+  if (waterTimer) {
+    const on = getStat(waterTimer, 'switch_2') === true;
+    const toggle = document.getElementById('toggle-rhone');
+    const badge  = document.getElementById('badge-rhone');
+    toggle.checked = on;
+    toggle.disabled = !waterTimer.online;
+    badge.textContent = on ? 'Actif' : 'Inactif';
+    badge.className = 'status-badge ' + (on ? 'badge-on' : 'badge-off');
+  }
+
+  // Bain à remous = switch_4 du prog LED ventil
+  if (progLed) {
+    const on = getStat(progLed, 'switch_4') === true;
+    const toggle = document.getElementById('toggle-remous');
+    const badge  = document.getElementById('badge-remous');
+    toggle.checked = on;
+    toggle.disabled = !progLed.online;
+    badge.textContent = on ? 'Actif' : 'Inactif';
+    badge.className = 'status-badge ' + (on ? 'badge-on' : 'badge-off');
+  }
+}
+
+async function cmdRhone(val) {
+  document.getElementById('toggle-rhone').disabled = true;
+  await controlDevice(DEVICE_WATER_TIMER_ID, 'switch_2', val);
+  const d = getDeviceById(DEVICE_WATER_TIMER_ID);
+  if (d?.status_list) { const s=d.status_list.find(x=>x.code==='switch_2'); if(s) s.value=val; }
+  updateCommandStates();
+  document.getElementById('toggle-rhone').disabled = false;
+}
+
+async function cmdRemous(val) {
+  document.getElementById('toggle-remous').disabled = true;
+  await controlDevice(DEVICE_PROG_LED_ID, 'switch_4', val);
+  const d = getDeviceById(DEVICE_PROG_LED_ID);
+  if (d?.status_list) { const s=d.status_list.find(x=>x.code==='switch_4'); if(s) s.value=val; }
+  updateCommandStates();
+  document.getElementById('toggle-remous').disabled = false;
+}
+
+// ── Appareils ────────────────────────────────────────────────
+function renderDevCard(d) {
+  const cat = getCat(d);
+
+  if (cat==='switch'||cat==='valve') {
+    const chs=['switch_1','switch_2','switch_3','switch_4'].filter(c=>d.status_list?.some(x=>x.code===c));
+    const onCount=chs.filter(c=>getStat(d,c)).length;
+    return `<div class="device-card">
+      <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">${cat==='valve'?'Vanne':'Commutateur'} ${chs.length} canaux</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
+      <div class="ch-row">${chs.map((c,i)=>{const on=getStat(d,c);return`<div class="ch-btn ${on?'on':''}" onclick="toggleCh('${d.id}','${c}',${!on})">C${i+1}<br>${on?'●':'○'}</div>`;}).join('')}</div>
+      <div class="ts">${onCount}/${chs.length} actifs</div>
+    </div>`;
+  }
+
+  if (cat==='sensor') {
+    const temp=getStat(d,'va_temperature');
+    const hum=getStat(d,'va_humidity');
+    return `<div class="device-card">
+      <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Temp / Humidité</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
+      <div style="display:flex;gap:14px">
+        ${temp!=null?`<div><div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:300">${(temp/10).toFixed(1)}°</div><div class="ts">TEMP</div></div>`:''}
+        ${hum!=null?`<div><div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:300">${hum}%</div><div class="ts">HUMID</div></div>`:''}
+      </div>
+    </div>`;
+  }
+
+  if (cat==='soil') {
+    const hum=getStat(d,'humidity');
+    const temp=getStat(d,'temp_current');
+    const bat=getStat(d,'battery_percentage');
+    return `<div class="device-card">
+      <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Humidité sol</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
+      <div style="display:flex;gap:14px">
+        ${hum!=null?`<div><div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:300">${hum}%</div><div class="ts">SOL</div></div>`:''}
+        ${temp!=null?`<div><div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:300">${(temp/10).toFixed(1)}°</div><div class="ts">TEMP</div></div>`:''}
+      </div>
+      ${bat!=null?`<div class="ts">🔋 ${bat}%</div>`:''}
+    </div>`;
+  }
+
+  if (cat==='door') {
+    const open=getStat(d,'doorcontact_state');
+    return `<div class="device-card">
+      <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Capteur porte</div></div><span class="dot ${open?'dot-amber':'dot-green'}"></span></div>
+      <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:${open?'var(--amber)':'var(--green)'}">${open?'Ouverte':'Fermée'}</div>
+    </div>`;
+  }
+
+  if (cat==='water') {
+    const alarm=getStat(d,'watersensor_state')==='alarm';
+    const bat=getStat(d,'battery_percentage');
+    return `<div class="device-card">
+      <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Détecteur fuite</div></div><span class="dot ${alarm?'dot-red':'dot-green'}"></span></div>
+      <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:${alarm?'var(--red)':'var(--green)'}">${alarm?'⚠ Alarme':'OK'}</div>
+      ${bat!=null?`<div class="ts">🔋 ${bat}%</div>`:''}
+    </div>`;
+  }
+
+  if (cat==='light') {
+    const lux=getStat(d,'bright_value');
+    const bat=getStat(d,'battery_percentage');
+    return `<div class="device-card">
+      <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Luminosité</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
+      ${lux!=null?`<div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:300">${lux} <span class="ts">lux</span></div>`:''}
+      ${bat!=null?`<div class="ts">🔋 ${bat}%</div>`:''}
+    </div>`;
+  }
+
+  if (cat==='plug') {
+    const sw=getStat(d,'switch_1');
+    return `<div class="device-card">
+      <div class="device-header">
+        <div><div class="device-name">${d.name}</div><div class="device-type">Prise</div></div>
+        ${sw!=null?`<label class="toggle"><input type="checkbox" ${sw?'checked':''} onchange="toggleDev('${d.id}','switch_1',this.checked)"><span class="toggle-slider"></span></label>`:`<span class="dot ${d.online?'dot-green':'dot-gray'}"></span>`}
+      </div>
+      <div class="ts">${d.online?'<span class="status-ok">En ligne</span>':'<span class="status-err">Hors ligne</span>'}</div>
+    </div>`;
+  }
+
+  return `<div class="device-card">
+    <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">${d.category||'—'}</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
+    <div class="ts">${d.online?'En ligne':'Hors ligne'}</div>
+  </div>`;
+}
+
+function renderDevices() {
+  const el=document.getElementById('devGrid');
+  if (!devices.length) { el.innerHTML='<div class="err"><strong>Aucun appareil</strong></div>'; return; }
+  el.innerHTML=devices.map(renderDevCard).join('');
+  const online=devices.filter(d=>d.online).length;
+  document.getElementById('devPills').innerHTML=`
+    <div class="pill"><span class="dot dot-green"></span>${online} en ligne</div>
+    <div class="pill"><span class="dot dot-gray"></span>${devices.length-online} hors ligne</div>
+    <div class="pill">${devices.length} appareils</div>`;
+}
+
+async function toggleCh(id, code, val) {
+  await controlDevice(id, code, val);
+  const d=devices.find(x=>x.id===id);
+  if (d?.status_list){const s=d.status_list.find(x=>x.code===code);if(s)s.value=val;}
+  renderDevices();
+}
+
+async function toggleDev(id, code, val) {
+  await controlDevice(id, code, val);
+}
+
+// ── Refresh principal ────────────────────────────────────────
+let lastHistoryRecord = 0;
+
+async function refreshAll() {
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  document.getElementById('hs').innerHTML='<span class="status-ok">Actualisation…</span>';
+
+  let tuyaOk = false;
+  try {
+    await fetchDevices();
+    tuyaOk = true;
+    lastRefresh = new Date().toISOString();
+
+    const sensor = getSerreTHSensor();
+    if (sensor) {
+      const temp = getStat(sensor, 'va_temperature');
+      const hum  = getStat(sensor, 'va_humidity');
+      const now  = Date.now();
+      if (temp !== null && hum !== null && (now - lastHistoryRecord) >= 30 * 60 * 1000) {
+        addHistoryPoint(temp, hum);
+        lastHistoryRecord = now;
+      }
+    }
+  } catch(e) {
+    console.error('Tuya:', e);
+  }
+
+  // Toujours render même en cas d'erreur
+  renderAlerts();
+  renderSerreMetrics();
+  renderCharts();
+  updateCommandStates();
+  renderDevices();
+
+  if (tuyaOk) {
+    const online=devices.filter(d=>d.online).length;
+    document.getElementById('hs').innerHTML=`<span class="status-ok">↑ ${online}/${devices.length}</span>`;
+  } else {
+    document.getElementById('hs').innerHTML='<span class="status-err">Erreur connexion</span>';
+  }
+
+  btn.classList.remove('spinning');
+}
+
+function goRecoltes() {
+  window.location.href = '/recoltes.html';
+}
+
+// ── Conseils IA ───────────────────────────────────────────────
+let currentTheme = 'general';
+let recosGenerees = false;
+
+async function genererRecos() {
+  const btn = document.getElementById('recoRefreshBtn');
+  const container = document.getElementById('recoContainer');
+  btn.classList.add('spinning');
+
+  // Squelettes pendant le chargement
+  container.className = 'reco-loading';
+  container.innerHTML = '<div class="reco-skeleton"></div>'.repeat(4);
+
+  // Contexte
+  const sensor = getSerreTHSensor();
+  const temp = sensor ? getStat(sensor, 'va_temperature') : null;
+  const hum  = sensor ? getStat(sensor, 'va_humidity') : null;
+  const waterTimer = getDeviceById(DEVICE_WATER_TIMER_ID);
+  const rhoneOn = waterTimer ? getStat(waterTimer, 'switch_2') : null;
+  const door = devices.find(d => getCat(d) === 'door');
+  const doorOpen = door ? getStat(door, 'doorcontact_state') : null;
+
+  let recoltesSummary = '';
+  try {
+    const rec = JSON.parse(localStorage.getItem('jardin_recoltes_v2') || '[]');
+    const recent = rec.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+    recoltesSummary = recent.map(r=>`${r.vegetal} (${r.poids}g, ${r.lieu})`).join(', ');
+  } catch(e) {}
+
+  const today = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  const month = new Date().getMonth() + 1;
+  const season = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+  const hour = new Date().getHours();
+  const momentJournee = hour < 12 ? 'matin' : hour < 18 ? 'après-midi' : 'soir';
+
+  const systemPrompt = `Tu es un expert en maraîchage, permaculture et aquaponie conseillant un jardinier à Montpellier (climat méditerranéen, zone 9b).
+
+Son système : serre aquaponique MyFood City, bacs surélevés enrichis, potager extérieur pleine terre, arrosage Bas Rhône automatisé.
+
+Arbres fruitiers : abricotier, 2 figuiers, 2 pommiers colonnaires, noisetier, amandier, pêchers, nectarinier, mandarinier, citronnier, kiwai, 3 bananiers.
+Cultures en cours : tomates (cerises, grosses), aubergines, courgettes, poivrons, piments, concombres, melons, pastèques, salades, blettes, aromatiques nombreuses.
+
+Données temps réel :
+- ${today} (${season}, ${momentJournee})
+- Température serre : ${temp !== null ? temp+'°C' : 'inconnue'}
+- Humidité serre : ${hum !== null ? hum+'%' : 'inconnue'}
+- Porte serre : ${doorOpen !== null ? (doorOpen?'ouverte':'fermée') : 'inconnue'}
+- Arrosage Bas Rhône : ${rhoneOn !== null ? (rhoneOn?'actif':'inactif') : 'inconnu'}
+- Dernières récoltes : ${recoltesSummary || 'aucune récente'}`;
+
+  const question = `Génère 4 recommandations JSON pour ce jardinier (${today}, ${momentJournee}, ${season}, Montpellier).
+Réponds UNIQUEMENT avec un tableau JSON valide, rien d'autre avant ou après.
+Format : [{"emoji":"🌡️","urgence":"urgent","titre":"Titre max 6 mots","description":"1 phrase concrète."},...]
+urgence = urgent | semaine | info. Domaines variés : serre, potager, bacs, arbres, maladies, arrosage, semis.`;
+
+  try {
+    const response = await fetch('/api/conseils', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: systemPrompt, question, mode: 'json' })
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error);
+
+    // Parse JSON from response - Gemini retourne directement du JSON valide avec responseMimeType
+    let recos;
+    try {
+      recos = JSON.parse(data.text);
+    } catch(e) {
+      // Fallback: essayer de nettoyer le texte
+      const raw = data.text.trim().replace(/^[^[]*/, '').replace(/[^\]]*$/, '');
+      recos = JSON.parse(raw);
+    }
+
+    container.className = 'reco-grid';
+    container.innerHTML = recos.map(r => `
+      <div class="reco-card ${r.urgence||'info'}">
+        <div class="reco-header">
+          <span class="reco-emoji">${r.emoji||'🌿'}</span>
+          <span class="tag-${r.urgence||'info'}" style="display:inline-block;padding:2px 7px;border-radius:10px;font-size:.58rem;letter-spacing:.06em;font-weight:500;background:${r.urgence==='urgent'?'rgba(248,113,113,.15)':r.urgence==='semaine'?'rgba(251,191,36,.12)':'rgba(74,222,128,.1)'};color:${r.urgence==='urgent'?'var(--red)':r.urgence==='semaine'?'var(--amber)':'var(--green)'};border:1px solid ${r.urgence==='urgent'?'rgba(248,113,113,.3)':r.urgence==='semaine'?'rgba(251,191,36,.25)':'rgba(74,222,128,.2)'}">${r.urgence==='urgent'?'URGENT':r.urgence==='semaine'?'CETTE SEMAINE':'INFO'}</span>
+        </div>
+        <div class="reco-titre">${r.titre||''}</div>
+        <div class="reco-desc">${r.description||''}</div>
+      </div>
+    `).join('');
+
+    recosGenerees = true;
+  } catch(e) {
+    container.className = 'reco-grid';
+    container.innerHTML = `<div class="reco-card info" style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.75rem">Impossible de générer les recommandations : ${e.message}</div>`;
+  }
+
+  btn.classList.remove('spinning');
+}
+
+const THEMES = {
+  general: `Donne-moi une vue d'ensemble des conseils les plus importants pour mon jardin en ce moment.`,
+  semis: `Quels semis et plantations dois-je faire maintenant ou dans les 2-3 prochaines semaines, compte tenu de la saison et de ma situation géographique à Montpellier ?`,
+  maladies: `Quelles maladies et ravageurs dois-je surveiller en ce moment ? Quels traitements préventifs recommandes-tu, notamment contre l'oïdium et les autres maladies fréquentes dans le sud de la France ?`,
+  arrosage: `Quels sont mes besoins en arrosage et fertilisation actuellement ? Tiens compte de mes capteurs d'humidité sol et de la météo.`,
+  verger: `Quelles interventions dois-je faire sur mes arbres fruitiers en ce moment ? Taille, traitement, fertilisation, récolte imminente ?`,
+  serre: `Donne-moi des conseils spécifiques pour ma serre aquaponique : paramètres à surveiller, ajustements à faire, cultures à privilégier en ce moment.`,
+};
+
+function selectTheme(btn, theme) {
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentTheme = theme;
+  askConseils(THEMES[theme]);
+}
+
+async function askConseils(questionOverride) {
+  const question = questionOverride || document.getElementById('conseilsInput').value.trim();
+  if (!question && !questionOverride) return;
+
+  // Show loading
+  const loading = document.getElementById('conseilsLoading');
+  const content = document.getElementById('conseilsContent');
+  loading.style.display = 'flex';
+  content.style.display = 'none';
+
+  // Build context
+  const sensor = getSerreTHSensor();
+  const temp = sensor ? getStat(sensor, 'va_temperature') : null;
+  const hum  = sensor ? getStat(sensor, 'va_humidity') : null;
+  const waterTimer = getDeviceById(DEVICE_WATER_TIMER_ID);
+  const rhoneOn = waterTimer ? getStat(waterTimer, 'switch_2') : null;
+
+  // Load harvest data from localStorage
+  let recoltesSummary = '';
+  try {
+    const rec = JSON.parse(localStorage.getItem('jardin_recoltes_v2') || '[]');
+    const byFam = {};
+    rec.forEach(r => { byFam[r.famille||'Autre'] = (byFam[r.famille||'Autre']||0) + r.poids; });
+    const top = Object.entries(byFam).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    recoltesSummary = top.map(([f,p])=>`${f}: ${(p/1000).toFixed(1)}kg`).join(', ');
+  } catch(e) {}
+
+  const today = new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+  const month = new Date().getMonth() + 1; // 1-12
+  const season = month >= 3 && month <= 5 ? 'printemps' : month >= 6 && month <= 8 ? 'été' : month >= 9 && month <= 11 ? 'automne' : 'hiver';
+
+  const systemPrompt = `Tu es un expert en maraîchage, permaculture et aquaponie, qui conseille un jardinier passionné basé à Montpellier (sud de la France, zone méditerranéenne, USDA zone 9b).
+
+Son système comprend :
+- Une serre aquaponique MyFood City (tours de culture, bassin de poissons)
+- Des bacs surélevés (substrat enrichi : terre criblée, compost, fumier, terreau)
+- Un potager extérieur en pleine terre
+- Des capteurs connectés SmartLife/Tuya
+- Un arrosage automatisé (Bas Rhône)
+- Des arbres fruitiers : abricotier, 2 figuiers, 2 pommiers colonnaires, noisetier, amandier, pêchers, nectarinier, mandarinier, citronnier, poivrier de Sichuan, kiwai, 3 bananiers
+- Des petits fruits : framboisiers, groseillier, baie de goji
+
+Données en temps réel :
+- Date : ${today} (${season})
+- Température serre : ${temp !== null ? temp + '°C' : 'non disponible'}
+- Humidité serre : ${hum !== null ? hum + '%' : 'non disponible'}
+- Arrosage Bas Rhône : ${rhoneOn !== null ? (rhoneOn ? 'actif' : 'inactif') : 'inconnu'}
+- Principales récoltes saison : ${recoltesSummary || 'non disponible'}
+
+Variétés cultivées (extraits) : Pak choï, blettes, choux, salades diverses, fenouil, betteraves, tomates cerises et grosses, aubergines, courgettes, poivrons, piments, concombres, melons, pastèques, basilic, persil, aromatiques variées.
+
+Réponds en français, de manière pratique et actionnable. Organise ta réponse en sections claires avec des titres HTML <h3>. Pour chaque conseil, indique l'urgence avec une balise <span class="conseils-tag tag-urgent">URGENT</span>, <span class="conseils-tag tag-semaine">CETTE SEMAINE</span>, ou <span class="conseils-tag tag-info">INFO</span>. Sois précis, concret, adapté à la saison et au climat méditerranéen. Maximum 400 mots.`;
+
+  try {
+    const response = await fetch('/api/conseils', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: systemPrompt, question })
+    });
+
+    const data = await response.json();
+    if (!data.success) throw new Error(data.error || 'Erreur inconnue');
+    const text = data.text || 'Aucune réponse reçue.';
+    // Convertir le markdown basique en HTML
+    const html = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/^### (.*)/gm, '<h3 style="font-family:Fraunces,serif;font-size:.95rem;font-weight:300;font-style:italic;color:var(--accent);margin:12px 0 6px">$1</h3>')
+      .replace(/^## (.*)/gm, '<h3 style="font-family:Fraunces,serif;font-size:1rem;font-weight:300;font-style:italic;color:var(--accent);margin:14px 0 6px">$1</h3>')
+      .replace(/^- (.*)/gm, '<div style="padding:3px 0 3px 12px;border-left:2px solid var(--green-dark)">$1</div>')
+      .replace(/\n/g, '<br>');
+    content.innerHTML = '<div style="padding:20px;font-size:.83rem;line-height:1.8;color:var(--text-dim)">' + html + '</div>';
+    if (!questionOverride) document.getElementById('conseilsInput').value = '';
+  } catch(e) {
+    content.innerHTML = '<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur : ' + e.message + '</div>';
+  }
+
+  loading.style.display = 'none';
+  content.style.display = 'block';
+}
+
+// ── Init ──────────────────────────────────────────────────────
+refreshAll();
+setInterval(refreshAll, 5 * 60 * 1000);         // refresh données toutes les 5min
+setInterval(() => {                               // enregistrement historique toutes les 30min
+  const sensor = getSerreTHSensor();
+  if (sensor) {
+    const temp = getStat(sensor, 'va_temperature');
+    const hum  = getStat(sensor, 'va_humidity');
+    if (temp !== null && hum !== null) {
+      addHistoryPoint(temp, hum);
+      renderCharts();
+    }
+  }
+}, 30 * 60 * 1000);
+</script>
+</body>
+</html>
