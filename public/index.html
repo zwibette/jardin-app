@@ -928,7 +928,16 @@ Réponds en français, de manière pratique et actionnable. Organise ta réponse
     content.innerHTML = '<div style="padding:20px;font-size:.83rem;line-height:1.8;color:var(--text-dim)">' + html + '</div>';
     if (!questionOverride) document.getElementById('conseilsInput').value = '';
   } catch(e) {
-    content.innerHTML = '<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur : ' + e.message + '</div>';
+    const msg = e.message || '';
+    const surcharge = msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('high demand');
+    if (surcharge) {
+      content.innerHTML = '<div style="padding:20px;color:var(--amber);font-size:.8rem">⏳ Gemini est temporairement surchargé. Nouvel essai dans 15 secondes…</div>';
+      loading.style.display = 'none';
+      content.style.display = 'block';
+      setTimeout(() => askConseils(questionOverride), 15000);
+      return;
+    }
+    content.innerHTML = '<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur : ' + msg + '</div>';
   }
 
   loading.style.display = 'none';
