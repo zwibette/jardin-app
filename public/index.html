@@ -337,7 +337,7 @@ function showTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   btn.classList.add('active');
-  if (name === 'conseils' && !recosGenerees) genererRecos();
+  if (name === 'conseils' && (Date.now() - recosCacheTime > RECOS_CACHE_DURATION)) genererRecos();
 }
 
 // ── API calls ────────────────────────────────────────────────
@@ -718,6 +718,8 @@ function goRecoltes() {
 // ── Conseils IA ───────────────────────────────────────────────
 let currentTheme = 'general';
 let recosGenerees = false;
+let recosCacheTime = 0;
+const RECOS_CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 heures
 
 async function genererRecos() {
   const btn = document.getElementById('recoRefreshBtn');
@@ -816,6 +818,7 @@ urgence = urgent | semaine | info. Domaines variés : serre, potager, bacs, arbr
     `).join('');
 
     recosGenerees = true;
+    recosCacheTime = Date.now();
   } catch(e) {
     const msg = e.message || '';
     const surcharge = msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('high demand');
