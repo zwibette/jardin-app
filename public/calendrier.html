@@ -200,6 +200,10 @@ main{max-width:1100px;margin:0 auto;padding:20px 16px 60px;position:relative;z-i
             <input type="date" id="inp-recolte-fin">
           </div>
           <div class="field">
+            <label class="field-label">Nombre de plants</label>
+            <input type="number" id="inp-nbplants" placeholder="ex: 6" min="1" step="1">
+          </div>
+          <div class="field">
             <label class="field-label">Famille</label>
             <select id="inp-famille">
               <option value="">— Sélectionner</option>
@@ -244,29 +248,29 @@ const FAMILLES_COLORS = {
 // ── DONNÉES PRÉ-REMPLIES (vos cultures connues) ───────────────
 const CULTURES_DEFAUT = [
   // SERRE — cultures d'hiver/printemps déjà faites
-  { id:'d1', culture:'Blette perez', famille:'BLETTES & ÉPINARDS', lieu:'serre', semis:'2025-10-01', plantation:'2025-10-20', recolteDebut:'2025-12-15', recolteFin:'2026-04-30', notes:'Excellent rendement 1173g/pied' },
-  { id:'d2', culture:'Chou pak choï perez', famille:'CHOUX', lieu:'serre', semis:'2025-10-15', plantation:'2025-11-05', recolteDebut:'2025-12-20', recolteFin:'2026-03-31', notes:'Top rendement serre' },
-  { id:'d3', culture:'Chou pe tsaï perez', famille:'CHOUX', lieu:'serre', semis:'2025-10-15', plantation:'2025-11-05', recolteDebut:'2026-01-10', recolteFin:'2026-03-31', notes:'' },
-  { id:'d4', culture:'Épinards perez bac', famille:'BLETTES & ÉPINARDS', lieu:'serre', semis:'2025-09-15', plantation:'2025-10-01', recolteDebut:'2025-11-01', recolteFin:'2026-03-15', notes:'' },
-  { id:'d5', culture:'Feuille chêne rouge perez', famille:'SALADES', lieu:'serre', semis:'2025-10-01', plantation:'2025-10-20', recolteDebut:'2025-12-01', recolteFin:'2026-02-28', notes:'' },
-  { id:'d6', culture:'Fenouil perez', famille:'LÉGUMES RACINES', lieu:'serre', semis:'2025-10-01', plantation:'2025-10-25', recolteDebut:'2026-01-15', recolteFin:'2026-03-15', notes:'Note 5/5' },
-  { id:'d7', culture:'Céleri perez', famille:'LÉGUMES RACINES', lieu:'serre', semis:'2025-09-01', plantation:'2025-10-01', recolteDebut:'2026-02-01', recolteFin:'2026-06-30', notes:'' },
-  { id:'d8', culture:'Persil perez', famille:'AROMATIQUES', lieu:'serre', semis:'2025-09-15', plantation:null, recolteDebut:'2025-11-15', recolteFin:'2026-06-30', notes:'Semis direct' },
-  { id:'d9', culture:'Mâche perez', famille:'SALADES', lieu:'serre', semis:'2025-10-01', plantation:null, recolteDebut:'2025-12-01', recolteFin:'2026-02-28', notes:'Semis direct' },
+  { id:'d1', culture:'Blette perez', famille:'BLETTES & ÉPINARDS', lieu:'serre', semis:'2025-10-01', plantation:'2025-10-20', recolteDebut:'2025-12-15', recolteFin:'2026-04-30', nbPlants:2, notes:'Historique PDF' },
+  { id:'d2', culture:'Chou pak choï perez', famille:'CHOUX', lieu:'serre', semis:'2025-10-15', plantation:'2025-11-05', recolteDebut:'2025-12-20', recolteFin:'2026-03-31', nbPlants:6, notes:'Historique PDF' },
+  { id:'d3', culture:'Chou pe tsaï perez', famille:'CHOUX', lieu:'serre', semis:'2025-10-15', plantation:'2025-11-05', recolteDebut:'2026-01-10', recolteFin:'2026-03-31', nbPlants:2, notes:'' },
+  { id:'d4', culture:'Épinards perez bac', famille:'BLETTES & ÉPINARDS', lieu:'serre', semis:'2025-09-15', plantation:'2025-10-01', recolteDebut:'2025-11-01', recolteFin:'2026-03-15', nbPlants:30, notes:'' },
+  { id:'d5', culture:'Feuille chêne rouge perez', famille:'SALADES', lieu:'serre', semis:'2025-10-01', plantation:'2025-10-20', recolteDebut:'2025-12-01', recolteFin:'2026-02-28', nbPlants:9, notes:'' },
+  { id:'d6', culture:'Fenouil perez', famille:'LÉGUMES RACINES', lieu:'serre', semis:'2025-10-01', plantation:'2025-10-25', recolteDebut:'2026-01-15', recolteFin:'2026-03-15', nbPlants:3, notes:'Note 5/5' },
+  { id:'d7', culture:'Céleri perez', famille:'LÉGUMES RACINES', lieu:'serre', semis:'2025-09-01', plantation:'2025-10-01', recolteDebut:'2026-02-01', recolteFin:'2026-06-30', nbPlants:2, notes:'' },
+  { id:'d8', culture:'Persil perez', famille:'AROMATIQUES', lieu:'serre', semis:'2025-09-15', plantation:null, recolteDebut:'2025-11-15', recolteFin:'2026-06-30', nbPlants:2, notes:'Semis direct' },
+  { id:'d9', culture:'Mâche perez', famille:'SALADES', lieu:'serre', semis:'2025-10-01', plantation:null, recolteDebut:'2025-12-01', recolteFin:'2026-02-28', nbPlants:null, notes:'Semis direct - nb plants inconnu' },
   // ÉTÉ — cultures en cours/à venir
-  { id:'d10', culture:'Tomate cerise sweet baby', famille:'TOMATES', lieu:'serre', semis:'2026-02-01', plantation:'2026-03-20', recolteDebut:'2026-06-01', recolteFin:'2026-10-31', notes:'Démarrée' },
-  { id:'d11', culture:'Tomate cœur de bœuf', famille:'TOMATES', lieu:'bacs', semis:'2026-02-01', plantation:'2026-04-01', recolteDebut:'2026-07-01', recolteFin:'2026-10-15', notes:'' },
-  { id:'d12', culture:'Aubergine Barbentane', famille:'AUBERGINES', lieu:'serre', semis:'2026-02-15', plantation:'2026-04-15', recolteDebut:'2026-07-01', recolteFin:'2026-10-31', notes:'' },
-  { id:'d13', culture:'Courgette zuboda', famille:'COURGETTES', lieu:'bacs', semis:'2026-03-15', plantation:'2026-04-20', recolteDebut:'2026-05-15', recolteFin:'2026-09-30', notes:'Première récolte faite' },
-  { id:'d14', culture:'Poivron balconi', famille:'POIVRONS & PIMENTS', lieu:'serre', semis:'2026-02-01', plantation:'2026-04-15', recolteDebut:'2026-07-15', recolteFin:'2026-10-31', notes:'' },
-  { id:'d15', culture:'Piment biquinho rouge', famille:'POIVRONS & PIMENTS', lieu:'serre', semis:'2026-02-15', plantation:'2026-04-15', recolteDebut:'2026-06-01', recolteFin:'2026-10-31', notes:'' },
-  { id:'d16', culture:'Concombre F1 Citaro', famille:'CONCOMBRES', lieu:'serre', semis:'2026-03-15', plantation:'2026-04-20', recolteDebut:'2026-06-01', recolteFin:'2026-09-30', notes:'' },
-  { id:'d17', culture:'Melon artemis', famille:'MELONS', lieu:'jardin', semis:'2026-04-01', plantation:'2026-05-01', recolteDebut:'2026-07-15', recolteFin:'2026-09-15', notes:'' },
-  { id:'d18', culture:'Pastèque baby sugar', famille:'MELONS', lieu:'jardin', semis:'2026-04-01', plantation:'2026-05-01', recolteDebut:'2026-08-01', recolteFin:'2026-09-30', notes:'' },
-  { id:'d19', culture:'Basilic prospéra', famille:'AROMATIQUES', lieu:'serre', semis:'2026-03-01', plantation:'2026-04-01', recolteDebut:'2026-05-01', recolteFin:'2026-10-31', notes:'' },
-  { id:'d20', culture:'Cornichon diamant', famille:'CONCOMBRES', lieu:'serre', semis:'2026-03-15', plantation:'2026-04-20', recolteDebut:'2026-05-15', recolteFin:'2026-09-15', notes:'' },
-  { id:'d21', culture:'Mange-tout norli', famille:'LÉGUMES D\'ÉTÉ', lieu:'jardin', semis:'2026-03-01', plantation:null, recolteDebut:'2026-05-01', recolteFin:'2026-07-15', notes:'Semis direct' },
-  { id:'d22', culture:'Betterave chiogga', famille:'LÉGUMES RACINES', lieu:'serre', semis:'2025-11-01', plantation:null, recolteDebut:'2026-02-01', recolteFin:'2026-04-30', notes:'' },
+  { id:'d10', nbPlants:null, culture:'Tomate cerise sweet baby', famille:'TOMATES', lieu:'serre', semis:'2026-02-01', plantation:'2026-03-20', recolteDebut:'2026-06-01', recolteFin:'2026-10-31', notes:'Démarrée' },
+  { id:'d11', nbPlants:null, culture:'Tomate cœur de bœuf', famille:'TOMATES', lieu:'bacs', semis:'2026-02-01', plantation:'2026-04-01', recolteDebut:'2026-07-01', recolteFin:'2026-10-15', notes:'' },
+  { id:'d12', nbPlants:null, culture:'Aubergine Barbentane', famille:'AUBERGINES', lieu:'serre', semis:'2026-02-15', plantation:'2026-04-15', recolteDebut:'2026-07-01', recolteFin:'2026-10-31', notes:'' },
+  { id:'d13', nbPlants:null, culture:'Courgette zuboda', famille:'COURGETTES', lieu:'bacs', semis:'2026-03-15', plantation:'2026-04-20', recolteDebut:'2026-05-15', recolteFin:'2026-09-30', notes:'Première récolte faite' },
+  { id:'d14', nbPlants:null, culture:'Poivron balconi', famille:'POIVRONS & PIMENTS', lieu:'serre', semis:'2026-02-01', plantation:'2026-04-15', recolteDebut:'2026-07-15', recolteFin:'2026-10-31', notes:'' },
+  { id:'d15', nbPlants:null, culture:'Piment biquinho rouge', famille:'POIVRONS & PIMENTS', lieu:'serre', semis:'2026-02-15', plantation:'2026-04-15', recolteDebut:'2026-06-01', recolteFin:'2026-10-31', notes:'' },
+  { id:'d16', nbPlants:null, culture:'Concombre F1 Citaro', famille:'CONCOMBRES', lieu:'serre', semis:'2026-03-15', plantation:'2026-04-20', recolteDebut:'2026-06-01', recolteFin:'2026-09-30', notes:'' },
+  { id:'d17', nbPlants:null, culture:'Melon artemis', famille:'MELONS', lieu:'jardin', semis:'2026-04-01', plantation:'2026-05-01', recolteDebut:'2026-07-15', recolteFin:'2026-09-15', notes:'' },
+  { id:'d18', nbPlants:null, culture:'Pastèque baby sugar', famille:'MELONS', lieu:'jardin', semis:'2026-04-01', plantation:'2026-05-01', recolteDebut:'2026-08-01', recolteFin:'2026-09-30', notes:'' },
+  { id:'d19', nbPlants:null, culture:'Basilic prospéra', famille:'AROMATIQUES', lieu:'serre', semis:'2026-03-01', plantation:'2026-04-01', recolteDebut:'2026-05-01', recolteFin:'2026-10-31', notes:'' },
+  { id:'d20', nbPlants:null, culture:'Cornichon diamant', famille:'CONCOMBRES', lieu:'serre', semis:'2026-03-15', plantation:'2026-04-20', recolteDebut:'2026-05-15', recolteFin:'2026-09-15', notes:'' },
+  { id:'d21', nbPlants:null, culture:'Mange-tout norli', famille:'LÉGUMES D\'ÉTÉ', lieu:'jardin', semis:'2026-03-01', plantation:null, recolteDebut:'2026-05-01', recolteFin:'2026-07-15', notes:'Semis direct' },
+  { id:'d22', nbPlants:null, culture:'Betterave chiogga', famille:'LÉGUMES RACINES', lieu:'serre', semis:'2025-11-01', plantation:null, recolteDebut:'2026-02-01', recolteFin:'2026-04-30', notes:'' },
 ];
 
 // ── STORAGE ───────────────────────────────────────────────────
@@ -574,6 +578,7 @@ function renderComparatif() {
       ${premierReel ? `<div class="compare-row"><span class="compare-label">1re récolte réelle</span><span>${fmtDate(premierReel)}</span></div>` : ''}
       ${totalReel ? `<div class="compare-row"><span class="compare-label">Total récolté</span><span style="color:var(--green);font-weight:500">${totalReel >= 1000 ? (totalReel/1000).toFixed(2)+' kg' : totalReel+' g'}</span></div>` : ''}
       ${recs.length ? `<div class="compare-row"><span class="compare-label">Nb récoltes</span><span>${recs.length}</span></div>` : ''}
+      ${c.nbPlants ? `<div class="compare-row"><span class="compare-label">Plants</span><span>${c.nbPlants} plants${premierReel && totalReel ? ' · <strong>' + Math.round(totalReel/c.nbPlants) + 'g/plant</strong>' : ''}</span></div>` : '<div class="compare-row"><span class="compare-label" style="color:var(--amber)">⚠ Nb plants non renseigné</span></div>'}
       ${c.notes ? `<div class="compare-row" style="margin-top:6px"><span style="font-size:.68rem;color:var(--text-muted);font-style:italic">${c.notes}</span></div>` : ''}
     </div>`;
   }).join('');
@@ -589,8 +594,9 @@ function addCulture() {
   const plantation = document.getElementById('inp-plantation').value;
   const recolteDebut = document.getElementById('inp-recolte-debut').value;
   const recolteFin   = document.getElementById('inp-recolte-fin').value;
-  const famille  = document.getElementById('inp-famille').value;
-  const notes    = document.getElementById('inp-notes').value.trim();
+  const famille   = document.getElementById('inp-famille').value;
+  const nbPlants  = parseInt(document.getElementById('inp-nbplants').value) || null;
+  const notes     = document.getElementById('inp-notes').value.trim();
 
   if (!culture || !semis || !recolteDebut || !recolteFin) {
     alert('Culture, date de semis et dates de récolte sont obligatoires.');
@@ -601,7 +607,7 @@ function addCulture() {
     id: 'c' + Date.now(),
     culture, lieu, semis,
     plantation: plantation || null,
-    recolteDebut, recolteFin, famille, notes,
+    recolteDebut, recolteFin, famille, nbPlants, notes,
   };
 
   cultures.push(newCulture);
@@ -616,6 +622,7 @@ function addCulture() {
   document.getElementById('inp-plantation').value = '';
   document.getElementById('inp-recolte-debut').value = '';
   document.getElementById('inp-recolte-fin').value = '';
+  document.getElementById('inp-nbplants').value = '';
   document.getElementById('inp-notes').value = '';
 }
 
@@ -642,6 +649,7 @@ function renderListe() {
           <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Lieu</th>
           <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Semis</th>
           <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Récolte prévue</th>
+          <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Plants</th>
           <th style="padding:8px 4px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500"></th>
         </tr>
       </thead>
@@ -654,6 +662,7 @@ function renderListe() {
             <td style="padding:9px 12px;color:var(--text-dim)">${c.famille||'—'}</td>
             <td style="padding:9px 12px;color:var(--text-dim)">${fmtDate(c.semis)}</td>
             <td style="padding:9px 12px;color:var(--text-dim)">${fmtDate(c.recolteDebut)} → ${fmtDate(c.recolteFin)}</td>
+            <td style="padding:9px 12px;color:${c.nbPlants?'var(--green)':'var(--text-muted)'}">${c.nbPlants ? c.nbPlants+' plants' : '<span title=\'Renseignez pour calculer g/pied\'>— plants</span>'}</td>
             <td style="padding:9px 4px;text-align:center"><button class="del-btn" onclick="deleteCulture('${c.id}',event)" title="Supprimer">✕</button></td>
           </tr>`;
         }).join('')}
