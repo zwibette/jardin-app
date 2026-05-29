@@ -30,7 +30,6 @@ main{max-width:900px;margin:0 auto;padding:20px 16px 40px;position:relative;z-in
 .stitle::after{content:'';flex:1;height:1px;background:var(--border)}
 .section{margin-bottom:28px}
 
-/* TOTAL BANNER */
 .total-banner{background:var(--surface);border:2px solid var(--green);color:var(--text);border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
 .total-val{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;line-height:1}
 .total-lbl{font-size:.7rem;opacity:.7;letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
@@ -39,44 +38,28 @@ main{max-width:900px;margin:0 auto;padding:20px 16px 40px;position:relative;z-in
 .tmeta-val{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;display:block}
 .tmeta-lbl{font-size:.62rem;opacity:.7;letter-spacing:.08em;text-transform:uppercase}
 
-/* LIEUX CARDS */
 .lieux-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
-.lieu-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.lieu-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
 .lieu-icon{font-size:1.5rem;margin-bottom:6px}
 .lieu-val{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;line-height:1;margin-bottom:2px}
-.lieu-val.serre{color:var(--blue)}
-.lieu-val.bacs{color:var(--amber)}
-.lieu-val.jardin{color:var(--green)}
+.lieu-val.serre{color:var(--blue)}.lieu-val.bacs{color:var(--amber)}.lieu-val.jardin{color:var(--green)}
 .lieu-lbl{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
 .lieu-pct{font-size:.75rem;color:var(--text-muted);margin-top:4px}
 
-/* CHARTS */
+/* RENDEMENT CARD */
+.rendement-card{background:var(--surface);border:1px solid var(--green);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.rendement-val{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--green);line-height:1}
+.rendement-lbl{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-top:2px}
+.rendement-detail{font-size:.72rem;color:var(--text-dim);margin-top:4px}
+.rendement-missing{background:var(--surface);border:1px dashed var(--border);border-radius:12px;padding:14px 20px;margin-bottom:20px;font-size:.75rem;color:var(--text-muted);display:flex;align-items:center;gap:10px}
+
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
 @media(max-width:560px){.charts-grid{grid-template-columns:1fr}}
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
 .chart-title{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;font-weight:500}
 .chart-wrap{position:relative;height:160px}
 
-/* TIMELINE */
-.timeline{display:flex;flex-direction:column;gap:0}
-.tl-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);position:relative}
-.tl-item:last-child{border-bottom:none}
-.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.tl-dot.serre{background:var(--blue)}
-.tl-dot.bacs{background:var(--amber)}
-.tl-dot.jardin{background:var(--green)}
-.tl-content{flex:1}
-.tl-date{font-size:.65rem;color:var(--text-muted);letter-spacing:.05em}
-.tl-poids{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--text);line-height:1}
-.tl-lieu{font-size:.7rem;color:var(--text-muted);margin-top:2px}
-.tl-note{font-size:.72rem;color:var(--amber)}
-
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.65rem;font-weight:500}
-.badge-serre{background:var(--blue-light);color:var(--blue)}
-.badge-bacs{background:var(--amber-light);color:var(--amber)}
-.badge-jardin{background:var(--green-light);color:var(--green)}
-
-.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 table{width:100%;border-collapse:collapse;font-size:.82rem}
 thead tr{background:var(--bg2);border-bottom:1px solid var(--border)}
 th{padding:10px 12px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500;white-space:nowrap}
@@ -85,8 +68,10 @@ tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--green-light)}
 td{padding:10px 12px;color:var(--text-dim)}
 .stars{color:var(--amber);font-size:.75rem}
-
-.empty{text-align:center;padding:40px;color:var(--text-muted);font-size:.82rem}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.65rem;font-weight:500}
+.badge-serre{background:var(--blue-light);color:var(--blue)}
+.badge-bacs{background:var(--amber-light);color:var(--amber)}
+.badge-jardin{background:var(--green-light);color:var(--green)}
 .no-data{text-align:center;padding:60px 20px;color:var(--text-muted)}
 .no-data div{font-family:'Playfair Display',serif;font-size:1.2rem;font-style:italic;margin-bottom:8px;color:var(--text-dim)}
 </style>
@@ -95,6 +80,7 @@ td{padding:10px 12px;color:var(--text-dim)}
 <header>
   <div class="header-top">
     <a href="/recoltes.html" class="back-btn">← Récoltes</a>
+    <a href="/calendrier.html" class="back-btn" style="background:rgba(163,230,53,.12);border-color:rgba(163,230,53,.3);color:var(--accent,#a3e635)">📅 Calendrier</a>
   </div>
   <div class="header-title" id="headerTitle">—</div>
   <div class="header-famille" id="headerFamille">—</div>
@@ -105,7 +91,9 @@ td{padding:10px 12px;color:var(--text-dim)}
 </main>
 
 <script>
-const STORAGE_KEY = 'jardin_recoltes_v2';
+const STORAGE_KEY     = 'jardin_recoltes_v2';
+const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
+
 const FAMILLES = {
   'Feuille chêne rouge perez':'SALADES','Batavia verte perez':'SALADES','Batavia rouge perez':'SALADES',
   'Rougette de Montpellier perez':'SALADES','Oseille':'SALADES','Mizuna':'SALADES',
@@ -116,40 +104,65 @@ const FAMILLES = {
   'Chou fleur précoce perez':'CHOUX','Chou tatsoï':'CHOUX','Brocoli perez':'CHOUX','Brocoli jet sessantina':'CHOUX',
   'Betterave chiogga':'LÉGUMES RACINES','Betterave perez':'LÉGUMES RACINES','Fenouil perez':'LÉGUMES RACINES',
   'Céleri perez':'LÉGUMES RACINES','Radis noirs':'LÉGUMES RACINES',
-  'Courgette zuboda':'COURGETTES','Cornichon diamant':'CONCOMBRES',
-  'Mange-tout norli':'LÉGUMES D\'ÉTÉ',
+  'Tomate cerise sweet baby':'TOMATES','Tomate cerise poire rouge':'TOMATES','Tomate matt\'s wild':'TOMATES',
+  'Tomate green zebra':'TOMATES','Tomate cœur de bœuf':'TOMATES','Tomate rose de Berne 19':'TOMATES',
+  'Tomate cerise poire jaune':'TOMATES','Tomate cerise poivron':'TOMATES',
+  'Aubergine Barbentane':'AUBERGINES','Aubergine slimjim':'AUBERGINES','Aubergine pickling':'AUBERGINES',
+  'Aubergine blanche dourga':'AUBERGINES',
+  'Poivron balconi':'POIVRONS & PIMENTS','Poivron Padrón perez':'POIVRONS & PIMENTS',
+  'Piment biquinho rouge':'POIVRONS & PIMENTS','Piment cherry bomb':'POIVRONS & PIMENTS',
+  'Courgette zuboda':'COURGETTES','Courgette ronde de nice':'COURGETTES','Potimarron bright summer':'COURGETTES',
+  'Butternut':'COURGETTES','Chayote':'COURGETTES',
+  'Concombre F1 Citaro':'CONCOMBRES','Concombre généreux':'CONCOMBRES','Cornichon diamant':'CONCOMBRES',
+  'Melon artemis':'MELONS','Pastèque baby sugar':'MELONS',
+  'Mange-tout norli':'LÉGUMES D\'ÉTÉ','Artichaut impérial':'LÉGUMES D\'ÉTÉ',
   'Basilic prospéra':'AROMATIQUES','Basilic perpétuel':'AROMATIQUES','Persil perez':'AROMATIQUES',
-  'Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
-  'Piment biquinho rouge':'POIVRONS & PIMENTS',
+  'Persil géant d\'Italie':'AROMATIQUES','Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
 };
 
+// ── STORAGE ───────────────────────────────────────────────────
 function loadRecoltes() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch(e) { return []; }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { return []; }
 }
 
-function fmtKg(g) {
-  if (g >= 1000) return (g/1000).toFixed(2) + ' kg';
-  return g + ' g';
+function loadCalendrier() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY_CAL) || '[]'); } catch(e) { return []; }
 }
 
+// ── NB PLANTS depuis calendrier (matching flexible) ───────────
+function getNbPlants(vegetal) {
+  const cal = loadCalendrier();
+  const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
+  const match = cal.find(c =>
+    norm(c.culture) === norm(vegetal) ||
+    norm(c.culture).includes(norm(vegetal)) ||
+    norm(vegetal).includes(norm(c.culture))
+  );
+  return match?.nbPlants || null;
+}
+
+function getCultureEntry(vegetal) {
+  const cal = loadCalendrier();
+  const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
+  return cal.find(c =>
+    norm(c.culture) === norm(vegetal) ||
+    norm(c.culture).includes(norm(vegetal)) ||
+    norm(vegetal).includes(norm(c.culture))
+  ) || null;
+}
+
+// ── FORMAT ────────────────────────────────────────────────────
+function fmtKg(g) { return g >= 1000 ? (g/1000).toFixed(2)+' kg' : g+' g'; }
 function fmtDate(d) {
   if (!d) return '—';
   const [y,m,j] = d.split('-');
   return j+'/'+m+'/'+y;
 }
-
-function stars(n) {
-  if (!n) return '';
-  return '★'.repeat(n) + '☆'.repeat(5-n);
-}
-
-function lieuLabel(l) {
-  return { serre:'🏠 Serre', bacs:'🪴 Bacs', jardin:'🌳 Jardin' }[l] || l;
-}
+function stars(n) { if (!n) return ''; return '★'.repeat(n)+'☆'.repeat(5-n); }
+function lieuLabel(l) { return {serre:'🏠 Serre',bacs:'🪴 Bacs',jardin:'🌳 Jardin'}[l]||l; }
 
 // ── INIT ──────────────────────────────────────────────────────
-const params = new URLSearchParams(window.location.search);
+const params  = new URLSearchParams(window.location.search);
 const vegetal = decodeURIComponent(params.get('v') || '');
 
 if (!vegetal) {
@@ -157,9 +170,9 @@ if (!vegetal) {
 } else {
   const allRecoltes = loadRecoltes();
   const recoltes = allRecoltes.filter(r => r.vegetal === vegetal).sort((a,b) => b.date.localeCompare(a.date));
-  const famille = FAMILLES[vegetal] || recoltes[0]?.famille || '';
+  const famille  = FAMILLES[vegetal] || recoltes[0]?.famille || '';
 
-  document.getElementById('headerTitle').textContent = vegetal;
+  document.getElementById('headerTitle').textContent  = vegetal;
   document.getElementById('headerFamille').textContent = famille;
   document.title = vegetal + ' — Jardin Vivant';
 
@@ -171,50 +184,79 @@ if (!vegetal) {
 }
 
 function render(recoltes, vegetal) {
-  const total = recoltes.reduce((s,r)=>s+r.poids,0);
+  const total    = recoltes.reduce((s,r)=>s+r.poids,0);
   const bySerre  = recoltes.filter(r=>r.lieu==='serre').reduce((s,r)=>s+r.poids,0);
   const byBacs   = recoltes.filter(r=>r.lieu==='bacs').reduce((s,r)=>s+r.poids,0);
   const byJardin = recoltes.filter(r=>r.lieu==='jardin').reduce((s,r)=>s+r.poids,0);
-  const nbRecoltes = recoltes.length;
-  const avgNote = recoltes.filter(r=>r.note).reduce((s,r,_,a)=>s+r.note/a.length,0);
-  const lieux = [...new Set(recoltes.map(r=>r.lieu))];
+  const lieux    = [...new Set(recoltes.map(r=>r.lieu))];
   const multiLieu = lieux.length > 1;
+  const avgNote  = recoltes.filter(r=>r.note).reduce((s,r,_,a)=>s+r.note/a.length,0);
+
+  // Données calendrier pour cette variété
+  const nbPlants   = getNbPlants(vegetal);
+  const calEntry   = getCultureEntry(vegetal);
+  const rPied      = nbPlants ? Math.round(total / nbPlants) : null;
 
   const main = document.getElementById('mainContent');
+
+  // ── RENDEMENT G/PIED ──────────────────────────────────────
+  let rendementHtml = '';
+  if (rPied !== null) {
+    rendementHtml = `
+    <div class="rendement-card">
+      <div>
+        <div class="rendement-val">${rPied} g/plant</div>
+        <div class="rendement-lbl">Rendement moyen</div>
+        <div class="rendement-detail">${fmtKg(total)} total · ${nbPlants} plants · saison ${calEntry?.semis?.slice(0,4)||'—'}</div>
+      </div>
+      ${calEntry ? `<div style="font-size:.72rem;color:var(--text-dim);text-align:right">
+        <div>Semis : ${fmtDate(calEntry.semis)}</div>
+        ${calEntry.plantation ? `<div>Plantation : ${fmtDate(calEntry.plantation)}</div>` : ''}
+        <div>Récolte prévue : ${fmtDate(calEntry.recolteDebut)} → ${fmtDate(calEntry.recolteFin)}</div>
+      </div>` : ''}
+    </div>`;
+  } else {
+    rendementHtml = `
+    <div class="rendement-missing">
+      <span style="font-size:1.2rem">📊</span>
+      <div>
+        <div style="color:var(--text-dim);font-weight:500;margin-bottom:2px">Rendement g/plant non calculable</div>
+        Renseignez le nombre de plants dans le
+        <a href="/calendrier.html" style="color:var(--accent);text-decoration:none">Calendrier de plantation →</a>
+      </div>
+    </div>`;
+  }
+
   main.innerHTML = `
-    <!-- TOTAL BANNER -->
     <div class="total-banner">
       <div>
         <div class="total-val">${fmtKg(total)}</div>
         <div class="total-lbl">Total récolté</div>
       </div>
       <div class="total-meta">
-        <div class="tmeta"><span class="tmeta-val">${nbRecoltes}</span><span class="tmeta-lbl">récoltes</span></div>
+        <div class="tmeta"><span class="tmeta-val">${recoltes.length}</span><span class="tmeta-lbl">récoltes</span></div>
         ${avgNote ? `<div class="tmeta"><span class="tmeta-val">${avgNote.toFixed(1)}</span><span class="tmeta-lbl">note moy.</span></div>` : ''}
+        ${rPied ? `<div class="tmeta"><span class="tmeta-val" style="color:var(--green)">${rPied}g</span><span class="tmeta-lbl">par plant</span></div>` : ''}
         <div class="tmeta"><span class="tmeta-val">${lieux.length}</span><span class="tmeta-lbl">${lieux.length>1?'lieux':'lieu'}</span></div>
       </div>
     </div>
 
-    <!-- LIEUX -->
+    ${rendementHtml}
+
     ${multiLieu ? `
     <div class="section">
       <div class="stitle">Répartition par lieu</div>
       <div class="lieux-grid">
-        ${bySerre>0?`<div class="lieu-card"><div class="lieu-icon">🏠</div><div class="lieu-val serre">${fmtKg(bySerre)}</div><div class="lieu-lbl">Serre</div><div class="lieu-pct">${(bySerre/total*100).toFixed(0)}% du total</div></div>`:''}
-        ${byBacs>0?`<div class="lieu-card"><div class="lieu-icon">🪴</div><div class="lieu-val bacs">${fmtKg(byBacs)}</div><div class="lieu-lbl">Bacs</div><div class="lieu-pct">${(byBacs/total*100).toFixed(0)}% du total</div></div>`:''}
-        ${byJardin>0?`<div class="lieu-card"><div class="lieu-icon">🌳</div><div class="lieu-val jardin">${fmtKg(byJardin)}</div><div class="lieu-lbl">Jardin</div><div class="lieu-pct">${(byJardin/total*100).toFixed(0)}% du total</div></div>`:''}
+        ${bySerre>0?`<div class="lieu-card"><div class="lieu-icon">🏠</div><div class="lieu-val serre">${fmtKg(bySerre)}</div><div class="lieu-lbl">Serre</div><div class="lieu-pct">${(bySerre/total*100).toFixed(0)}%</div></div>`:''}
+        ${byBacs>0?`<div class="lieu-card"><div class="lieu-icon">🪴</div><div class="lieu-val bacs">${fmtKg(byBacs)}</div><div class="lieu-lbl">Bacs</div><div class="lieu-pct">${(byBacs/total*100).toFixed(0)}%</div></div>`:''}
+        ${byJardin>0?`<div class="lieu-card"><div class="lieu-icon">🌳</div><div class="lieu-val jardin">${fmtKg(byJardin)}</div><div class="lieu-lbl">Jardin</div><div class="lieu-pct">${(byJardin/total*100).toFixed(0)}%</div></div>`:''}
       </div>
     </div>` : ''}
 
-    <!-- GRAPHIQUES -->
     <div class="section">
       <div class="stitle">Graphiques</div>
       <div class="charts-grid">
-        ${multiLieu ? `
-        <div class="chart-card">
-          <div class="chart-title">Répartition par lieu</div>
-          <div class="chart-wrap"><canvas id="chartDonut"></canvas></div>
-        </div>` : ''}
+        ${multiLieu ? `<div class="chart-card"><div class="chart-title">Répartition par lieu</div><div class="chart-wrap"><canvas id="chartDonut"></canvas></div></div>` : ''}
         <div class="chart-card ${multiLieu?'':''}">
           <div class="chart-title">Évolution des récoltes</div>
           <div class="chart-wrap"><canvas id="chartEvol"></canvas></div>
@@ -222,19 +264,11 @@ function render(recoltes, vegetal) {
       </div>
     </div>
 
-    <!-- TABLEAU DÉTAIL -->
     <div class="section">
       <div class="stitle">Détail des récoltes</div>
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Lieu</th>
-              <th>Poids</th>
-              <th>Note</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Date</th><th>Lieu</th><th>Poids</th><th>Note</th></tr></thead>
           <tbody>
             ${recoltes.map(r=>`
               <tr>
@@ -242,94 +276,59 @@ function render(recoltes, vegetal) {
                 <td><span class="badge badge-${r.lieu}">${lieuLabel(r.lieu)}</span></td>
                 <td style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700">${fmtKg(r.poids)}</td>
                 <td><span class="stars">${stars(r.note)}</span></td>
-              </tr>
-            `).join('')}
+              </tr>`).join('')}
           </tbody>
         </table>
       </div>
     </div>
   `;
 
-  // ── DONUT par lieu ───────────────────────────────────────
+  // ── DONUT ────────────────────────────────────────────────
   if (multiLieu) {
-    const ctxD = document.getElementById('chartDonut').getContext('2d');
-    const lieuxData = [];
-    const lieuxLabels = [];
-    const lieuxColors = [];
-    if (bySerre>0)  { lieuxData.push(bySerre);  lieuxLabels.push('Serre');  lieuxColors.push('#3a6ea5'); }
-    if (byBacs>0)   { lieuxData.push(byBacs);   lieuxLabels.push('Bacs');   lieuxColors.push('#c47c2b'); }
-    if (byJardin>0) { lieuxData.push(byJardin); lieuxLabels.push('Jardin'); lieuxColors.push('#3d7a4f'); }
-    new Chart(ctxD, {
+    const lieuxData=[],lieuxLabels=[],lieuxColors=[];
+    if(bySerre>0){lieuxData.push(bySerre);lieuxLabels.push('Serre');lieuxColors.push('#3a6ea5');}
+    if(byBacs>0){lieuxData.push(byBacs);lieuxLabels.push('Bacs');lieuxColors.push('#c47c2b');}
+    if(byJardin>0){lieuxData.push(byJardin);lieuxLabels.push('Jardin');lieuxColors.push('#3d7a4f');}
+    new Chart(document.getElementById('chartDonut').getContext('2d'), {
       type:'doughnut',
-      data:{ labels:lieuxLabels, datasets:[{ data:lieuxData, backgroundColor:lieuxColors, borderWidth:0 }] },
-      options:{
-        responsive:true, maintainAspectRatio:false, animation:false,
-        plugins:{ legend:{ position:'bottom', labels:{color:'#6b6259',font:{size:10}} },
-          tooltip:{ callbacks:{ label:c=>c.label+': '+fmtKg(c.parsed) } } }
-      }
+      data:{ labels:lieuxLabels, datasets:[{data:lieuxData,backgroundColor:lieuxColors,borderWidth:0}] },
+      options:{ responsive:true,maintainAspectRatio:false,animation:false,
+        plugins:{ legend:{position:'bottom',labels:{color:'#6b6259',font:{size:10}}},
+          tooltip:{callbacks:{label:c=>c.label+': '+fmtKg(c.parsed)}} } }
     });
   }
 
-  // ── ÉVOLUTION dans le temps ──────────────────────────────
-  const ctxE = document.getElementById('chartEvol').getContext('2d');
+  // ── ÉVOLUTION ────────────────────────────────────────────
   const sorted = [...recoltes].sort((a,b)=>a.date.localeCompare(b.date));
-
   if (multiLieu) {
-    // Lignes séparées par lieu
-    const datasets = [];
-    const lieuxCfg = [
-      { key:'serre',  label:'Serre',  color:'#3a6ea5' },
-      { key:'bacs',   label:'Bacs',   color:'#c47c2b' },
-      { key:'jardin', label:'Jardin', color:'#3d7a4f' },
-    ];
-    const labels = [...new Set(sorted.map(r=>r.date))];
-    lieuxCfg.forEach(lc => {
-      const byLieu = sorted.filter(r=>r.lieu===lc.key);
-      if (!byLieu.length) return;
-      const data = labels.map(d => {
-        const match = byLieu.find(r=>r.date===d);
-        return match ? match.poids : null;
-      });
-      datasets.push({
-        label:lc.label, data,
-        borderColor:lc.color, backgroundColor:lc.color+'20',
-        borderWidth:2, pointRadius:4, pointBackgroundColor:lc.color,
-        fill:false, tension:0.3, spanGaps:true
-      });
-    });
-    new Chart(ctxE, {
+    const lieuxCfg=[{key:'serre',label:'Serre',color:'#3a6ea5'},{key:'bacs',label:'Bacs',color:'#c47c2b'},{key:'jardin',label:'Jardin',color:'#3d7a4f'}];
+    const labels=[...new Set(sorted.map(r=>r.date))];
+    const datasets=lieuxCfg.map(lc=>{
+      const byLieu=sorted.filter(r=>r.lieu===lc.key);
+      if(!byLieu.length) return null;
+      return { label:lc.label, data:labels.map(d=>{const m=byLieu.find(r=>r.date===d);return m?m.poids:null;}),
+        borderColor:lc.color,backgroundColor:lc.color+'20',borderWidth:2,pointRadius:4,
+        pointBackgroundColor:lc.color,fill:false,tension:0.3,spanGaps:true };
+    }).filter(Boolean);
+    new Chart(document.getElementById('chartEvol').getContext('2d'), {
       type:'line',
-      data:{ labels:labels.map(d=>{ const [,m,j]=d.split('-'); return j+'/'+m; }), datasets },
-      options:{
-        responsive:true, maintainAspectRatio:false, animation:false,
-        plugins:{ legend:{ position:'bottom', labels:{color:'#6b6259',font:{size:10}} },
-          tooltip:{ callbacks:{ label:c=>c.dataset.label+': '+fmtKg(c.parsed.y) } } },
-        scales:{
-          x:{ ticks:{color:'#9e9488',font:{size:9}}, grid:{display:false} },
-          y:{ ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)}, grid:{color:'rgba(0,0,0,.06)'} }
-        }
-      }
+      data:{ labels:labels.map(d=>{const[,m,j]=d.split('-');return j+'/'+m;}), datasets },
+      options:{ responsive:true,maintainAspectRatio:false,animation:false,
+        plugins:{legend:{position:'bottom',labels:{color:'#6b6259',font:{size:10}}},
+          tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtKg(c.parsed.y)}}},
+        scales:{x:{ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},
+          y:{ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(0,0,0,.06)'}}} }
     });
   } else {
-    // Ligne simple
-    new Chart(ctxE, {
+    new Chart(document.getElementById('chartEvol').getContext('2d'), {
       type:'bar',
-      data:{
-        labels: sorted.map(r=>{ const [,m,j]=r.date.split('-'); return j+'/'+m; }),
-        datasets:[{
-          data: sorted.map(r=>r.poids),
-          backgroundColor: lieux[0]==='serre'?'#3a6ea5':lieux[0]==='bacs'?'#c47c2b':'#3d7a4f',
-          borderRadius:6
-        }]
-      },
-      options:{
-        responsive:true, maintainAspectRatio:false, animation:false,
-        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>fmtKg(c.parsed.y) } } },
-        scales:{
-          x:{ ticks:{color:'#9e9488',font:{size:9}}, grid:{display:false} },
-          y:{ ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)}, grid:{color:'rgba(0,0,0,.06)'} }
-        }
-      }
+      data:{ labels:sorted.map(r=>{const[,m,j]=r.date.split('-');return j+'/'+m;}),
+        datasets:[{data:sorted.map(r=>r.poids),
+          backgroundColor:lieux[0]==='serre'?'#3a6ea5':lieux[0]==='bacs'?'#c47c2b':'#3d7a4f',borderRadius:6}] },
+      options:{ responsive:true,maintainAspectRatio:false,animation:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtKg(c.parsed.y)}}},
+        scales:{x:{ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},
+          y:{ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(0,0,0,.06)'}}} }
     });
   }
 }
