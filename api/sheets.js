@@ -1,11 +1,10 @@
-const https = require('https');
-
 const CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL;
 const PRIVATE_KEY = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
-const SHEET_NAME = 'Récoltes';
+const SHEET_RECOLTES  = 'Récoltes';
+const SHEET_HISTORIQUE = 'Historique';
 
-// ── JWT Google ────────────────────────────────────────────────
+// ── JWT Google (identique à l'original) ──────────────────────
 function base64url(str) {
   return Buffer.from(str).toString('base64')
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
@@ -13,7 +12,7 @@ function base64url(str) {
 
 async function getGoogleToken() {
   const now = Math.floor(Date.now() / 1000);
-  const header = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const header  = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
   const payload = base64url(JSON.stringify({
     iss: CLIENT_EMAIL,
     scope: 'https://www.googleapis.com/auth/spreadsheets',
@@ -39,7 +38,7 @@ async function getGoogleToken() {
   return data.access_token;
 }
 
-// ── Helpers Sheets API ────────────────────────────────────────
+// ── Helpers Sheets API (identiques à l'original) ─────────────
 async function sheetsGet(path, token) {
   const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}${path}`, {
     headers: { Authorization: 'Bearer ' + token }
@@ -65,70 +64,120 @@ async function sheetsPut(path, token, body) {
   return res.json();
 }
 
-// ── Initialiser la feuille si vide ────────────────────────────
-async function initSheet(token) {
-  // Vérifier si l'onglet existe
+// ── Init onglet Récoltes (identique à l'original) ─────────────
+async function initRecoltes(token) {
   const meta = await sheetsGet('', token);
   const sheets = meta.sheets || [];
-  const exists = sheets.some(s => s.properties.title === SHEET_NAME);
-
+  const exists = sheets.some(s => s.properties.title === SHEET_RECOLTES);
   if (!exists) {
     await sheetsPost(':batchUpdate', token, {
-      requests: [{ addSheet: { properties: { title: SHEET_NAME } } }]
+      requests: [{ addSheet: { properties: { title: SHEET_RECOLTES } } }]
     });
   }
-
-  // Vérifier si headers existent
-  const data = await sheetsGet(`/values/${encodeURIComponent(SHEET_NAME)}!A1:H1`, token);
+  const data = await sheetsGet(`/values/${encodeURIComponent(SHEET_RECOLTES)}!A1:H1`, token);
   const rows = data.values || [];
   if (!rows.length || rows[0][0] !== 'ID') {
     await sheetsPut(
-      `/values/${encodeURIComponent(SHEET_NAME)}!A1:H1?valueInputOption=RAW`,
+      `/values/${encodeURIComponent(SHEET_RECOLTES)}!A1:H1?valueInputOption=RAW`,
       token,
       { values: [['ID', 'Végétal', 'Famille', 'Lieu', 'Poids (g)', 'Date', 'Note', 'Timestamp']] }
     );
   }
 }
 
-// ── Lire toutes les récoltes ──────────────────────────────────
+// ── Init onglet Historique (nouveau) ─────────────────────────
+async function initHistorique(token) {
+  const meta = await sheetsGet('', token);
+  const sheets = meta.sheets || [];
+  const exists = sheets.some(s => s.properties.title === SHEET_HISTORIQUE);
+  if (!exists) {
+    await sheetsPost(':batchUpdate', token, {
+      requests: [{ addSheet: { properties: { title: SHEET_HISTORIQUE } } }]
+    });
+    await sheetsPut(
+      `/values/${encodeURIComponent(SHEET_HISTORIQUE)}!A1:D1?valueInputOption=RAW`,
+      token,
+      { values: [['timestamp', 'temperature', 'humidite', 'source']] }
+    );
+  }
+}
+
+// ── Récoltes : lire ───────────────────────────────────────────
 async function readRecoltes(token) {
-  const data = await sheetsGet(`/values/${encodeURIComponent(SHEET_NAME)}!A2:H`, token);
+  const data = await sheetsGet(`/values/${encodeURIComponent(SHEET_RECOLTES)}!A2:H`, token);
   const rows = data.values || [];
   return rows.map(r => ({
-    id: r[0] || '',
-    vegetal: r[1] || '',
-    famille: r[2] || '',
-    lieu: r[3] || '',
-    poids: parseInt(r[4]) || 0,
-    date: r[5] || '',
-    note: r[6] ? parseInt(r[6]) : null,
+    id:        r[0] || '',
+    vegetal:   r[1] || '',
+    famille:   r[2] || '',
+    lieu:      r[3] || '',
+    poids:     parseInt(r[4]) || 0,
+    date:      r[5] || '',
+    note:      r[6] ? parseInt(r[6]) : null,
     timestamp: r[7] || '',
   })).filter(r => r.id);
 }
 
-// ── Écrire toutes les récoltes (sync complète) ────────────────
+// ── Récoltes : écrire (sync complète, identique à l'original) ─
 async function writeAllRecoltes(token, recoltes) {
-  // Effacer d'abord les données existantes
-  await sheetsPost(`/values/${encodeURIComponent(SHEET_NAME)}!A2:H:clear`, token, {});
-
+  await sheetsPost(`/values/${encodeURIComponent(SHEET_RECOLTES)}!A2:H:clear`, token, {});
   if (!recoltes.length) return;
-
   const values = recoltes.map(r => [
     r.id || ('r' + Date.now() + Math.random()),
-    r.vegetal || '',
-    r.famille || '',
-    r.lieu || '',
-    r.poids || 0,
-    r.date || '',
-    r.note || '',
+    r.vegetal   || '',
+    r.famille   || '',
+    r.lieu      || '',
+    r.poids     || 0,
+    r.date      || '',
+    r.note      || '',
     r.timestamp || new Date().toISOString(),
   ]);
-
   await sheetsPut(
-    `/values/${encodeURIComponent(SHEET_NAME)}!A2:H?valueInputOption=RAW`,
+    `/values/${encodeURIComponent(SHEET_RECOLTES)}!A2:H?valueInputOption=RAW`,
     token,
     { values }
   );
+}
+
+// ── Historique : ajouter un point capteur (nouveau) ──────────
+async function appendHistorique(token, temp, hum) {
+  await initHistorique(token);
+  const timestamp = new Date().toISOString();
+  const res = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_HISTORIQUE)}!A:D:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+    {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [[timestamp, parseFloat(temp), parseFloat(hum), 'tuya']] })
+    }
+  );
+  return res.json();
+}
+
+// ── Historique : lire par plage (nouveau) ────────────────────
+async function readHistorique(token, range) {
+  await initHistorique(token);
+  const data = await sheetsGet(`/values/${encodeURIComponent(SHEET_HISTORIQUE)}!A:D`, token);
+  const rows = data.values || [];
+  if (rows.length <= 1) return { data: [], total: 0 };
+
+  const ms = { '24h': 86400000, '7d': 604800000, '30d': 2592000000 };
+  const cutoff = Date.now() - (ms[range] || ms['24h']);
+
+  const filtered = rows.slice(1) // skip header
+    .filter(r => r[0] && new Date(r[0]).getTime() >= cutoff)
+    .map(r => ({
+      t:    r[0],
+      temp: parseFloat(r[1]) || null,
+      hum:  parseFloat(r[2]) || null,
+    }));
+
+  // Sous-échantillonnage pour ne pas surcharger les graphiques
+  // 24h : tous les pts (~48 à 30min) | 7j : 1/3 (~112 pts) | 30j : 1/12 (~120 pts)
+  const step = range === '7d' ? 3 : range === '30d' ? 12 : 1;
+  const sampled = filtered.filter((_, i) => i % step === 0);
+
+  return { data: sampled, total: filtered.length };
 }
 
 // ── Handler principal ─────────────────────────────────────────
@@ -140,22 +189,44 @@ module.exports = async function handler(req, res) {
 
   try {
     const token = await getGoogleToken();
-    await initSheet(token);
+    const params = req.method === 'POST' ? req.body : req.query;
+    const action = params?.action;
+
+    // ── HISTORIQUE CAPTEURS ───────────────────────────────────
+    // GET /api/sheets?action=append_history&temp=24&hum=65
+    if (action === 'append_history') {
+      const { temp, hum } = params;
+      if (temp === undefined || hum === undefined)
+        return res.status(400).json({ error: 'temp et hum requis' });
+      await appendHistorique(token, temp, hum);
+      return res.json({ success: true });
+    }
+
+    // GET /api/sheets?action=get_history&range=7d
+    if (action === 'get_history') {
+      const range = params.range || '24h';
+      const result = await readHistorique(token, range);
+      return res.json({ success: true, ...result, range });
+    }
+
+    // ── RÉCOLTES (logique originale, inchangée) ───────────────
+    await initRecoltes(token);
 
     if (req.method === 'GET') {
-      // Lire les récoltes depuis Sheets
       const recoltes = await readRecoltes(token);
       return res.json({ success: true, recoltes });
     }
 
     if (req.method === 'POST') {
       const { recoltes } = req.body;
-      if (!Array.isArray(recoltes)) return res.status(400).json({ error: 'recoltes manquantes' });
+      if (!Array.isArray(recoltes))
+        return res.status(400).json({ error: 'recoltes manquantes' });
       await writeAllRecoltes(token, recoltes);
       return res.json({ success: true, count: recoltes.length });
     }
 
     return res.status(405).json({ error: 'Méthode non autorisée' });
+
   } catch(e) {
     console.error('Sheets error:', e.message);
     return res.status(500).json({ error: e.message });
