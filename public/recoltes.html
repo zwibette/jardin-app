@@ -723,18 +723,43 @@ const FAMILLES = {
   'Persil géant d\'Italie':'AROMATIQUES','Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
 };
 
-const RENDEMENTS_PDF = [
-  { vegetal:'Blette perez', poids_pied:1173, lieu:'serre', note:5 },
-  { vegetal:'Chou pak choï perez', poids_pied:782, lieu:'serre', note:5 },
-  { vegetal:'Chou pe tsaï perez', poids_pied:678, lieu:'serre', note:4 },
-  { vegetal:'Chou rave perez', poids_pied:235, lieu:'serre', note:4 },
-  { vegetal:'Céleri perez', poids_pied:217, lieu:'serre', note:4 },
-  { vegetal:'Feuille chêne rouge perez', poids_pied:194, lieu:'serre', note:4 },
-  { vegetal:'Fenouil perez', poids_pied:145, lieu:'serre', note:5 },
-  { vegetal:'Blette lucullus', poids_pied:190, lieu:'serre', note:4 },
-  { vegetal:'Épinards perez bac', poids_pied:73, lieu:'serre', note:4 },
-  { vegetal:'Persil perez', poids_pied:120, lieu:'serre', note:4 },
-];
+// ── RENDEMENT DYNAMIQUE (depuis jardin_calendrier_v1) ─────────
+// Aucune donnée figée — g/pied calculé depuis nb plants saisis dans le calendrier
+const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
+
+function loadCalendrier() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY_CAL) || '[]'); } catch(e) { return []; }
+}
+
+function getNbPlants(vegetal) {
+  const cal = loadCalendrier();
+  const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
+  const match = cal.find(c =>
+    norm(c.culture) === norm(vegetal) ||
+    norm(c.culture).includes(norm(vegetal)) ||
+    norm(vegetal).includes(norm(c.culture))
+  );
+  return match?.nbPlants || null;
+}
+
+function computeRendementPied(vegetal, totalPoids) {
+  const nb = getNbPlants(vegetal);
+  if (!nb || nb <= 0) return null;
+  return Math.round(totalPoids / nb);
+}
+
+function computeTopRendements() {
+  const byVeg = {};
+  recoltes.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
+  return Object.entries(byVeg)
+    .map(([vegetal, total]) => ({
+      vegetal, total,
+      rPied: computeRendementPied(vegetal, total),
+      nbPlants: getNbPlants(vegetal)
+    }))
+    .filter(r => r.rPied !== null)
+    .sort((a, b) => b.rPied - a.rPied);
+}
 
 // Récoltes historiques du PDF
 const RECOLTES_INITIALES = [
@@ -1003,9 +1028,16 @@ function renderStats() {
   document.getElementById('hNbRecoltes').textContent = recoltes.length;
   document.getElementById('hNbVarietes').textContent = s.varietes;
 
-  // Meilleur rendement/pied
-  const best = RENDEMENTS_PDF[0];
-  document.getElementById('hMeilleur').textContent = best.vegetal.split(' ')[0];
+  // Meilleur rendement/pied (dynamique depuis calendrier)
+  const topR = computeTopRendements();
+  if (topR.length) {
+    document.getElementById('hMeilleur').textContent = topR[0].vegetal.split(' ')[0] + ' (' + topR[0].rPied + 'g/p)';
+  } else {
+    const byVeg = {};
+    recoltes.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
+    const bestTotal = Object.entries(byVeg).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('hMeilleur').textContent = bestTotal ? bestTotal[0].split(' ')[0] : '—';
+  }
 }
 
 // ── CHARTS ───────────────────────────────────────────────────
@@ -1120,21 +1152,33 @@ function renderChartMois() {
 }
 
 function renderChartRendement() {
-  const top = RENDEMENTS_PDF.slice(0,8);
   destroyChart('chartRendement');
   const ctx = document.getElementById('chartRendement').getContext('2d');
+  const top = computeTopRendements().slice(0, 10);
+  if (!top.length) {
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    ctx.fillStyle = '#4a6b52'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('Renseignez le nombre de plants dans le Calendrier', ctx.canvas.width/2, ctx.canvas.height/2);
+    return;
+  }
+  const shortName = v => v.replace(/ perez$/i,'').replace(/ char$/i,'').replace(/ sessantina$/i,'').replace(/ bac$/i,'');
   chartInstances['chartRendement'] = new Chart(ctx, {
     type:'bar',
     data:{
-      labels: top.map(r=>r.vegetal.replace(' perez','').replace(' char','').replace(' sessantina','')),
-      datasets:[{ data:top.map(r=>r.poids_pied), backgroundColor:PALETTE, borderRadius:6 }]
+      labels: top.map(r => shortName(r.vegetal)),
+      datasets:[{ data:top.map(r=>r.rPied), backgroundColor:PALETTE, borderRadius:6 }]
     },
     options:{
       indexAxis:'y',
       responsive:true, maintainAspectRatio:false, animation:false,
-      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.x+'g/pied' } } },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{
+        label: c => {
+          const item = top[c.dataIndex];
+          return c.parsed.x + 'g/pied · ' + item.nbPlants + ' plants · total ' + (item.total>=1000?(item.total/1000).toFixed(2)+'kg':item.total+'g');
+        }
+      }}},
       scales:{
-        x:{ ticks:{color:'#9e9488',font:{size:9}}, grid:{color:'rgba(0,0,0,.06)'} },
+        x:{ ticks:{color:'#9e9488',font:{size:9},callback:v=>v+'g'}, grid:{color:'rgba(0,0,0,.06)'} },
         y:{ ticks:{color:'#6b6259',font:{size:10}}, grid:{display:false} }
       }
     }
@@ -1150,11 +1194,13 @@ function renderTop() {
   const ranks = ['gold','silver','bronze','',''];
   document.getElementById('topList').innerHTML = sorted.map(([v,p],i) => {
     const fam = FAMILLES[v] || '';
+    const rPied = computeRendementPied(v, p);
+    const nbPlants = getNbPlants(v);
     return `<div class="top-item" onclick="window.location='/variete.html?v='+encodeURIComponent(v)" style="cursor:pointer">
       <div class="top-rank ${ranks[i]}">${i+1}</div>
       <div style="flex:1">
         <div class="top-name">${v}</div>
-        <div class="top-sub">${fam}</div>
+        <div class="top-sub">${fam}${rPied ? ' · <span style="color:var(--green)">' + rPied + 'g/pied</span>' : (nbPlants ? '' : ' · <span style="color:var(--text-muted);font-size:.6rem">nb plants non renseigné</span>')}</div>
         <div class="bar-wrap"><div class="bar-fill" style="width:${(p/max*100).toFixed(0)}%"></div></div>
       </div>
       <div class="top-val">${fmtKg(p)}</div>
