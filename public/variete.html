@@ -74,6 +74,28 @@ td{padding:10px 12px;color:var(--text-dim)}
 .badge-jardin{background:var(--green-light);color:var(--green)}
 .no-data{text-align:center;padding:60px 20px;color:var(--text-muted)}
 .no-data div{font-family:'Playfair Display',serif;font-size:1.2rem;font-style:italic;margin-bottom:8px;color:var(--text-dim)}
+
+/* ANALYSE PRÉDICTIVE */
+.predict-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.predict-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.predict-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:400;font-style:italic;color:var(--accent)}
+.predict-btn{background:var(--bg2);border:1px solid var(--border);color:var(--text-muted);padding:5px 14px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
+.predict-btn:hover{border-color:var(--accent);color:var(--accent)}
+.predict-btn.loading{opacity:.6;pointer-events:none}
+.predict-body{padding:18px;font-size:.83rem;line-height:1.8;color:var(--text-dim);min-height:80px}
+.predict-body h3{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:400;font-style:italic;color:var(--accent);margin:12px 0 6px}
+.predict-body h3:first-child{margin-top:0}
+.predict-body strong{color:var(--text);font-weight:500}
+.predict-body em{color:var(--green)}
+.predict-placeholder{text-align:center;padding:24px 0;color:var(--text-muted)}
+.predict-placeholder div{font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;margin-bottom:6px;color:var(--text-dim)}
+.predict-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px;color:var(--text-muted);font-size:.75rem}
+.predict-sources{padding:10px 18px;border-top:1px solid var(--border);font-size:.62rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.predict-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:.6rem;font-weight:500}
+.predict-badge.capteurs{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.predict-badge.historique{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+.predict-badge.meteo{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.2)}
+.predict-badge.internet{background:rgba(163,230,53,.1);color:var(--accent);border:1px solid rgba(163,230,53,.2)}
 </style>
 </head>
 <body>
@@ -90,6 +112,31 @@ td{padding:10px 12px;color:var(--text-dim)}
   <div class="no-data"><div>Chargement…</div></div>
 </main>
 
+<!-- ANALYSE PRÉDICTIVE — injectée dynamiquement sous mainContent -->
+<div id="predictSection" style="max-width:900px;margin:0 auto;padding:0 16px 40px;position:relative;z-index:1;display:none">
+  <div class="predict-card">
+    <div class="predict-header">
+      <div class="predict-title">🔮 Analyse prédictive — Quand récolter ?</div>
+      <button class="predict-btn" id="predictBtn" onclick="lancerAnalyse()">
+        <span id="predictBtnIcon">✦</span> Analyser avec l'IA
+      </button>
+    </div>
+    <div class="predict-body" id="predictBody">
+      <div class="predict-placeholder">
+        <div>Prêt à analyser</div>
+        Croise tes données capteurs, l'historique de récoltes et les prévisions météo pour estimer la prochaine récolte.
+      </div>
+    </div>
+    <div class="predict-sources" id="predictSources" style="display:none">
+      Sources :
+      <span class="predict-badge capteurs">🌡️ Capteurs Tuya</span>
+      <span class="predict-badge historique">📋 Journal récoltes</span>
+      <span class="predict-badge meteo">🌤️ Météo Montpellier</span>
+      <span class="predict-badge internet">🌐 Données agronomiques</span>
+    </div>
+  </div>
+</div>
+
 <script>
 const STORAGE_KEY     = 'jardin_recoltes_v2';
 const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
@@ -97,7 +144,7 @@ const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
 const FAMILLES = {
   'Feuille chêne rouge perez':'SALADES','Batavia verte perez':'SALADES','Batavia rouge perez':'SALADES',
   'Rougette de Montpellier perez':'SALADES','Oseille':'SALADES','Mizuna':'SALADES',
-  'Mâche perez':'SALADES','Laitue romaine d\'Avignon':'SALADES','Sucrine perez':'SALADES','Pourpier doré':'SALADES',
+  'Mâche perez':'SALADES',"Laitue romaine d'Avignon":"SALADES",'Sucrine perez':'SALADES','Pourpier doré':'SALADES',
   'Blette perez':'BLETTES & ÉPINARDS','Poirée rubis char':'BLETTES & ÉPINARDS','Blette lucullus':'BLETTES & ÉPINARDS',
   'Nero di toscana':'BLETTES & ÉPINARDS','Épinards malabar':'BLETTES & ÉPINARDS','Épinards perez bac':'BLETTES & ÉPINARDS',
   'Chou pak choï perez':'CHOUX','Chou pe tsaï perez':'CHOUX','Chou rave perez':'CHOUX',
@@ -115,9 +162,9 @@ const FAMILLES = {
   'Butternut':'COURGETTES','Chayote':'COURGETTES',
   'Concombre F1 Citaro':'CONCOMBRES','Concombre généreux':'CONCOMBRES','Cornichon diamant':'CONCOMBRES',
   'Melon artemis':'MELONS','Pastèque baby sugar':'MELONS',
-  'Mange-tout norli':'LÉGUMES D\'ÉTÉ','Artichaut impérial':'LÉGUMES D\'ÉTÉ',
+  "Mange-tout norli":"LÉGUMES ETE","Artichaut impérial":"LÉGUMES ETE",
   'Basilic prospéra':'AROMATIQUES','Basilic perpétuel':'AROMATIQUES','Persil perez':'AROMATIQUES',
-  'Persil géant d\'Italie':'AROMATIQUES','Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
+  "Persil géant d'Italie":"AROMATIQUES",'Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
 };
 
 // ── STORAGE ───────────────────────────────────────────────────
@@ -180,6 +227,138 @@ if (!vegetal) {
     document.getElementById('mainContent').innerHTML = '<div class="no-data"><div>Aucune récolte enregistrée</div><p>pour cette variété.</p></div>';
   } else {
     render(recoltes, vegetal);
+  }
+  // Toujours afficher la section prédictive (même sans récoltes passées)
+  document.getElementById('predictSection').style.display = 'block';
+}
+
+// ── ANALYSE PRÉDICTIVE IA ────────────────────────────────────
+async function lancerAnalyse() {
+  const btn     = document.getElementById('predictBtn');
+  const body    = document.getElementById('predictBody');
+  const sources = document.getElementById('predictSources');
+  const icon    = document.getElementById('predictBtnIcon');
+
+  btn.classList.add('loading');
+  icon.textContent = '⟳';
+  sources.style.display = 'none';
+
+  body.innerHTML = `<div class="predict-loading">
+    <div class="loading-ring" style="width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite"></div>
+    <span>Collecte des données et analyse en cours…</span>
+  </div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
+
+  // ── Contexte récoltes passées ────────────────────────────
+  const allRec = loadRecoltes();
+  const recVariete = allRec.filter(r => r.vegetal === vegetal)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const totalPoids  = recVariete.reduce((s, r) => s + r.poids, 0);
+  const nbRecoltes  = recVariete.length;
+  const premiereRec = recVariete[0]?.date || null;
+  const derniereRec = recVariete[nbRecoltes - 1]?.date || null;
+  const noteMoy     = recVariete.filter(r => r.note).length
+    ? (recVariete.filter(r => r.note).reduce((s, r) => s + r.note, 0) / recVariete.filter(r => r.note).length).toFixed(1)
+    : null;
+
+  // Grouper par mois pour détecter la saisonnalité
+  const parMois = {};
+  recVariete.forEach(r => {
+    const m = r.date.slice(0, 7);
+    parMois[m] = (parMois[m] || 0) + r.poids;
+  });
+  const saisonRecolte = Object.entries(parMois)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([m]) => { const [y, mo] = m.split('-'); return ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][parseInt(mo)-1] + ' ' + y; })
+    .join(', ');
+
+  // ── Données calendrier ───────────────────────────────────
+  const cal     = loadCalendrier();
+  const norm    = s => s.toLowerCase().replace(/[^a-z]/g, '');
+  const calEntry = cal.find(c =>
+    norm(c.culture) === norm(vegetal) ||
+    norm(c.culture).includes(norm(vegetal)) ||
+    norm(vegetal).includes(norm(c.culture))
+  );
+
+  // ── Données capteurs depuis localStorage ────────────────
+  let capteurContext = 'non disponibles';
+  try {
+    const hist = JSON.parse(localStorage.getItem('jardin_history_v1') || '[]');
+    if (hist.length) {
+      const recent = hist.slice(-6); // 3h de données récentes
+      const tempMoy = (recent.reduce((s, p) => s + p.temp, 0) / recent.length).toFixed(1);
+      const humMoy  = (recent.reduce((s, p) => s + p.hum, 0) / recent.length).toFixed(0);
+      capteurContext = `température serre ${tempMoy}°C, humidité ${humMoy}%`;
+    }
+  } catch(e) {}
+
+  const today  = new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+  const month  = new Date().getMonth() + 1;
+  const season = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+  const famille = FAMILLES[vegetal] || calEntry?.famille || '';
+
+  const systemPrompt = `Tu es un expert agronome et maraîcher conseillant un jardinier à Montpellier (zone méditerranéenne, USDA 9b). 
+Tu as accès à toutes ses données de jardinage et tu dois faire une analyse prédictive précise et personnalisée.
+
+Système : serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône automatisé, capteurs connectés Tuya.
+
+Données de la plante analysée — ${vegetal} (${famille}) :
+- Historique récoltes : ${nbRecoltes} récolte(s)${premiereRec ? ', première le ' + premiereRec : ''}${derniereRec ? ', dernière le ' + derniereRec : ''}
+- Total récolté : ${totalPoids}g
+- Mois de forte production : ${saisonRecolte || 'non déterminé'}
+- Note moyenne : ${noteMoy || 'non notée'}
+- Lieu : ${calEntry?.lieu || recVariete[0]?.lieu || 'inconnu'}
+${calEntry ? `- Semis : ${calEntry.semis}, plantation : ${calEntry.plantation || 'semis direct'}, récolte prévue : ${calEntry.recolteDebut} → ${calEntry.recolteFin}` : ''}
+${calEntry?.nbPlants ? `- Nombre de plants : ${calEntry.nbPlants}` : ''}
+
+Conditions actuelles :
+- Date : ${today} (${season})
+- Capteurs serre : ${capteurContext}
+
+Réponds en français. Structure ta réponse avec des titres <h3>. Sois concret, précis, et utilise les données fournies pour personnaliser l'analyse. Maximum 500 mots.`;
+
+  const question = `Analyse prédictive complète pour ${vegetal} :
+1. En te basant sur l'historique de récoltes et la saisonnalité détectée, quand vais-je pouvoir récolter cette plante prochainement ?
+2. Quelles sont les conditions optimales à surveiller (température, humidité, durée depuis plantation) pour cette variété spécifiquement ?
+3. Y a-t-il des signaux visuels ou des indicateurs que je dois surveiller pour savoir que c'est le bon moment ?
+4. Des conseils spécifiques pour maximiser le rendement de la prochaine récolte compte tenu de la saison actuelle et du climat méditerranéen ?
+Utilise également tes connaissances agronomiques générales sur cette variété pour enrichir l'analyse.`;
+
+  try {
+    const res = await fetch('/api/conseils', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: systemPrompt, question })
+    });
+    const txt = await res.text();
+    if (!txt.trim()) throw new Error('Réponse vide');
+    const data = JSON.parse(txt);
+    if (!data.success) throw new Error(data.error || 'Erreur API');
+
+    const html = (data.text || '')
+      .replace(/[*][*](.*?)[*][*]/g, '<strong>$1</strong>')
+      .replace(/[*](.*?)[*]/g, '<em>$1</em>')
+      .replace(/^### (.*)/gm, '<h3>$1</h3>')
+      .replace(/^## (.*)/gm, '<h3>$1</h3>')
+      .replace(/^- (.*)/gm, '<div style="padding:3px 0 3px 14px;border-left:2px solid var(--border2);margin:2px 0">$1</div>')
+      .replace(/\n/g, '<br>');
+
+    body.innerHTML = html;
+    sources.style.display = 'flex';
+    btn.textContent = '↺ Actualiser';
+    btn.classList.remove('loading');
+    icon.textContent = '';
+
+  } catch(e) {
+    const surcharge = e.message?.includes('503') || e.message?.includes('UNAVAILABLE');
+    body.innerHTML = `<div style="color:${surcharge ? 'var(--amber)' : 'var(--red)'};font-size:.8rem;padding:10px 0">
+      ${surcharge ? '⏳ IA temporairement surchargée. Réessayez dans quelques secondes.' : '❌ Erreur : ' + e.message}
+    </div>`;
+    btn.classList.remove('loading');
+    icon.textContent = '✦';
   }
 }
 
