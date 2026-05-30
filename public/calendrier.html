@@ -844,6 +844,7 @@ function renderListe() {
             <div class="edit-actions">
               <button class="save-btn" onclick="saveEdit('${c.id}',event)">Enregistrer</button>
               <button class="cancel-btn" onclick="cancelEdit('${c.id}',event)">Annuler</button>
+              <button class="cancel-btn" onclick="deleteCulture('${c.id}',event)" style="margin-left:auto;color:var(--red);border-color:rgba(248,113,113,.4)">🗑 Supprimer</button>
             </div>
           </div>
         </td>
