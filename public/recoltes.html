@@ -495,6 +495,10 @@ td:first-child { color: var(--text); font-weight: 500; }
 
 .tab-section { display: none; }
 .tab-section.active { display: block; }
+.top-tab-nav{display:flex;gap:4px;margin-bottom:12px;background:var(--bg2);padding:3px;border-radius:8px;border:1px solid var(--border)}
+.top-tnav{flex:1;padding:7px 6px;border:none;background:transparent;color:var(--text-muted);font-family:'Karla',sans-serif;font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s;font-weight:500}
+.top-tnav.active{background:var(--bg);color:var(--accent);border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.top-tab-section{display:none}.top-tab-section.active{display:block}
 
 /* TOAST */
 .toast {
@@ -660,25 +664,23 @@ td:first-child { color: var(--text); font-weight: 500; }
   <!-- TOP PLANTES -->
   <div class="section">
     <div class="stitle">🏆 Top rendement</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
-      <div>
-        <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:8px;display:flex;align-items:center;gap:6px">
-          <span style="width:8px;height:8px;border-radius:50%;background:var(--blue);display:inline-block"></span>🏠 Serre
-        </div>
-        <div class="top-list" id="topSerre"></div>
-      </div>
-      <div>
-        <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;display:flex;align-items:center;gap:6px">
-          <span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block"></span>🪴 Bacs surélevés
-        </div>
-        <div class="top-list" id="topBacs"></div>
-      </div>
-      <div>
-        <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px">
-          <span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>🌳 Jardin
-        </div>
-        <div class="top-list" id="topJardin"></div>
-      </div>
+    <div class="top-tab-nav">
+      <button class="top-tnav active" onclick="showTop('serre',this)">🏠 Serre</button>
+      <button class="top-tnav" onclick="showTop('bacs',this)">🪴 Bacs</button>
+      <button class="top-tnav" onclick="showTop('jardin',this)">🌳 Jardin</button>
+      <button class="top-tnav" onclick="showTop('tous',this)">🌿 Tous lieux</button>
+    </div>
+    <div class="top-tab-section active" id="top-serre">
+      <div class="top-list" id="topSerre"></div>
+    </div>
+    <div class="top-tab-section" id="top-bacs">
+      <div class="top-list" id="topBacs"></div>
+    </div>
+    <div class="top-tab-section" id="top-jardin">
+      <div class="top-list" id="topJardin"></div>
+    </div>
+    <div class="top-tab-section" id="top-tous">
+      <div class="top-list" id="topTous"></div>
     </div>
   </div>
 
@@ -1205,20 +1207,23 @@ function renderChartRendement() {
 }
 
 // ── TOP PLANTES ──────────────────────────────────────────────
-function renderTopLieu(lieu, containerId, accentColor) {
+function renderTopLieu(lieuFilter, containerId, accentColor) {
   const el = document.getElementById(containerId);
   if (!el) return;
 
-  // Agréger par végétal pour ce lieu uniquement
   const byVeg = {};
-  recoltes.filter(r => r.lieu === lieu).forEach(r => {
+  const recFiltrees = lieuFilter === 'tous'
+    ? recoltes
+    : recoltes.filter(r => r.lieu === lieuFilter);
+
+  recFiltrees.forEach(r => {
     byVeg[r.vegetal] = (byVeg[r.vegetal] || 0) + r.poids;
   });
 
   const sorted = Object.entries(byVeg).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   if (!sorted.length) {
-    el.innerHTML = '<div style="font-size:.75rem;color:var(--text-muted);padding:10px 0;font-style:italic">Aucune récolte enregistrée</div>';
+    el.innerHTML = '<div style="font-size:.75rem;color:var(--text-muted);padding:10px 0;font-style:italic">Aucune récolte enregistrée pour ce lieu.</div>';
     return;
   }
 
@@ -1226,15 +1231,16 @@ function renderTopLieu(lieu, containerId, accentColor) {
   const ranks = ['gold', 'silver', 'bronze', '', ''];
 
   el.innerHTML = sorted.map(([v, p], i) => {
-    const fam    = FAMILLES[v] || '';
-    const rPied  = computeRendementPied(v, p);
+    const fam      = FAMILLES[v] || '';
+    const rPied    = computeRendementPied(v, p);
     const nbPlants = getNbPlants(v);
     const rendLabel = rPied
       ? ` · <span style="color:${accentColor};font-weight:500">${rPied}g/plant</span>`
       : nbPlants
         ? ''
         : ' · <span style="color:var(--text-muted);font-size:.6rem">plants non renseignés</span>';
-    return `<div class="top-item" onclick="window.location='/variete.html?v='+encodeURIComponent('${v.replace(/'/g,"\'")}')}" style="cursor:pointer;border-color:${i===0?accentColor+'40':'var(--border)'}">
+    const vEnc = encodeURIComponent(v);
+    return `<div class="top-item" onclick="window.location='/variete.html?v=${vEnc}'" style="cursor:pointer;border-color:${i===0 ? accentColor+'40' : 'var(--border)'}">
       <div class="top-rank ${ranks[i]}">${i + 1}</div>
       <div style="flex:1">
         <div class="top-name">${v}</div>
@@ -1246,10 +1252,22 @@ function renderTopLieu(lieu, containerId, accentColor) {
   }).join('');
 }
 
+const TOP_ACCENT = { serre:'var(--blue)', bacs:'var(--amber)', jardin:'var(--green)', tous:'var(--accent)' };
+const TOP_IDS    = { serre:'topSerre', bacs:'topBacs', jardin:'topJardin', tous:'topTous' };
+let currentTopLieu = 'serre';
+
+function showTop(lieu, btn) {
+  document.querySelectorAll('.top-tab-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.top-tnav').forEach(t => t.classList.remove('active'));
+  document.getElementById('top-' + lieu).classList.add('active');
+  btn.classList.add('active');
+  currentTopLieu = lieu;
+  renderTopLieu(lieu, TOP_IDS[lieu], TOP_ACCENT[lieu]);
+}
+
 function renderTop() {
-  renderTopLieu('serre',  'topSerre',  'var(--blue)');
-  renderTopLieu('bacs',   'topBacs',   'var(--amber)');
-  renderTopLieu('jardin', 'topJardin', 'var(--green)');
+  // Rendre uniquement l'onglet actif (les autres se chargent au clic)
+  renderTopLieu(currentTopLieu, TOP_IDS[currentTopLieu], TOP_ACCENT[currentTopLieu]);
 }
 
 // ── TABLEAU ──────────────────────────────────────────────────
