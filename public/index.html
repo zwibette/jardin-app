@@ -154,17 +154,18 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
       <div class="loading" style="grid-column:1/-1"><div class="loading-ring"></div>Lecture capteurs…</div>
     </div>
 
-    <!-- Graphique Température avec sélecteur de plage -->
+    <!-- Graphique Température -->
     <div class="chart-card">
       <div class="chart-title">
-        <span id="chartTempTitle">Température serre — 24 heures</span>
+        <span>Température serre</span>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div class="range-selector">
-            <button class="range-btn active" onclick="setRange('24h',this)">24h</button>
-            <button class="range-btn" onclick="setRange('7d',this)">7j</button>
-            <button class="range-btn" onclick="setRange('30d',this)">30j</button>
+            <button class="range-btn active" onclick="setRangeTemp('24h',this)">24h</button>
+            <button class="range-btn" onclick="setRangeTemp('3d',this)">3j</button>
+            <button class="range-btn" onclick="setRangeTemp('7d',this)">7j</button>
+            <button class="range-btn" onclick="setRangeTemp('30d',this)">30j</button>
           </div>
-          <span id="chartHistoryInfo" class="history-info">—</span>
+          <span id="chartTempInfo" class="history-info">—</span>
         </div>
       </div>
       <div class="chart-wrap">
@@ -173,11 +174,19 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
       </div>
     </div>
 
-    <!-- Graphique Humidité (suit automatiquement la même plage) -->
+    <!-- Graphique Humidité -->
     <div class="chart-card mb">
       <div class="chart-title">
-        <span id="chartHumTitle">Humidité serre — 24 heures</span>
-        <span class="ts" id="chartLastUpdate">—</span>
+        <span>Humidité serre</span>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div class="range-selector">
+            <button class="range-btn active" onclick="setRangeHum('24h',this)">24h</button>
+            <button class="range-btn" onclick="setRangeHum('3d',this)">3j</button>
+            <button class="range-btn" onclick="setRangeHum('7d',this)">7j</button>
+            <button class="range-btn" onclick="setRangeHum('30d',this)">30j</button>
+          </div>
+          <span id="chartHumInfo" class="history-info">—</span>
+        </div>
       </div>
       <div class="chart-wrap">
         <canvas id="chartHum"></canvas>
@@ -291,8 +300,7 @@ const DEVICE_PROG_LED_ID    = 'bf2de5244b7a2128ean6nq';
 let devices = [];
 let lastRefresh = null;
 let charts = { temp: null, hum: null };
-let currentRange = '24h';
-let isLoadingChart = false;
+let isLoadingChart = false; // legacy — remplacé par isLoadingTemp/isLoadingHum
 
 // ── localStorage — backup local + collecte ───────────────────
 const HISTORY_KEY = 'jardin_history_v1';
@@ -311,10 +319,10 @@ function addLocalPoint(temp, hum) {
   saveLocal(h);
 }
 function filterLocal(history, range) {
-  const ms = { '24h': 86400000, '7d': 604800000, '30d': 2592000000 };
+  const ms = { '24h': 86400000, '3d': 259200000, '7d': 604800000, '30d': 2592000000 };
   const cutoff = Date.now() - (ms[range] || ms['24h']);
   const filtered = history.filter(p => new Date(p.t).getTime() >= cutoff);
-  const step = range === '7d' ? 3 : range === '30d' ? 12 : 1;
+  const step = range === '30d' ? 12 : range === '7d' ? 3 : 1;
   return filtered.filter((_, i) => i % step === 0);
 }
 
@@ -333,63 +341,109 @@ async function fetchHistory(range) {
   return data;
 }
 
-// ── Sélecteur de plage ───────────────────────────────────────
-function setRange(range, btn) {
-  if (isLoadingChart) return;
-  currentRange = range;
-  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+// ── Sélecteurs de plage indépendants ────────────────────────
+let currentRangeTemp = '24h';
+let currentRangeHum  = '24h';
+let isLoadingTemp = false;
+let isLoadingHum  = false;
+
+function setRangeTemp(range, btn) {
+  if (isLoadingTemp) return;
+  currentRangeTemp = range;
+  // Réinitialiser uniquement les boutons du graphique temp
+  btn.closest('.range-selector').querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const labels = { '24h': '24 heures', '7d': '7 jours', '30d': '30 jours' };
-  document.getElementById('chartTempTitle').textContent = 'Température serre — ' + labels[range];
-  document.getElementById('chartHumTitle').textContent  = 'Humidité serre — ' + labels[range];
-  loadAndRenderCharts(range);
+  loadAndRenderTemp(range);
 }
 
-async function loadAndRenderCharts(range) {
-  if (isLoadingChart) return;
-  isLoadingChart = true;
+function setRangeHum(range, btn) {
+  if (isLoadingHum) return;
+  currentRangeHum = range;
+  btn.closest('.range-selector').querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadAndRenderHum(range);
+}
+
+async function fetchHistoryData(range) {
+  // Adapter 3j → sheets stocke en 24h/7d/30d — on filtre côté client
+  const apiRange = range === '3d' ? '7d' : range;
+  const data = await fetchHistory(apiRange);
+  if (range === '3d' && data.data) {
+    const cutoff = Date.now() - 3 * 86400000;
+    data.data = data.data.filter(p => new Date(p.t).getTime() >= cutoff);
+  }
+  return data;
+}
+
+async function loadAndRenderTemp(range) {
+  if (isLoadingTemp) return;
+  isLoadingTemp = true;
   document.getElementById('overlayTemp').style.display = 'flex';
-  document.getElementById('overlayHum').style.display  = 'flex';
-  const infoEl = document.getElementById('chartHistoryInfo');
+  const infoEl = document.getElementById('chartTempInfo');
   infoEl.className = 'history-info history-loading';
   infoEl.textContent = 'Chargement…';
 
+  let history = [];
   try {
-    const data = await fetchHistory(range);
+    const data = await fetchHistoryData(range);
     if (data.data && data.data.length > 0) {
-      renderCharts(data.data);
+      history = data.data;
       infoEl.className = 'history-info';
-      infoEl.textContent = data.data.length + ' pts · ' + data.total + ' total';
+      infoEl.textContent = history.length + ' pts';
     } else {
-      // Fallback localStorage
-      const local = filterLocal(loadLocal(), range);
-      if (local.length > 0) {
-        renderCharts(local);
-        infoEl.className = 'history-info';
-        infoEl.textContent = local.length + ' pts (local)';
-      } else {
-        renderChartsEmpty();
-        infoEl.className = 'history-info history-err';
-        infoEl.textContent = 'Aucune donnée';
-      }
+      history = filterLocal(loadLocal(), range);
+      infoEl.className = 'history-info';
+      infoEl.textContent = history.length + ' pts (local)';
     }
   } catch(e) {
-    // Fallback localStorage
-    const local = filterLocal(loadLocal(), range);
-    if (local.length > 0) {
-      renderCharts(local);
-      infoEl.className = 'history-info';
-      infoEl.textContent = local.length + ' pts (local)';
-    } else {
-      renderChartsEmpty();
-      infoEl.className = 'history-info history-err';
-      infoEl.textContent = 'Erreur chargement';
-    }
+    history = filterLocal(loadLocal(), range);
+    infoEl.className = history.length ? 'history-info' : 'history-info history-err';
+    infoEl.textContent = history.length ? history.length + ' pts (local)' : 'Erreur';
   }
 
+  renderChartTemp(history, range);
   document.getElementById('overlayTemp').style.display = 'none';
-  document.getElementById('overlayHum').style.display  = 'none';
-  isLoadingChart = false;
+  isLoadingTemp = false;
+}
+
+async function loadAndRenderHum(range) {
+  if (isLoadingHum) return;
+  isLoadingHum = true;
+  document.getElementById('overlayHum').style.display = 'flex';
+  const infoEl = document.getElementById('chartHumInfo');
+  infoEl.className = 'history-info history-loading';
+  infoEl.textContent = 'Chargement…';
+
+  let history = [];
+  try {
+    const data = await fetchHistoryData(range);
+    if (data.data && data.data.length > 0) {
+      history = data.data;
+      infoEl.className = 'history-info';
+      infoEl.textContent = history.length + ' pts';
+    } else {
+      history = filterLocal(loadLocal(), range);
+      infoEl.className = 'history-info';
+      infoEl.textContent = history.length + ' pts (local)';
+    }
+  } catch(e) {
+    history = filterLocal(loadLocal(), range);
+    infoEl.className = history.length ? 'history-info' : 'history-info history-err';
+    infoEl.textContent = history.length ? history.length + ' pts (local)' : 'Erreur';
+  }
+
+  renderChartHum(history, range);
+  document.getElementById('overlayHum').style.display = 'none';
+  isLoadingHum = false;
+}
+
+// Charge les deux graphiques (appelé au refresh global)
+async function loadAndRenderCharts(range) {
+  // range ignoré — chaque graphique a sa propre plage
+  await Promise.all([
+    loadAndRenderTemp(currentRangeTemp),
+    loadAndRenderHum(currentRangeHum),
+  ]);
 }
 
 // ── Navigation ───────────────────────────────────────────────
@@ -443,7 +497,7 @@ function fmtTick(dateStr, range) {
   try {
     const d = new Date(dateStr);
     if (range === '30d') return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
-    if (range === '7d')  return d.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit'}) + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    if (range === '7d' || range === '3d') return d.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit'}) + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   } catch(e) { return ''; }
 }
@@ -486,14 +540,9 @@ function renderSerreMetrics() {
 }
 
 // ── Graphiques ───────────────────────────────────────────────
-function renderCharts(history) {
-  const labels = history.map(p => fmtTick(p.t, currentRange));
-  const temps  = history.map(p => p.temp);
-  const hums   = history.map(p => p.hum);
-  const maxTicks = currentRange === '30d' ? 10 : currentRange === '7d' ? 14 : 8;
-  const ptRadius = history.length > 100 ? 0 : 2;
-
-  const opts = (color, unit) => ({
+function chartOpts(color, unit, range) {
+  const maxTicks = range === '30d' ? 10 : (range === '7d' || range === '3d') ? 10 : 8;
+  return {
     responsive: true, maintainAspectRatio: false, animation: false,
     plugins: { legend: { display: false }, tooltip: {
       backgroundColor: '#1a2e1c', borderColor: '#2a4030', borderWidth: 1,
@@ -504,32 +553,51 @@ function renderCharts(history) {
       x: { ticks: { color:'#4a6b52', font:{size:9}, maxTicksLimit: maxTicks, maxRotation: 30 }, grid: { color:'rgba(42,64,48,.4)' } },
       y: { ticks: { color:'#4a6b52', font:{size:9}, callback: v => v?.toFixed(1) + unit }, grid: { color:'rgba(42,64,48,.4)' } }
     }
-  });
-  const ds = (data, color) => ({
-    data, borderColor: color, backgroundColor: color + '18',
-    borderWidth: 2, pointRadius: ptRadius, pointBackgroundColor: color, fill: true, tension: 0.4
-  });
-
-  const ctxT = document.getElementById('chartTemp').getContext('2d');
-  if (charts.temp) charts.temp.destroy();
-  charts.temp = new Chart(ctxT, { type:'line', data:{ labels, datasets:[ds(temps,'#4ade80')] }, options: opts('#4ade80','°C') });
-
-  const ctxH = document.getElementById('chartHum').getContext('2d');
-  if (charts.hum) charts.hum.destroy();
-  charts.hum = new Chart(ctxH, { type:'line', data:{ labels, datasets:[ds(hums,'#60a5fa')] }, options: opts('#60a5fa','%') });
-
-  document.getElementById('chartLastUpdate').textContent = history.length ? fmt(history[history.length-1].t) : '—';
+  };
+}
+function chartDs(data, color, history) {
+  return { data, borderColor: color, backgroundColor: color + '18',
+    borderWidth: 2, pointRadius: history.length > 100 ? 0 : 2,
+    pointBackgroundColor: color, fill: true, tension: 0.4 };
 }
 
+function renderChartTemp(history, range) {
+  const labels = history.map(p => fmtTick(p.t, range));
+  const temps  = history.map(p => p.temp);
+  const ctx = document.getElementById('chartTemp').getContext('2d');
+  if (charts.temp) charts.temp.destroy();
+  if (!history.length) { renderChartEmpty(ctx, 'temp'); return; }
+  charts.temp = new Chart(ctx, { type:'line',
+    data:{ labels, datasets:[chartDs(temps,'#4ade80',history)] },
+    options: chartOpts('#4ade80','°C', range) });
+}
+
+function renderChartHum(history, range) {
+  const labels = history.map(p => fmtTick(p.t, range));
+  const hums   = history.map(p => p.hum);
+  const ctx = document.getElementById('chartHum').getContext('2d');
+  if (charts.hum) charts.hum.destroy();
+  if (!history.length) { renderChartEmpty(ctx, 'hum'); return; }
+  charts.hum = new Chart(ctx, { type:'line',
+    data:{ labels, datasets:[chartDs(hums,'#60a5fa',history)] },
+    options: chartOpts('#60a5fa','%', range) });
+}
+
+function renderChartEmpty(ctx, key) {
+  if (charts[key]) { charts[key].destroy(); charts[key] = null; }
+  ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+  ctx.fillStyle = '#4a6b52'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('Aucune donnée pour cette période', ctx.canvas.width/2, ctx.canvas.height/2);
+}
+
+// Compat legacy (appelé depuis le setInterval 30min)
+function renderCharts(history) {
+  renderChartTemp(history, currentRangeTemp);
+  renderChartHum(history, currentRangeHum);
+}
 function renderChartsEmpty() {
-  ['chartTemp','chartHum'].forEach((id, i) => {
-    const key = i === 0 ? 'temp' : 'hum';
-    if (charts[key]) { charts[key].destroy(); charts[key] = null; }
-    const ctx = document.getElementById(id).getContext('2d');
-    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
-    ctx.fillStyle = '#4a6b52'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
-    ctx.fillText('Aucune donnée pour cette période', ctx.canvas.width/2, ctx.canvas.height/2);
-  });
+  renderChartEmpty(document.getElementById('chartTemp').getContext('2d'), 'temp');
+  renderChartEmpty(document.getElementById('chartHum').getContext('2d'), 'hum');
 }
 
 // ── Commandes dashboard ──────────────────────────────────────
@@ -831,7 +899,8 @@ setInterval(() => {
     if (temp !== null && hum !== null) {
       addLocalPoint(temp, hum);
       pushToSheets(temp, hum);
-      loadAndRenderCharts(currentRange);
+      loadAndRenderTemp(currentRangeTemp);
+      loadAndRenderHum(currentRangeHum);
     }
   }
 }, 30 * 60 * 1000);
