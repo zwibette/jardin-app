@@ -523,8 +523,12 @@ function renderCalendrier() {
       const cultureCell = document.createElement('div');
       cultureCell.className = 'cal-culture';
       const lieuIcons = { serre:'🏠', bacs:'🪴', jardin:'🌳' };
-      cultureCell.innerHTML = `<span style="font-size:.8rem">${lieuIcons[c.lieu]||''}</span><span class="culture-name">${c.culture}</span>`;
-      cultureCell.title = c.notes || '';
+      cultureCell.innerHTML = `<span style="font-size:.8rem">${lieuIcons[c.lieu]||''}</span><span class="culture-name" style="text-decoration:underline dotted;text-decoration-color:var(--border2)">${c.culture}</span>`;
+      cultureCell.title = (c.notes ? c.notes + ' — ' : '') + 'Cliquer pour voir la fiche';
+      cultureCell.style.cursor = 'pointer';
+      cultureCell.addEventListener('click', () => {
+        window.location.href = '/variete.html?v=' + encodeURIComponent(c.culture);
+      });
       row.appendChild(cultureCell);
 
       // Cellules mois (conteneur unique positionné en relatif)
@@ -812,7 +816,7 @@ function renderListe() {
           onmouseout="this.style.background=''"
           onclick="toggleEditRow('${c.id}',event)">
         <td style="padding:9px 12px;color:var(--text);font-weight:500">
-          ${lieuIcons[c.lieu]||''} ${c.culture}
+          <span style="cursor:pointer;text-decoration:underline dotted;text-decoration-color:var(--border2)" onclick="event.stopPropagation();window.location.href='/variete.html?v='+encodeURIComponent('${c.culture}')">${lieuIcons[c.lieu]||''} ${c.culture}</span>
           ${hasReel ? '<span style="margin-left:6px;font-size:.6rem;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.3);padding:1px 5px;border-radius:8px">✓ récolté</span>' : ''}
         </td>
         <td style="padding:9px 12px;color:var(--text-dim);font-size:.75rem">${c.famille||'—'}</td>
