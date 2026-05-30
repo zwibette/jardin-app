@@ -104,6 +104,11 @@ main{max-width:1100px;margin:0 auto;padding:20px 16px 60px;position:relative;z-i
 /* DELETE BTN */
 .del-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.85rem;padding:2px 4px;border-radius:4px;line-height:1;transition:color .2s}
 .del-btn:hover{color:var(--red)}
+.th-sort{cursor:pointer;user-select:none;white-space:nowrap}
+.th-sort:hover{color:var(--green)}
+.th-sort.active{color:var(--accent)}
+.sort-arrow{margin-left:4px;font-size:.6rem;opacity:.6}
+.th-sort.active .sort-arrow{opacity:1}
 .edit-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:4px;line-height:1;transition:color .2s;font-family:'Karla',sans-serif}
 .edit-btn:hover{color:var(--accent)}
 .edit-row{display:none;background:var(--bg2);border-top:1px dashed var(--border2)}
@@ -760,6 +765,32 @@ function saveEdit(id, e) {
 }
 
 // ── LISTE DES CULTURES ────────────────────────────────────────
+// ── TRI LISTE CULTURES ───────────────────────────────────────
+let sortCol = 'culture';
+let sortDir = 1; // 1=asc, -1=desc
+
+function sortListe(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  renderListe();
+}
+
+function sortedCultures() {
+  return [...cultures].sort((a, b) => {
+    let va, vb;
+    switch(sortCol) {
+      case 'culture':  va = a.culture||'';      vb = b.culture||'';      break;
+      case 'famille':  va = a.famille||'';      vb = b.famille||'';      break;
+      case 'semis':    va = a.semis||'';        vb = b.semis||'';        break;
+      case 'recolte':  va = a.recolteDebut||''; vb = b.recolteDebut||''; break;
+      case 'plants':   va = a.nbPlants||0;      vb = b.nbPlants||0;      break;
+      default:         va = ''; vb = '';
+    }
+    if (typeof va === 'number') return (va - vb) * sortDir;
+    return va.localeCompare(vb, 'fr') * sortDir;
+  });
+}
+
 function renderListe() {
   const el = document.getElementById('listeCultures');
   if (!cultures.length) { el.innerHTML = '<div class="empty">Aucune culture planifiée.</div>'; return; }
@@ -768,7 +799,7 @@ function renderListe() {
   const familles = ['SALADES','BLETTES & ÉPINARDS','CHOUX','LÉGUMES RACINES','TOMATES','AUBERGINES',
     'POIVRONS & PIMENTS','COURGETTES','CONCOMBRES','MELONS','AROMATIQUES','LÉGUMES ETE'];
 
-  const rows = cultures.map(c => {
+  const rows = sortedCultures().map(c => {
     const recs   = getRecoltesPourCulture(c.culture);
     const hasReel = recs.length > 0;
     const plantsBadge = c.nbPlants
@@ -855,11 +886,11 @@ function renderListe() {
     <table style="width:100%;border-collapse:collapse;font-size:.78rem">
       <thead style="background:var(--bg2);border-bottom:1px solid var(--border)">
         <tr>
-          <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Culture</th>
-          <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Famille</th>
-          <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Semis</th>
-          <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Récolte prévue</th>
-          <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Plants</th>
+          <th class="th-sort ${sortCol==='culture'?'active':''}" onclick="sortListe('culture')" style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Culture<span class="sort-arrow">${sortCol==='culture'?(sortDir===1?'▲':'▼'):'⇅'}</span></th>
+          <th class="th-sort ${sortCol==='famille'?'active':''}" onclick="sortListe('famille')" style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Famille<span class="sort-arrow">${sortCol==='famille'?(sortDir===1?'▲':'▼'):'⇅'}</span></th>
+          <th class="th-sort ${sortCol==='semis'?'active':''}" onclick="sortListe('semis')" style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Semis<span class="sort-arrow">${sortCol==='semis'?(sortDir===1?'▲':'▼'):'⇅'}</span></th>
+          <th class="th-sort ${sortCol==='recolte'?'active':''}" onclick="sortListe('recolte')" style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Récolte prévue<span class="sort-arrow">${sortCol==='recolte'?(sortDir===1?'▲':'▼'):'⇅'}</span></th>
+          <th class="th-sort ${sortCol==='plants'?'active':''}" onclick="sortListe('plants')" style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Plants<span class="sort-arrow">${sortCol==='plants'?(sortDir===1?'▲':'▼'):'⇅'}</span></th>
           <th style="padding:8px 8px;text-align:right;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Actions</th>
         </tr>
       </thead>
