@@ -660,7 +660,26 @@ td:first-child { color: var(--text); font-weight: 500; }
   <!-- TOP PLANTES -->
   <div class="section">
     <div class="stitle">🏆 Top rendement</div>
-    <div class="top-list" id="topList"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+      <div>
+        <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--blue);display:inline-block"></span>🏠 Serre
+        </div>
+        <div class="top-list" id="topSerre"></div>
+      </div>
+      <div>
+        <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block"></span>🪴 Bacs surélevés
+        </div>
+        <div class="top-list" id="topBacs"></div>
+      </div>
+      <div>
+        <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>🌳 Jardin
+        </div>
+        <div class="top-list" id="topJardin"></div>
+      </div>
+    </div>
   </div>
 
   <!-- JOURNAL RÉCOLTES -->
@@ -1186,26 +1205,51 @@ function renderChartRendement() {
 }
 
 // ── TOP PLANTES ──────────────────────────────────────────────
-function renderTop() {
+function renderTopLieu(lieu, containerId, accentColor) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  // Agréger par végétal pour ce lieu uniquement
   const byVeg = {};
-  recoltes.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
-  const sorted = Object.entries(byVeg).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const max = sorted[0]?.[1] || 1;
-  const ranks = ['gold','silver','bronze','',''];
-  document.getElementById('topList').innerHTML = sorted.map(([v,p],i) => {
-    const fam = FAMILLES[v] || '';
-    const rPied = computeRendementPied(v, p);
+  recoltes.filter(r => r.lieu === lieu).forEach(r => {
+    byVeg[r.vegetal] = (byVeg[r.vegetal] || 0) + r.poids;
+  });
+
+  const sorted = Object.entries(byVeg).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  if (!sorted.length) {
+    el.innerHTML = '<div style="font-size:.75rem;color:var(--text-muted);padding:10px 0;font-style:italic">Aucune récolte enregistrée</div>';
+    return;
+  }
+
+  const max   = sorted[0][1];
+  const ranks = ['gold', 'silver', 'bronze', '', ''];
+
+  el.innerHTML = sorted.map(([v, p], i) => {
+    const fam    = FAMILLES[v] || '';
+    const rPied  = computeRendementPied(v, p);
     const nbPlants = getNbPlants(v);
-    return `<div class="top-item" onclick="window.location='/variete.html?v='+encodeURIComponent(v)" style="cursor:pointer">
-      <div class="top-rank ${ranks[i]}">${i+1}</div>
+    const rendLabel = rPied
+      ? ` · <span style="color:${accentColor};font-weight:500">${rPied}g/plant</span>`
+      : nbPlants
+        ? ''
+        : ' · <span style="color:var(--text-muted);font-size:.6rem">plants non renseignés</span>';
+    return `<div class="top-item" onclick="window.location='/variete.html?v='+encodeURIComponent('${v.replace(/'/g,"\'")}')}" style="cursor:pointer;border-color:${i===0?accentColor+'40':'var(--border)'}">
+      <div class="top-rank ${ranks[i]}">${i + 1}</div>
       <div style="flex:1">
         <div class="top-name">${v}</div>
-        <div class="top-sub">${fam}${rPied ? ' · <span style="color:var(--green)">' + rPied + 'g/pied</span>' : (nbPlants ? '' : ' · <span style="color:var(--text-muted);font-size:.6rem">nb plants non renseigné</span>')}</div>
-        <div class="bar-wrap"><div class="bar-fill" style="width:${(p/max*100).toFixed(0)}%"></div></div>
+        <div class="top-sub">${fam}${rendLabel}</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${(p / max * 100).toFixed(0)}%;background:${accentColor}"></div></div>
       </div>
-      <div class="top-val">${fmtKg(p)}</div>
+      <div class="top-val" style="color:${accentColor}">${fmtKg(p)}</div>
     </div>`;
   }).join('');
+}
+
+function renderTop() {
+  renderTopLieu('serre',  'topSerre',  'var(--blue)');
+  renderTopLieu('bacs',   'topBacs',   'var(--amber)');
+  renderTopLieu('jardin', 'topJardin', 'var(--green)');
 }
 
 // ── TABLEAU ──────────────────────────────────────────────────
