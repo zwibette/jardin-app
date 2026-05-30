@@ -224,7 +224,7 @@ main{max-width:1100px;margin:0 auto;padding:20px 16px 60px;position:relative;z-i
               <option>SALADES</option><option>BLETTES & ÉPINARDS</option><option>CHOUX</option>
               <option>LÉGUMES RACINES</option><option>TOMATES</option><option>AUBERGINES</option>
               <option>POIVRONS & PIMENTS</option><option>COURGETTES</option><option>CONCOMBRES</option>
-              <option>MELONS</option><option>AROMATIQUES</option><option>LÉGUMES D'ÉTÉ</option>
+              <option>MELONS</option><option>AROMATIQUES</option><option>LÉGUMES ETE</option>
             </select>
           </div>
           <div class="field">
@@ -274,7 +274,7 @@ const DUREES_FAMILLE = {
   'CONCOMBRES':           { semisPlanteation: 25, plantationRecolte: 45, dureeRecolte: 75 },
   'MELONS':               { semisPlanteation: 30, plantationRecolte: 75, dureeRecolte: 60 },
   'AROMATIQUES':          { semisPlanteation: 30, plantationRecolte: 30, dureeRecolte: 150 },
-  "LÉGUMES D'ÉTÉ":        { semisPlanteation: 20, plantationRecolte: 60, dureeRecolte: 60 },
+  "LÉGUMES ETE":          { semisPlanteation: 20, plantationRecolte: 60, dureeRecolte: 60 },
 };
 
 function addDays(dateStr, days) {
@@ -316,7 +316,7 @@ const CULTURES_DEFAUT = [
   { id:'d18', nbPlants:null, culture:'Pastèque baby sugar', famille:'MELONS', lieu:'jardin', semis:'2026-04-01', plantation:'2026-05-01', recolteDebut:'2026-08-01', recolteFin:'2026-09-30', notes:'' },
   { id:'d19', nbPlants:null, culture:'Basilic prospéra', famille:'AROMATIQUES', lieu:'serre', semis:'2026-03-01', plantation:'2026-04-01', recolteDebut:'2026-05-01', recolteFin:'2026-10-31', notes:'' },
   { id:'d20', nbPlants:null, culture:'Cornichon diamant', famille:'CONCOMBRES', lieu:'serre', semis:'2026-03-15', plantation:'2026-04-20', recolteDebut:'2026-05-15', recolteFin:'2026-09-15', notes:'' },
-  { id:'d21', nbPlants:null, culture:'Mange-tout norli', famille:'LÉGUMES D\'ÉTÉ', lieu:'jardin', semis:'2026-03-01', plantation:null, recolteDebut:'2026-05-01', recolteFin:'2026-07-15', notes:'Semis direct' },
+  { id:'d21', nbPlants:null, culture:'Mange-tout norli', famille:'LÉGUMES ETE', lieu:'jardin', semis:'2026-03-01', plantation:null, recolteDebut:'2026-05-01', recolteFin:'2026-07-15', notes:'Semis direct' },
   { id:'d22', nbPlants:null, culture:'Betterave chiogga', famille:'LÉGUMES RACINES', lieu:'serre', semis:'2025-11-01', plantation:null, recolteDebut:'2026-02-01', recolteFin:'2026-04-30', notes:'' },
 ];
 
@@ -766,7 +766,7 @@ function renderListe() {
 
   const lieuIcons = { serre:'🏠', bacs:'🪴', jardin:'🌳' };
   const familles = ['SALADES','BLETTES & ÉPINARDS','CHOUX','LÉGUMES RACINES','TOMATES','AUBERGINES',
-    'POIVRONS & PIMENTS','COURGETTES','CONCOMBRES','MELONS','LÉGUMES D'ÉTÉ','AROMATIQUES'];
+    'POIVRONS & PIMENTS','COURGETTES','CONCOMBRES','MELONS','AROMATIQUES','LÉGUMES ETE'];
 
   const rows = cultures.map(c => {
     const recs   = getRecoltesPourCulture(c.culture);
