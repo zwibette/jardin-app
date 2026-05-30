@@ -104,6 +104,20 @@ main{max-width:1100px;margin:0 auto;padding:20px 16px 60px;position:relative;z-i
 /* DELETE BTN */
 .del-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.85rem;padding:2px 4px;border-radius:4px;line-height:1;transition:color .2s}
 .del-btn:hover{color:var(--red)}
+.edit-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:4px;line-height:1;transition:color .2s;font-family:'Karla',sans-serif}
+.edit-btn:hover{color:var(--accent)}
+.edit-row{display:none;background:var(--bg2);border-top:1px dashed var(--border2)}
+.edit-row.open{display:table-row}
+.edit-inner{padding:14px 16px}
+.edit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:10px}
+.edit-field{display:flex;flex-direction:column;gap:3px}
+.edit-label{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500}
+.edit-input{background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text);outline:none;transition:border-color .2s;-webkit-appearance:none;width:100%}
+.edit-input:focus{border-color:var(--green)}
+.edit-actions{display:flex;gap:8px;margin-top:4px}
+.save-btn{background:var(--green-mid);border:none;color:#0a120b;padding:7px 18px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;flex:1}
+.save-btn:hover{background:var(--green)}
+.cancel-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text-muted);padding:7px 14px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.78rem;cursor:pointer}
 
 /* TOAST */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green-mid);color:#0a120b;padding:10px 20px;border-radius:20px;font-size:.82rem;font-weight:500;z-index:1000;transition:transform .3s ease;box-shadow:0 4px 16px rgba(0,0,0,.2)}
@@ -185,19 +199,19 @@ main{max-width:1100px;margin:0 auto;padding:20px 16px 60px;position:relative;z-i
           </div>
           <div class="field">
             <label class="field-label">Date de semis</label>
-            <input type="date" id="inp-semis">
+            <input type="date" id="inp-semis" onchange="autoCalcDates()">
           </div>
           <div class="field">
             <label class="field-label">Date de plantation</label>
             <input type="date" id="inp-plantation" placeholder="Optionnel">
           </div>
           <div class="field">
-            <label class="field-label">Début récolte prévue</label>
-            <input type="date" id="inp-recolte-debut">
+            <label class="field-label">Début récolte prévue <span style="color:var(--accent);font-size:.55rem">auto</span></label>
+            <input type="date" id="inp-recolte-debut" placeholder="calculé auto">
           </div>
           <div class="field">
-            <label class="field-label">Fin récolte prévue</label>
-            <input type="date" id="inp-recolte-fin">
+            <label class="field-label">Fin récolte prévue <span style="color:var(--accent);font-size:.55rem">auto</span></label>
+            <input type="date" id="inp-recolte-fin" placeholder="calculé auto">
           </div>
           <div class="field">
             <label class="field-label">Nombre de plants</label>
@@ -205,7 +219,7 @@ main{max-width:1100px;margin:0 auto;padding:20px 16px 60px;position:relative;z-i
           </div>
           <div class="field">
             <label class="field-label">Famille</label>
-            <select id="inp-famille">
+            <select id="inp-famille" onchange="autoCalcDates()">
               <option value="">— Sélectionner</option>
               <option>SALADES</option><option>BLETTES & ÉPINARDS</option><option>CHOUX</option>
               <option>LÉGUMES RACINES</option><option>TOMATES</option><option>AUBERGINES</option>
@@ -218,6 +232,7 @@ main{max-width:1100px;margin:0 auto;padding:20px 16px 60px;position:relative;z-i
             <input type="text" id="inp-notes" placeholder="variété, observations…">
           </div>
         </div>
+        <div id="dates-hint" style="display:none;font-size:.65rem;color:var(--accent);margin-bottom:8px;padding:6px 10px;background:rgba(163,230,53,.06);border-radius:6px;border:1px solid rgba(163,230,53,.2)"></div>
         <button class="add-btn" onclick="addCulture()">Ajouter au calendrier</button>
       </div>
     </div>
@@ -244,6 +259,38 @@ const FAMILLES_COLORS = {
   'POIVRONS & PIMENTS':'#b85c2b','COURGETTES':'#8a7a3a','CONCOMBRES':'#3a7a6e',
   'MELONS':'#7a6a22','AROMATIQUES':'#5a7a3a','LÉGUMES D\'ÉTÉ':'#3a5a7a',
 };
+
+// ── DURÉES TYPIQUES PAR FAMILLE (semis → récolte, en jours) ──
+// Source : données maraîchage méditerranéen zone 9b
+const DUREES_FAMILLE = {
+  'SALADES':              { semisPlanteation: 30, plantationRecolte: 45, dureeRecolte: 60 },
+  'BLETTES & ÉPINARDS':   { semisPlanteation: 35, plantationRecolte: 50, dureeRecolte: 90 },
+  'CHOUX':                { semisPlanteation: 35, plantationRecolte: 60, dureeRecolte: 60 },
+  'LÉGUMES RACINES':      { semisPlanteation: 0,  plantationRecolte: 90, dureeRecolte: 60 },
+  'TOMATES':              { semisPlanteation: 50, plantationRecolte: 75, dureeRecolte: 120 },
+  'AUBERGINES':           { semisPlanteation: 60, plantationRecolte: 75, dureeRecolte: 90 },
+  'POIVRONS & PIMENTS':   { semisPlanteation: 60, plantationRecolte: 90, dureeRecolte: 120 },
+  'COURGETTES':           { semisPlanteation: 25, plantationRecolte: 45, dureeRecolte: 90 },
+  'CONCOMBRES':           { semisPlanteation: 25, plantationRecolte: 45, dureeRecolte: 75 },
+  'MELONS':               { semisPlanteation: 30, plantationRecolte: 75, dureeRecolte: 60 },
+  'AROMATIQUES':          { semisPlanteation: 30, plantationRecolte: 30, dureeRecolte: 150 },
+  "LÉGUMES D'ÉTÉ":        { semisPlanteation: 20, plantationRecolte: 60, dureeRecolte: 60 },
+};
+
+function addDays(dateStr, days) {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function calcDatesRecolte(semis, famille) {
+  const dur = DUREES_FAMILLE[famille];
+  if (!semis || !dur) return { debut: null, fin: null };
+  const totalJusquRecolte = dur.semisPlanteation + dur.plantationRecolte;
+  const debut = addDays(semis, totalJusquRecolte);
+  const fin   = addDays(debut, dur.dureeRecolte);
+  return { debut, fin };
+}
 
 // ── DONNÉES PRÉ-REMPLIES (vos cultures connues) ───────────────
 const CULTURES_DEFAUT = [
@@ -587,6 +634,28 @@ function renderComparatif() {
 }
 
 // ── AJOUT CULTURE ─────────────────────────────────────────────
+// Calcul automatique des dates de récolte depuis semis + famille
+function autoCalcDates() {
+  const semis   = document.getElementById('inp-semis').value;
+  const famille = document.getElementById('inp-famille').value;
+  if (!semis || !famille) return;
+  const { debut, fin } = calcDatesRecolte(semis, famille);
+  if (debut) {
+    const debutEl = document.getElementById('inp-recolte-debut');
+    const finEl   = document.getElementById('inp-recolte-fin');
+    // Ne pas écraser si l'utilisateur a déjà renseigné manuellement
+    if (!debutEl.value) debutEl.value = debut;
+    if (!finEl.value)   finEl.value   = fin;
+    // Afficher le hint
+    const hint = document.getElementById('dates-hint');
+    if (hint) {
+      const dur = DUREES_FAMILLE[famille];
+      hint.textContent = `Estimé : ${dur.semisPlanteation + dur.plantationRecolte}j du semis à la première récolte, fenêtre de ${dur.dureeRecolte}j`;
+      hint.style.display = 'block';
+    }
+  }
+}
+
 function addCulture() {
   const culture  = document.getElementById('inp-culture').value.trim();
   const lieu     = document.getElementById('inp-lieu').value;
@@ -598,16 +667,26 @@ function addCulture() {
   const nbPlants  = parseInt(document.getElementById('inp-nbplants').value) || null;
   const notes     = document.getElementById('inp-notes').value.trim();
 
-  if (!culture || !semis || !recolteDebut || !recolteFin) {
-    alert('Culture, date de semis et dates de récolte sont obligatoires.');
+  if (!culture || !semis) {
+    alert('Le nom de la culture et la date de semis sont obligatoires.');
     return;
+  }
+
+  // Calcul auto si champs récolte vides
+  let finalDebut = recolteDebut, finalFin = recolteFin;
+  if ((!finalDebut || !finalFin) && famille) {
+    const auto = calcDatesRecolte(semis, famille);
+    if (!finalDebut) finalDebut = auto.debut;
+    if (!finalFin)   finalFin   = auto.fin;
   }
 
   const newCulture = {
     id: 'c' + Date.now(),
     culture, lieu, semis,
     plantation: plantation || null,
-    recolteDebut, recolteFin, famille, nbPlants, notes,
+    recolteDebut: finalDebut, recolteFin: finalFin,
+    famille, nbPlants, notes,
+    datesAuto: (!recolteDebut && !recolteFin), // flag pour savoir si calculé auto
   };
 
   cultures.push(newCulture);
@@ -624,15 +703,60 @@ function addCulture() {
   document.getElementById('inp-recolte-fin').value = '';
   document.getElementById('inp-nbplants').value = '';
   document.getElementById('inp-notes').value = '';
+  const hint = document.getElementById('dates-hint');
+  if (hint) hint.style.display = 'none';
 }
 
 function deleteCulture(id, e) {
   e.stopPropagation();
+  if (!confirm('Supprimer cette culture du calendrier ?')) return;
   cultures = cultures.filter(c => c.id !== id);
   saveCalendrier(cultures);
   updateStats();
   renderListe();
   showToast('Culture supprimée');
+}
+
+function toggleEditRow(id, e) {
+  e.stopPropagation();
+  const row = document.getElementById('edit-row-' + id);
+  const isOpen = row.classList.contains('open');
+  // Fermer tous les autres
+  document.querySelectorAll('.edit-row.open').forEach(r => r.classList.remove('open'));
+  if (!isOpen) row.classList.add('open');
+}
+
+function cancelEdit(id, e) {
+  e.stopPropagation();
+  document.getElementById('edit-row-' + id).classList.remove('open');
+}
+
+function saveEdit(id, e) {
+  e.stopPropagation();
+  const idx = cultures.findIndex(c => c.id === id);
+  if (idx === -1) return;
+
+  const culture      = document.getElementById(`ec-culture-${id}`).value.trim();
+  const lieu         = document.getElementById(`ec-lieu-${id}`).value;
+  const famille      = document.getElementById(`ec-famille-${id}`).value;
+  const semis        = document.getElementById(`ec-semis-${id}`).value;
+  const plantation   = document.getElementById(`ec-plantation-${id}`).value || null;
+  const recolteDebut = document.getElementById(`ec-rdebut-${id}`).value;
+  const recolteFin   = document.getElementById(`ec-rfin-${id}`).value;
+  const nbPlants     = parseInt(document.getElementById(`ec-nbplants-${id}`).value) || null;
+  const notes        = document.getElementById(`ec-notes-${id}`).value.trim();
+
+  if (!culture || !semis || !recolteDebut || !recolteFin) {
+    alert('Culture, semis et dates de récolte sont obligatoires.'); return;
+  }
+
+  cultures[idx] = { ...cultures[idx], culture, lieu, famille, semis, plantation, recolteDebut, recolteFin, nbPlants, notes };
+  saveCalendrier(cultures);
+  updateStats();
+  renderListe();
+  // Rafraîchir le calendrier si visible
+  if (document.getElementById('tab-calendrier').classList.contains('active')) renderCalendrier();
+  showToast('✓ ' + culture + ' mis à jour');
 }
 
 // ── LISTE DES CULTURES ────────────────────────────────────────
@@ -641,32 +765,104 @@ function renderListe() {
   if (!cultures.length) { el.innerHTML = '<div class="empty">Aucune culture planifiée.</div>'; return; }
 
   const lieuIcons = { serre:'🏠', bacs:'🪴', jardin:'🌳' };
+  const familles = ['SALADES','BLETTES & ÉPINARDS','CHOUX','LÉGUMES RACINES','TOMATES','AUBERGINES',
+    'POIVRONS & PIMENTS','COURGETTES','CONCOMBRES','MELONS','LÉGUMES D'ÉTÉ','AROMATIQUES'];
+
+  const rows = cultures.map(c => {
+    const recs   = getRecoltesPourCulture(c.culture);
+    const hasReel = recs.length > 0;
+    const plantsBadge = c.nbPlants
+      ? `<span style="color:var(--green)">${c.nbPlants} plants</span>`
+      : `<span style="color:var(--amber);font-size:.68rem" title="Renseignez pour calculer g/pied">⚠ à renseigner</span>`;
+
+    return `
+      <tr id="view-row-${c.id}" style="border-bottom:1px solid var(--border);cursor:pointer"
+          onmouseover="this.style.background='var(--green-light)'"
+          onmouseout="this.style.background=''"
+          onclick="toggleEditRow('${c.id}',event)">
+        <td style="padding:9px 12px;color:var(--text);font-weight:500">
+          ${lieuIcons[c.lieu]||''} ${c.culture}
+          ${hasReel ? '<span style="margin-left:6px;font-size:.6rem;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.3);padding:1px 5px;border-radius:8px">✓ récolté</span>' : ''}
+        </td>
+        <td style="padding:9px 12px;color:var(--text-dim);font-size:.75rem">${c.famille||'—'}</td>
+        <td style="padding:9px 12px;color:var(--text-dim)">${fmtDate(c.semis)}</td>
+        <td style="padding:9px 12px;color:var(--text-dim)">${fmtDate(c.recolteDebut)} → ${fmtDate(c.recolteFin)}</td>
+        <td style="padding:9px 12px">${plantsBadge}</td>
+        <td style="padding:9px 8px;text-align:right;white-space:nowrap">
+          <button class="edit-btn" onclick="toggleEditRow('${c.id}',event)" title="Modifier">✏</button>
+          <button class="del-btn" onclick="deleteCulture('${c.id}',event)" title="Supprimer">✕</button>
+        </td>
+      </tr>
+      <tr class="edit-row" id="edit-row-${c.id}">
+        <td colspan="6">
+          <div class="edit-inner">
+            <div class="edit-grid">
+              <div class="edit-field" style="grid-column:1/-1">
+                <label class="edit-label">Culture</label>
+                <input class="edit-input" id="ec-culture-${c.id}" value="${c.culture.replace(/"/g,'&quot;')}">
+              </div>
+              <div class="edit-field">
+                <label class="edit-label">Lieu</label>
+                <select class="edit-input" id="ec-lieu-${c.id}">
+                  <option value="serre" ${c.lieu==='serre'?'selected':''}>🏠 Serre</option>
+                  <option value="bacs"  ${c.lieu==='bacs' ?'selected':''}>🪴 Bacs</option>
+                  <option value="jardin"${c.lieu==='jardin'?'selected':''}>🌳 Jardin</option>
+                </select>
+              </div>
+              <div class="edit-field">
+                <label class="edit-label">Famille</label>
+                <select class="edit-input" id="ec-famille-${c.id}">
+                  <option value="">—</option>
+                  ${familles.map(f=>`<option value="${f}" ${c.famille===f?'selected':''}>${f}</option>`).join('')}
+                </select>
+              </div>
+              <div class="edit-field">
+                <label class="edit-label">Nb de plants</label>
+                <input class="edit-input" type="number" id="ec-nbplants-${c.id}" value="${c.nbPlants||''}" placeholder="ex: 6" min="1">
+              </div>
+              <div class="edit-field">
+                <label class="edit-label">Date de semis</label>
+                <input class="edit-input" type="date" id="ec-semis-${c.id}" value="${c.semis||''}">
+              </div>
+              <div class="edit-field">
+                <label class="edit-label">Plantation</label>
+                <input class="edit-input" type="date" id="ec-plantation-${c.id}" value="${c.plantation||''}">
+              </div>
+              <div class="edit-field">
+                <label class="edit-label">Début récolte</label>
+                <input class="edit-input" type="date" id="ec-rdebut-${c.id}" value="${c.recolteDebut||''}">
+              </div>
+              <div class="edit-field">
+                <label class="edit-label">Fin récolte</label>
+                <input class="edit-input" type="date" id="ec-rfin-${c.id}" value="${c.recolteFin||''}">
+              </div>
+              <div class="edit-field" style="grid-column:1/-1">
+                <label class="edit-label">Notes</label>
+                <input class="edit-input" id="ec-notes-${c.id}" value="${(c.notes||'').replace(/"/g,'&quot;')}" placeholder="observations, variété…">
+              </div>
+            </div>
+            <div class="edit-actions">
+              <button class="save-btn" onclick="saveEdit('${c.id}',event)">Enregistrer</button>
+              <button class="cancel-btn" onclick="cancelEdit('${c.id}',event)">Annuler</button>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
   el.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
     <table style="width:100%;border-collapse:collapse;font-size:.78rem">
       <thead style="background:var(--bg2);border-bottom:1px solid var(--border)">
         <tr>
           <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Culture</th>
-          <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Lieu</th>
+          <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Famille</th>
           <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Semis</th>
           <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Récolte prévue</th>
           <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Plants</th>
-          <th style="padding:8px 4px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500"></th>
+          <th style="padding:8px 8px;text-align:right;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Actions</th>
         </tr>
       </thead>
-      <tbody>
-        ${cultures.map(c => {
-          const recs = getRecoltesPourCulture(c.culture);
-          const hasReel = recs.length > 0;
-          return `<tr style="border-bottom:1px solid var(--border);transition:background .15s" onmouseover="this.style.background='var(--green-light)'" onmouseout="this.style.background=''">
-            <td style="padding:9px 12px;color:var(--text);font-weight:500">${lieuIcons[c.lieu]||''} ${c.culture}${hasReel?'<span style="margin-left:6px;font-size:.6rem;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.3);padding:1px 5px;border-radius:8px">✓ récolté</span>':''}</td>
-            <td style="padding:9px 12px;color:var(--text-dim)">${c.famille||'—'}</td>
-            <td style="padding:9px 12px;color:var(--text-dim)">${fmtDate(c.semis)}</td>
-            <td style="padding:9px 12px;color:var(--text-dim)">${fmtDate(c.recolteDebut)} → ${fmtDate(c.recolteFin)}</td>
-            <td style="padding:9px 12px;color:${c.nbPlants?'var(--green)':'var(--text-muted)'}">${c.nbPlants ? c.nbPlants+' plants' : '<span title=\'Renseignez pour calculer g/pied\'>— plants</span>'}</td>
-            <td style="padding:9px 4px;text-align:center"><button class="del-btn" onclick="deleteCulture('${c.id}',event)" title="Supprimer">✕</button></td>
-          </tr>`;
-        }).join('')}
-      </tbody>
+      <tbody>${rows}</tbody>
     </table>
   </div>`;
 }
