@@ -844,12 +844,16 @@ function getSaisonRecolte(r) {
 
 // Retourne le sous-ensemble de récoltes correspondant à la saison active
 function getRecoltesFiltered() {
-  if (currentSaison === 'toutes') return recoltes;
-  return recoltes.filter(r => {
+  // CORRECTION : Si la variable globale recoltes est vide au démarrage, on pioche dans l'historique initial
+  const sourceData = (typeof recoltes !== 'undefined' && recoltes.length > 0) ? recoltes : RECOLTES_INITIALES;
+  
+  if (currentSaison === 'toutes') return sourceData;
+  return sourceData.filter(r => {
     const s = getSaisonRecolte(r);
     return s && s.id === currentSaison;
   });
 }
+
 
 // Construit et peuple le select avec toutes les saisons trouvées
 function buildSaisonSelect() {
