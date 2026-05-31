@@ -95,6 +95,23 @@ header {
   opacity: .7;
   letter-spacing: .05em;
 }
+.saison-select {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.2);
+  color: var(--text);
+  font-family: 'Karla', sans-serif;
+  font-size: .65rem;
+  letter-spacing: .08em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+  -webkit-appearance: none;
+  text-transform: uppercase;
+}
+.saison-select:focus { border-color: var(--accent); }
+.saison-select option { background: #0f1c10; color: var(--text); font-size: .8rem; }
+.saison-select optgroup { background: #0f1c10; color: var(--text-muted); font-size: .7rem; }
 
 .header-stats {
   display: flex;
@@ -544,7 +561,9 @@ td:first-child { color: var(--text); font-weight: 500; }
     <a href="/" class="back-btn">← Dashboard</a>
     <div style="display:flex;align-items:center;gap:10px">
       <a href="/calendrier.html" class="back-btn" style="background:rgba(163,230,53,.12);border-color:rgba(163,230,53,.3);color:var(--accent)">📅 Calendrier</a>
-      <div style="font-size:.65rem;opacity:.6;letter-spacing:.08em">SAISON 2025–2026</div>
+      <select class="saison-select" id="saisonSelect" onchange="changerSaison(this.value)" title="Filtrer par saison">
+        <option value="toutes">Toutes les saisons</option>
+      </select>
     </div>
   </div>
   <div class="header-title">🌿 Récoltes</div>
@@ -752,6 +771,130 @@ function loadCalendrier() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY_CAL) || '[]'); } catch(e) { return []; }
 }
 
+// ── SAISONS ───────────────────────────────────────────────────
+// Hiver  : plantation du 01/09 au 31/01
+// Été    : plantation du 02/02 au 31/08
+// Fallback : date de récolte si pas de calendrier
+
+let currentSaison = 'toutes'; // valeur active du select
+
+function getSaisonFromDate(dateStr) {
+  // Règles de plantation :
+  // Été    : 02/02 inclus → 31/08 inclus  (ex: Été 2026)
+  // Hiver  : 01/09 inclus → 01/02 inclus  (ex: Hiver 2026–2027)
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  const m = d.getMonth() + 1; // 1-12
+  const j = d.getDate();
+  const y = d.getFullYear();
+
+  // Septembre → décembre : Hiver Y/Y+1
+  if (m >= 9) {
+    return { type:'hiver', label:`Hiver ${y}–${y+1}`, id:`hiver-${y}-${y+1}` };
+  }
+  // Janvier + 1er février : Hiver (Y-1)/Y
+  if (m === 1 || (m === 2 && j <= 1)) {
+    return { type:'hiver', label:`Hiver ${y-1}–${y}`, id:`hiver-${y-1}-${y}` };
+  }
+  // 2 février → 31 août : Été Y
+  return { type:'ete', label:`Été ${y}`, id:`ete-${y}` };
+}
+
+function getDatePlantationPourRecolte(recolteVegetal) {
+  const cal = loadCalendrier();
+  const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
+  const entry = cal.find(c =>
+    norm(c.culture) === norm(recolteVegetal) ||
+    norm(c.culture).includes(norm(recolteVegetal)) ||
+    norm(recolteVegetal).includes(norm(c.culture))
+  );
+  // Utiliser plantation si dispo, sinon semis, sinon null
+  return entry?.plantation || entry?.semis || null;
+}
+
+function getSaisonRecolte(r) {
+  const datePlant = getDatePlantationPourRecolte(r.vegetal);
+  return getSaisonFromDate(datePlant || r.date);
+}
+
+// Retourne le sous-ensemble de récoltes correspondant à la saison active
+function getRecoltesFiltered() {
+  if (currentSaison === 'toutes') return recoltes;
+  return recoltes.filter(r => {
+    const s = getSaisonRecolte(r);
+    return s && s.id === currentSaison;
+  });
+}
+
+// Construit et peuple le select avec toutes les saisons trouvées
+function buildSaisonSelect() {
+  const sel = document.getElementById('saisonSelect');
+  if (!sel) return;
+
+  // Collecter toutes les saisons présentes
+  const saisonsMap = {};
+  recoltes.forEach(r => {
+    const s = getSaisonRecolte(r);
+    if (s && !saisonsMap[s.id]) saisonsMap[s.id] = s;
+  });
+
+  // Fonction pour extraire un timestamp de tri depuis l'id
+  // ete-2026  → année de début : 2026-02 (février)
+  // hiver-2025-2026 → année de début : 2025-09 (septembre)
+  function saisonSortKey(s) {
+    if (s.type === 'ete') {
+      const y = parseInt(s.id.split('-')[1]);
+      return y * 100 + 2; // ex: 202602
+    } else {
+      const parts = s.id.split('-'); // ['hiver','2025','2026']
+      const y = parseInt(parts[1]);
+      return y * 100 + 9; // ex: 202509
+    }
+  }
+
+  // Trier toutes les saisons par date de début, plus récent en premier
+  const allSaisons = Object.values(saisonsMap).sort((a, b) =>
+    saisonSortKey(b) - saisonSortKey(a)
+  );
+
+  const etes   = allSaisons.filter(s => s.type === 'ete');
+  const hivers = allSaisons.filter(s => s.type === 'hiver');
+
+  // Reconstruire les options
+  sel.innerHTML = '<option value="toutes">Toutes les saisons</option>';
+
+  if (etes.length) {
+    const grp = document.createElement('optgroup');
+    grp.label = '☀️ Saisons Été';
+    etes.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.label;
+      if (s.id === currentSaison) opt.selected = true;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  }
+
+  if (hivers.length) {
+    const grp = document.createElement('optgroup');
+    grp.label = '❄️ Saisons Hiver';
+    hivers.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.label;
+      if (s.id === currentSaison) opt.selected = true;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  }
+}
+
+function changerSaison(val) {
+  currentSaison = val;
+  renderAll();
+}
+
 function getNbPlants(vegetal) {
   const cal = loadCalendrier();
   const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
@@ -769,9 +912,10 @@ function computeRendementPied(vegetal, totalPoids) {
   return Math.round(totalPoids / nb);
 }
 
-function computeTopRendements() {
+function computeTopRendements(recFiltrees) {
+  const src = recFiltrees || getRecoltesFiltered();
   const byVeg = {};
-  recoltes.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
+  src.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
   return Object.entries(byVeg)
     .map(([vegetal, total]) => ({
       vegetal, total,
@@ -1050,12 +1194,12 @@ function renderStats() {
   document.getElementById('hNbVarietes').textContent = s.varietes;
 
   // Meilleur rendement/pied (dynamique depuis calendrier)
-  const topR = computeTopRendements();
+  const topR = computeTopRendements(rf);
   if (topR.length) {
     document.getElementById('hMeilleur').textContent = topR[0].vegetal.split(' ')[0] + ' (' + topR[0].rPied + 'g/p)';
   } else {
     const byVeg = {};
-    recoltes.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
+    rf.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
     const bestTotal = Object.entries(byVeg).sort((a,b)=>b[1]-a[1])[0];
     document.getElementById('hMeilleur').textContent = bestTotal ? bestTotal[0].split(' ')[0] : '—';
   }
@@ -1225,9 +1369,10 @@ function renderTopLieu(lieuFilter, containerId, accentColor) {
   if (!el) return;
 
   const byVeg = {};
+  const base = getRecoltesFiltered();
   const recFiltrees = lieuFilter === 'tous'
-    ? recoltes
-    : recoltes.filter(r => r.lieu === lieuFilter);
+    ? base
+    : base.filter(r => r.lieu === lieuFilter);
 
   recFiltrees.forEach(r => {
     byVeg[r.vegetal] = (byVeg[r.vegetal] || 0) + r.poids;
@@ -1415,6 +1560,7 @@ function showAnalyse(name, btn) {
 
 // ── INIT ─────────────────────────────────────────────────────
 function renderAll() {
+  buildSaisonSelect();
   renderStats();
   renderChartFamille();
   renderTop();
