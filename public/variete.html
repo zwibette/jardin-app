@@ -96,6 +96,7 @@ td{padding:10px 12px;color:var(--text-dim)}
 </header>
 
 <main>
+  <!-- PARAMÈTRES / CONFIGURATION DE LA VARIÉTÉ -->
   <div class="section">
     <div class="stitle">Paramètres de la variété</div>
     <div class="edit-panel">
@@ -122,21 +123,27 @@ td{padding:10px 12px;color:var(--text-dim)}
     </div>
   </div>
 
+  <!-- BANNIÈRE DE RENDEMENT GLOBAL -->
   <div class="total-banner">
     <div>
       <div class="total-val" id="lbl-total-poids">0,00 <span style="font-size:1.5rem">kg</span></div>
       <div class="total-lbl">récoltés au total</div>
     </div>
     <div class="total-meta">
-      <div class="tmeta"><span class="tmeta-val" id="lbl-nb-recoltes">0</span><span class="tmeta-lbl">apports</span></div>
-      <div class="tmeta"><span class="tmeta-val" id="lbl-nb-plants">0</span><span class="tmeta-lbl">plants actifs</span></div>
+      <div class="total-meta">
+        <div class="tmeta"><span class="tmeta-val" id="lbl-nb-recoltes">0</span><span class="tmeta-lbl">apports</span></div>
+        <div class="tmeta"><span class="tmeta-val" id="lbl-nb-plants">0</span><span class="tmeta-lbl">plants actifs</span></div>
+      </div>
     </div>
   </div>
 
+  <!-- RENDEMENT PAR LIEU -->
   <div class="lieux-grid" id="lieuxContainer"></div>
 
+  <!-- RENDEMENT MOYEN PAR PLANT -->
   <div id="rendementContainer"></div>
 
+  <!-- GRAPHIQUES -->
   <div class="charts-grid">
     <div class="chart-card">
       <div class="chart-title">Répartition par Lieu</div>
@@ -148,6 +155,7 @@ td{padding:10px 12px;color:var(--text-dim)}
     </div>
   </div>
 
+  <!-- HISTORIQUE DES APPORTS -->
   <div class="section">
     <div class="stitle">Historique détaillé des apports</div>
     <div id="tableContainer"></div>
@@ -155,14 +163,16 @@ td{padding:10px 12px;color:var(--text-dim)}
 </main>
 
 <script>
-// Récupération de l'ID passé en paramètre URL
 const params = new URLSearchParams(window.location.search);
+// Récupération de l'ID numérique ou du paramètre "nom" au cas où votre structure utilise les chaînes
 const varieteId = parseInt(params.get('id')) || 0;
+const varieteNomParam = params.get('nom') ? params.get('nom').trim() : null;
 
 let currentVariete = null;
 let recoltesMatch = [];
 let culturesMatch = [];
 let saisonActive = "2025-2026";
+let storageKeyUtilisee = "varietes_globales"; // Par défaut
 
 function fmtKg(v) { return v.toFixed(2).replace('.', ',') + ' kg'; }
 
@@ -172,32 +182,54 @@ function initPage() {
   if(storedSaison) saisonActive = storedSaison;
   document.getElementById('saisonLabel').innerText = `SAISON ${saisonActive.replace('-', '–')}`;
 
-  // 1. Charger la variété de référence
-  const listV = JSON.parse(localStorage.getItem('varietes_globales') || '[]');
-  currentVariete = listV.find(v => v.id === varieteId);
-  
-  if(!currentVariete) {
-    document.getElementById('txt-title').innerText = "Variété inconnue";
-    return;
+  // Détection adaptative de votre clé de stockage des variétés
+  let listV = [];
+  if (localStorage.getItem('varietes')) {
+    listV = JSON.parse(localStorage.getItem('varietes') || '[]');
+    storageKeyUtilisee = "varietes";
+  } else if (localStorage.getItem('varietes_globales')) {
+    listV = JSON.parse(localStorage.getItem('varietes_globales') || '[]');
+    storageKeyUtilisee = "varietes_globales";
   }
 
-  // Remplissage du titre et métadonnées d'en-tête
+  // Recherche adaptative (par ID ou par Nom pour éviter les erreurs de lien)
+  if (varieteId > 0) {
+    currentVariete = listV.find(v => v.id === varieteId);
+  }
+  if (!currentVariete && varieteNomParam) {
+    currentVariete = listV.find(v => v.nom.toLowerCase() === varieteNomParam.toLowerCase());
+  }
+  // Si toujours pas trouvé, on tente un repli sur le premier élément correspondant au nom dans l'URL si l'ID a changé
+  if (!currentVariete && params.get('id')) {
+    currentVariete = listV.find(v => v.nom.toLowerCase().includes(params.get('id').toLowerCase()));
+  }
+  
+  // Si l'application n'a rien trouvé, on génère un profil temporaire pour ne pas bloquer l'affichage
+  if(!currentVariete) {
+    currentVariete = {
+      id: varieteId || Date.now(),
+      nom: varieteNomParam || params.get('id') || "Variété Générique",
+      famille: "LÉGUME",
+      note: "3",
+      perpetuelle: false
+    };
+  }
+
+  // Remplissage de l'interface
   document.getElementById('txt-title').innerText = currentVariete.nom;
   document.getElementById('txt-famille').innerText = currentVariete.famille || 'LÉGUME';
-
-  // Remplissage du statut de la case à cocher et du select
   document.getElementById('param-note').value = currentVariete.note || "3";
   document.getElementById('param-perpetuelle').checked = currentVariete.perpetuelle || false;
 
-  // 2. Extraire l'historique de récolte global lié à cette variété précise
+  // Récupération de l'historique des récoltes
   const allRecoltes = JSON.parse(localStorage.getItem('recoltes_jardin') || '[]');
-  recoltesMatch = allRecoltes.filter(r => r.varieteId === varieteId || r.variete === currentVariete.nom);
+  recoltesMatch = allRecoltes.filter(r => r.varieteId === currentVariete.id || r.variete.toLowerCase() === currentVariete.nom.toLowerCase());
 
-  // 3. Extraire les cultures planifiées correspondantes
+  // Récupération des cultures planifiées correspondantes
   const allCultures = JSON.parse(localStorage.getItem('cultures_planifiees') || '[]');
   culturesMatch = allCultures.filter(c => c.culture.toLowerCase().includes(currentVariete.nom.toLowerCase()));
 
-  // Calculs & rendus graphiques
+  // Lancement des calculs
   calculerStatsEtRendus();
 }
 
@@ -207,30 +239,37 @@ function sauverParametresVariete() {
   const noteSelectionnee = document.getElementById('param-note').value;
   const estPerpetuelle = document.getElementById('param-perpetuelle').checked;
 
-  // Mise à jour de la liste globale
-  let listV = JSON.parse(localStorage.getItem('varietes_globales') || '[]');
-  const idx = listV.findIndex(v => v.id === currentVariete.id);
+  // Sauvegarde adaptative dans la bonne clé localStorage
+  let listV = JSON.parse(localStorage.getItem(storageKeyUtilisee) || '[]');
+  let idx = listV.findIndex(v => v.id === currentVariete.id || v.nom.toLowerCase() === currentVariete.nom.toLowerCase());
   
-  if(idx !== -1) {
+  if(idx === -1 && listV.length > 0) {
+    // Si non trouvé mais que la liste existe, on l'ajoute
+    currentVariete.note = noteSelectionnee;
+    currentVariete.perpetuelle = estPerpetuelle;
+    listV.push(currentVariete);
+    idx = listV.length - 1;
+  } else if (idx !== -1) {
     listV[idx].note = noteSelectionnee;
     listV[idx].perpetuelle = estPerpetuelle;
-    localStorage.setItem('varietes_globales', JSON.stringify(listV));
-    
-    // Également propager aux cultures planifiées associées si nécessaire
-    let allCultures = JSON.parse(localStorage.getItem('cultures_planifiees') || '[]');
-    let modificationsCultures = false;
-    allCultures.forEach(c => {
-      if(c.culture.toLowerCase().includes(currentVariete.nom.toLowerCase())) {
-        c.perpetuelle = estPerpetuelle;
-        modificationsCultures = true;
-      }
-    });
-    if(modificationsCultures) {
-      localStorage.setItem('cultures_planifiees', JSON.stringify(allCultures));
-    }
-
-    alert("✨ Paramètres et persistance de la variété sauvegardés avec succès !");
   }
+
+  localStorage.setItem(storageKeyUtilisee, JSON.stringify(listV));
+  
+  // Propagation du statut perpétuel vers la table calendrier
+  let allCultures = JSON.parse(localStorage.getItem('cultures_planifiees') || '[]');
+  let modificationsCultures = false;
+  allCultures.forEach(c => {
+    if(c.culture.toLowerCase().includes(currentVariete.nom.toLowerCase())) {
+      c.perpetuelle = estPerpetuelle;
+      modificationsCultures = true;
+    }
+  });
+  if(modificationsCultures) {
+    localStorage.setItem('cultures_planifiees', JSON.stringify(allCultures));
+  }
+
+  alert("✨ Paramètres et persistance enregistrés !");
 }
 
 function calculerStatsEtRendus() {
@@ -253,7 +292,6 @@ function calculerStatsEtRendus() {
   document.getElementById('lbl-nb-recoltes').innerText = recoltesMatch.length;
   document.getElementById('lbl-nb-plants').innerText = plantsActifs;
 
-  // Rendu de la répartition par lieu
   const lieuxContainer = document.getElementById('lieuxContainer');
   const icons = { serre: "🏠", bacs: "🪴", jardin: "🌳" };
   const labels = { serre: "Serre", bacs: "Bacs", jardin: "Jardin" };
@@ -272,7 +310,6 @@ function calculerStatsEtRendus() {
   }
   lieuxContainer.innerHTML = htmlLieux;
 
-  // Rendu rendement moyen par plant
   const rendContainer = document.getElementById('rendementContainer');
   if(plantsActifs > 0) {
     let moy = totalPoids / plantsActifs;
@@ -291,7 +328,6 @@ function calculerStatsEtRendus() {
     </div>`;
   }
 
-  // Rendu du tableau d'historique
   const tableContainer = document.getElementById('tableContainer');
   if(recoltesMatch.length === 0) {
     tableContainer.innerHTML = `
@@ -301,7 +337,6 @@ function calculerStatsEtRendus() {
     </div>`;
   } else {
     let rows = '';
-    // Tri décroissant sur la date
     const sorted = [...recoltesMatch].sort((a,b) => b.date.localeCompare(a.date));
     sorted.forEach(r => {
       rows += `
@@ -329,12 +364,10 @@ function calculerStatsEtRendus() {
     </div>`;
   }
 
-  // Rendu des Graphiques ChartJS
   renderCharts(distributionLieu);
 }
 
 function renderCharts(distLieu) {
-  // Chart 1: Répartition par lieu (Pie)
   const ctxLieu = document.getElementById('chartLieu').getContext('2d');
   new Chart(ctxLieu, {
     type: 'doughnut',
@@ -353,10 +386,10 @@ function renderCharts(distLieu) {
     }
   });
 
-  // Chart 2: Évolution chronologique des récoltes (Line)
   const ctxEvol = document.getElementById('chartEvol').getContext('2d');
-  const chronoData = [...recoltesMatch].sort((a,b) => a.date.localeCompare(b.date));
+  if(recoltesMatch.length === 0) return;
   
+  const chronoData = [...recoltesMatch].sort((a,b) => a.date.localeCompare(b.date));
   let labels = chronoData.map(r => r.date.split('-').slice(1).reverse().join('/'));
   let cumulativeWeights = [];
   let sum = 0;
@@ -391,7 +424,6 @@ function renderCharts(distLieu) {
   });
 }
 
-// Démarrage de la page au chargement
 window.addEventListener('DOMContentLoaded', initPage);
 </script>
 </body>
