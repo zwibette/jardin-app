@@ -233,10 +233,11 @@ main{max-width:1100px;margin:0 auto;padding:20px 16px 60px;position:relative;z-i
             </select>
           </div>
           <div class="field">
-  <label class="field-label">Option</label>
-  <div style="padding:10px 0;">
-    <input type="checkbox" id="inp-perpetuelle"> <label for="inp-perpetuelle" style="font-size:0.75rem">Culture perpétuelle</label>
-  </div>
+            <label class="field-label">Type de culture</label>
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;cursor:pointer" onclick="document.getElementById('inp-perpetuelle').click()">
+              <input type="checkbox" id="inp-perpetuelle" onclick="event.stopPropagation()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+              <label for="inp-perpetuelle" style="font-size:.82rem;color:var(--text-dim);cursor:pointer">Culture perpétuelle ♾️</label>
+            </div>
           </div>
           
           <div class="field">
@@ -680,8 +681,9 @@ function addCulture() {
   const recolteDebut = document.getElementById('inp-recolte-debut').value;
   const recolteFin   = document.getElementById('inp-recolte-fin').value;
   const famille   = document.getElementById('inp-famille').value;
-  const nbPlants  = parseInt(document.getElementById('inp-nbplants').value) || null;
-  const notes     = document.getElementById('inp-notes').value.trim();
+  const nbPlants      = parseInt(document.getElementById('inp-nbplants').value) || null;
+  const estPerpetuelle = document.getElementById('inp-perpetuelle').checked;
+  const notes          = document.getElementById('inp-notes').value.trim();
 
   if (!culture || !semis) {
     alert('Le nom de la culture et la date de semis sont obligatoires.');
@@ -702,7 +704,7 @@ function addCulture() {
     plantation: plantation || null,
     recolteDebut: finalDebut, recolteFin: finalFin,
     famille, nbPlants, notes,
-    estPerpetuelle, // Ajouter cette propriété
+    estPerpetuelle,
     datesAuto: (!recolteDebut && !recolteFin), // flag pour savoir si calculé auto
   };
 
@@ -719,6 +721,7 @@ function addCulture() {
   document.getElementById('inp-recolte-debut').value = '';
   document.getElementById('inp-recolte-fin').value = '';
   document.getElementById('inp-nbplants').value = '';
+  document.getElementById('inp-perpetuelle').checked = false;
   document.getElementById('inp-notes').value = '';
   const hint = document.getElementById('dates-hint');
   if (hint) hint.style.display = 'none';
@@ -760,14 +763,15 @@ function saveEdit(id, e) {
   const plantation   = document.getElementById(`ec-plantation-${id}`).value || null;
   const recolteDebut = document.getElementById(`ec-rdebut-${id}`).value;
   const recolteFin   = document.getElementById(`ec-rfin-${id}`).value;
-  const nbPlants     = parseInt(document.getElementById(`ec-nbplants-${id}`).value) || null;
-  const notes        = document.getElementById(`ec-notes-${id}`).value.trim();
+  const nbPlants       = parseInt(document.getElementById(`ec-nbplants-${id}`).value) || null;
+  const estPerpetuelle = document.getElementById(`ec-perpetuelle-${id}`).checked;
+  const notes          = document.getElementById(`ec-notes-${id}`).value.trim();
 
   if (!culture || !semis || !recolteDebut || !recolteFin) {
     alert('Culture, semis et dates de récolte sont obligatoires.'); return;
   }
 
-  cultures[idx] = { ...cultures[idx], culture, lieu, famille, semis, plantation, recolteDebut, recolteFin, nbPlants, notes };
+  cultures[idx] = { ...cultures[idx], culture, lieu, famille, semis, plantation, recolteDebut, recolteFin, nbPlants, estPerpetuelle, notes };
   saveCalendrier(cultures);
   updateStats();
   renderListe();
@@ -826,6 +830,7 @@ function renderListe() {
         <td style="padding:9px 12px;color:var(--text);font-weight:500">
           <span style="cursor:pointer;text-decoration:underline dotted;text-decoration-color:var(--border2)" onclick="event.stopPropagation();window.location.href='/variete.html?v='+encodeURIComponent('${c.culture}')">${lieuIcons[c.lieu]||''} ${c.culture}</span>
           ${hasReel ? '<span style="margin-left:6px;font-size:.6rem;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.3);padding:1px 5px;border-radius:8px">✓ récolté</span>' : ''}
+          ${c.estPerpetuelle ? '<span style="margin-left:4px;font-size:.6rem;background:rgba(163,230,53,.1);color:var(--accent);border:1px solid rgba(163,230,53,.3);padding:1px 5px;border-radius:8px">♾️ perpétuelle</span>' : ''}
         </td>
         <td style="padding:9px 12px;color:var(--text-dim);font-size:.75rem">${c.famille||'—'}</td>
         <td style="padding:9px 12px;color:var(--text-dim)">${fmtDate(c.semis)}</td>
@@ -863,9 +868,12 @@ function renderListe() {
                 <label class="edit-label">Nb de plants</label>
                 <input class="edit-input" type="number" id="ec-nbplants-${c.id}" value="${c.nbPlants||''}" placeholder="ex: 6" min="1">
               </div>
+              <div class="edit-field">
                 <label class="edit-label">Type</label>
-                <div style="padding:7px 0;">
-                <input type="checkbox" id="ec-perpetuelle-${c.id}" ${c.estPerpetuelle ? 'checked' : ''}> Perpétuelle
+                <div style="display:flex;align-items:center;gap:8px;padding:9px 10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;cursor:pointer" onclick="document.getElementById('ec-perpetuelle-${c.id}').click()">
+                  <input type="checkbox" id="ec-perpetuelle-${c.id}" ${c.estPerpetuelle ? 'checked' : ''} onclick="event.stopPropagation()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+                  <span style="font-size:.82rem;color:var(--text-dim)">Culture perpétuelle ♾️</span>
+                </div>
               </div>
               <div class="edit-field">
                 <label class="edit-label">Date de semis</label>
