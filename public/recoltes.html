@@ -802,19 +802,42 @@ function getSaisonFromDate(dateStr) {
   return { type:'ete', label:`Été ${y}`, id:`ete-${y}` };
 }
 
+// Cache du calendrier pour éviter de le recharger à chaque récolte
+let _calCache = null;
+function getCalCache() {
+  if (!_calCache) _calCache = loadCalendrier();
+  return _calCache;
+}
+function invalidateCalCache() { _calCache = null; }
+
 function getDatePlantationPourRecolte(recolteVegetal) {
-  const cal = loadCalendrier();
+  const cal = getCalCache();
   const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
-  const entry = cal.find(c =>
-    norm(c.culture) === norm(recolteVegetal) ||
-    norm(c.culture).includes(norm(recolteVegetal)) ||
-    norm(recolteVegetal).includes(norm(c.culture))
-  );
-  // Utiliser plantation si dispo, sinon semis, sinon null
+  const nv = norm(recolteVegetal);
+
+  // 1. Matching exact
+  let entry = cal.find(c => norm(c.culture) === nv);
+  // 2. Culture contient exactement le nom de la récolte (ex: "Tomate cerise sweet baby" ⊃ "Tomate cerise")
+  if (!entry) entry = cal.find(c => norm(c.culture) === nv);
+  // 3. Matching strict : les deux mots-clés doivent être dans le même sens
+  if (!entry) {
+    entry = cal.find(c => {
+      const nc = norm(c.culture);
+      // Seulement si le nom est assez long pour être discriminant (>6 chars)
+      return nc.length > 6 && nv.length > 6 && nc === nv;
+    });
+  }
+  // 4. Fallback : inclusion dans un seul sens (culture du calendrier ⊂ récolte)
+  if (!entry) entry = cal.find(c => {
+    const nc = norm(c.culture);
+    return nc.length > 8 && nv.startsWith(nc);
+  });
+
   return entry?.plantation || entry?.semis || null;
 }
 
 function getSaisonRecolte(r) {
+  // Priorité : date de plantation du calendrier → sinon date de récolte
   const datePlant = getDatePlantationPourRecolte(r.vegetal);
   return getSaisonFromDate(datePlant || r.date);
 }
@@ -1566,6 +1589,8 @@ function renderAll() {
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
+// Invalider cache calendrier à l'init
+invalidateCalCache();
 // Construire le select saison UNE seule fois à l'init
 buildSaisonSelect();
 renderAll();
