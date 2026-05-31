@@ -736,6 +736,7 @@ td:first-child { color: var(--text); font-weight: 500; }
 </main>
 
 <script>
+  let recoltes = [];
 // ── DONNÉES HISTORIQUES (depuis le PDF) ────────────────────
 const FAMILLES = {
   'Feuille chêne rouge perez':'SALADES','Batavia verte perez':'SALADES','Batavia rouge perez':'SALADES',
@@ -1591,11 +1592,20 @@ function renderAll() {
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
-// Invalider cache calendrier à l'init
+// 1. On remplit la variable globale avec toutes les données historiques
+recoltes = [...RECOLTES_INITIALES];
+
+// 2. On prépare le calendrier et on génère le sélecteur de saisons (Hiver/Été)
 invalidateCalCache();
-// Construire le select saison UNE seule fois à l'init
 buildSaisonSelect();
-renderAll();
+
+// 3. On force le menu déroulant à appliquer son filtre de saison immédiatement au chargement
+if (typeof onSaisonChange === "function") {
+  onSaisonChange(); 
+} else {
+  renderAll();
+}
+  
 // Sync depuis Sheets au démarrage (rebuild select après sync)
 syncFromSheets();
 </script>
