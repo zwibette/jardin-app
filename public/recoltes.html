@@ -1212,16 +1212,18 @@ function renderStats() {
   document.getElementById('hNbVarietes').textContent = s.varietes;
 
   // Meilleur rendement/pied (dynamique depuis calendrier)
-  const topR = computeTopRendements(rf);
+  // CORRECTION : Utilisation de la fonction officielle getRecoltesFiltered() à la place de rf
+  const recFiltreesPourTop = getRecoltesFiltered();
+  const topR = computeTopRendements(recFiltreesPourTop);
   if (topR.length) {
     document.getElementById('hMeilleur').textContent = topR[0].vegetal.split(' ')[0] + ' (' + topR[0].rPied + 'g/p)';
   } else {
     const byVeg = {};
-    rf.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
+    recFiltreesPourTop.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
     const bestTotal = Object.entries(byVeg).sort((a,b)=>b[1]-a[1])[0];
     document.getElementById('hMeilleur').textContent = bestTotal ? bestTotal[0].split(' ')[0] : '—';
   }
-}
+
 
 // ── CHARTS ───────────────────────────────────────────────────
 const chartInstances = {};
