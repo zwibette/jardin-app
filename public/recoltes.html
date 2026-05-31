@@ -1582,15 +1582,16 @@ function renderAll() {
   // Ne pas rebuilder le select à chaque rendu (écrase la sélection)
   // buildSaisonSelect est appelé uniquement au init et après ajout/suppression
   renderStats();
+
   renderChartFamille();
   renderChartLieu();
   renderChartEvolution();
   renderChartMois();
   renderChartRendement();
+
   renderTop();
   populateFamFilter();
   renderTable();
- }
 }
 
 // Date par défaut = aujourd'hui
