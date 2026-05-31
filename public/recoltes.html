@@ -1611,23 +1611,26 @@ function renderAll() {
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
-// 1. Initialiser le cache du calendrier
+// 1. Déclarer proprement la variable globale au démarrage pour éviter le crash
+window.recoltes = [...RECOLTES_INITIALES];
+
+// 2. Initialiser le calendrier
 invalidateCalCache();
 
-// 2. Construire le menu déroulant des saisons
+// 3. Construire le menu déroulant (il va retrouver toutes ses saisons : Été 2026, Hiver...)
 buildSaisonSelect();
 
-// 3. FORCE LE CHARGEMENT AUTOMATIQUE : 
-// Si au démarrage 'currentSaison' n'est pas définie ou vaut 'toutes', on force la première saison réelle trouvée (ex: Été 2026)
-const selectSaisonDOM = document.getElementById('saisonSelect');
-if (selectSaisonDOM && selectSaisonDOM.options.length > 1 && (!currentSaison || currentSaison === 'toutes')) {
-    // L'option 0 est "Toutes les saisons", l'option 1 est la saison la plus récente (ex: Été 2026)
-    currentSaison = selectSaisonDOM.options[1].value;
-    selectSaisonDOM.value = currentSaison;
+// 4. Sélectionner automatiquement la saison la plus récente au chargement
+const menuSaison = document.getElementById('saisonSelect');
+if (menuSaison && menuSaison.options.length > 1) {
+  // L'option 0 est "Toutes les saisons", l'option 1 est la saison la plus récente
+  currentSaison = menuSaison.options[1].value;
+  menuSaison.value = currentSaison;
 }
 
-// 4. Lancer l'affichage global
+// 5. Lancer l'affichage automatique des tableaux et graphiques
 renderAll();
+
 
 
 // Sync depuis Sheets au démarrage (rebuild select après sync)
