@@ -776,7 +776,9 @@ function loadCalendrier() {
 // Été    : plantation du 02/02 au 31/08
 // Fallback : date de récolte si pas de calendrier
 
-let currentSaison = 'toutes'; // valeur active du select
+// Initialiser à la saison en cours (aujourd'hui)
+const _saisonAujourdhui = getSaisonFromDate(new Date().toISOString().slice(0,10));
+let currentSaison = _saisonAujourdhui ? _saisonAujourdhui.id : 'toutes';
 
 function getSaisonFromDate(dateStr) {
   // Règles de plantation :
@@ -831,62 +833,48 @@ function buildSaisonSelect() {
   const sel = document.getElementById('saisonSelect');
   if (!sel) return;
 
-  // Collecter toutes les saisons présentes
+  // Collecter toutes les saisons présentes dans les récoltes
   const saisonsMap = {};
   recoltes.forEach(r => {
     const s = getSaisonRecolte(r);
     if (s && !saisonsMap[s.id]) saisonsMap[s.id] = s;
   });
 
-  // Fonction pour extraire un timestamp de tri depuis l'id
-  // ete-2026  → année de début : 2026-02 (février)
-  // hiver-2025-2026 → année de début : 2025-09 (septembre)
-  function saisonSortKey(s) {
+  // Ajouter la saison en cours même si aucune récolte encore
+  const saisonNow = getSaisonFromDate(new Date().toISOString().slice(0,10));
+  if (saisonNow && !saisonsMap[saisonNow.id]) saisonsMap[saisonNow.id] = saisonNow;
+
+  // Clé de tri chronologique : date de début de la saison (YYYYMM)
+  // Été 2026    → 202602  (commence le 02/02/2026)
+  // Hiver 25/26 → 202509  (commence le 01/09/2025)
+  function sortKey(s) {
     if (s.type === 'ete') {
-      const y = parseInt(s.id.split('-')[1]);
-      return y * 100 + 2; // ex: 202602
+      return parseInt(s.id.split('-')[1]) * 100 + 2;
     } else {
-      const parts = s.id.split('-'); // ['hiver','2025','2026']
-      const y = parseInt(parts[1]);
-      return y * 100 + 9; // ex: 202509
+      return parseInt(s.id.split('-')[1]) * 100 + 9;
     }
   }
 
-  // Trier toutes les saisons par date de début, plus récent en premier
-  const allSaisons = Object.values(saisonsMap).sort((a, b) =>
-    saisonSortKey(b) - saisonSortKey(a)
-  );
+  // Trier chronologiquement, plus récent en premier, sans séparation été/hiver
+  const sorted = Object.values(saisonsMap).sort((a, b) => sortKey(b) - sortKey(a));
 
-  const etes   = allSaisons.filter(s => s.type === 'ete');
-  const hivers = allSaisons.filter(s => s.type === 'hiver');
+  // Mémoriser la valeur actuelle avant de reconstruire
+  const current = currentSaison;
 
-  // Reconstruire les options
   sel.innerHTML = '<option value="toutes">Toutes les saisons</option>';
+  sorted.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    const icon = s.type === 'ete' ? '☀️' : '❄️';
+    opt.textContent = icon + ' ' + s.label;
+    if (s.id === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
 
-  if (etes.length) {
-    const grp = document.createElement('optgroup');
-    grp.label = '☀️ Saisons Été';
-    etes.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = s.label;
-      if (s.id === currentSaison) opt.selected = true;
-      grp.appendChild(opt);
-    });
-    sel.appendChild(grp);
-  }
-
-  if (hivers.length) {
-    const grp = document.createElement('optgroup');
-    grp.label = '❄️ Saisons Hiver';
-    hivers.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = s.label;
-      if (s.id === currentSaison) opt.selected = true;
-      grp.appendChild(opt);
-    });
-    sel.appendChild(grp);
+  // Si currentSaison n'est pas dans la liste, forcer la saison actuelle
+  if (!saisonsMap[current] && current !== 'toutes') {
+    currentSaison = saisonNow ? saisonNow.id : 'toutes';
+    sel.value = currentSaison;
   }
 }
 
@@ -991,6 +979,7 @@ async function syncFromSheets() {
         // Sheets a des données : on les prend (source de vérité)
         recoltes = data.recoltes;
         saveRecoltes(recoltes);
+        buildSaisonSelect();
         renderAll();
         showSyncBadge('✓ Sync Sheets');
       } else {
@@ -1094,13 +1083,18 @@ function addRecolte() {
   showToast('✓ Récolte ajoutée — ' + poids + 'g de ' + vegetal);
 }
 
+function _rebuildAndRender() {
+  buildSaisonSelect();
+  renderAll();
+}
+
 function deleteRecolte(id, e) {
   e.stopPropagation();
   if (!confirm('Supprimer cette récolte ?')) return;
   recoltes = recoltes.filter(r => r.id !== id);
   saveRecoltes(recoltes);
   syncToSheets();
-  renderAll();
+  _rebuildAndRender();
 }
 
 function showEdit(id, e) {
@@ -1560,7 +1554,8 @@ function showAnalyse(name, btn) {
 
 // ── INIT ─────────────────────────────────────────────────────
 function renderAll() {
-  buildSaisonSelect();
+  // Ne pas rebuilder le select à chaque rendu (écrase la sélection)
+  // buildSaisonSelect est appelé uniquement au init et après ajout/suppression
   renderStats();
   renderChartFamille();
   renderTop();
@@ -1571,8 +1566,10 @@ function renderAll() {
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
+// Construire le select saison UNE seule fois à l'init
+buildSaisonSelect();
 renderAll();
-// Sync depuis Sheets au démarrage
+// Sync depuis Sheets au démarrage (rebuild select après sync)
 syncFromSheets();
 </script>
 </body>
