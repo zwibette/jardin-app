@@ -1595,6 +1595,9 @@ document.getElementById('inp-date').valueAsDate = new Date();
 invalidateCalCache();
 // Construire le select saison UNE seule fois à l'init
 buildSaisonSelect();
+  console.log('currentSaison=', currentSaison);
+console.log('recoltes filtrées=', getRecoltesFiltered().length);
+console.log('recoltes totales=', recoltes.length);
 renderAll();
 // Sync depuis Sheets au démarrage (rebuild select après sync)
 syncFromSheets();
