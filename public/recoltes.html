@@ -1611,14 +1611,24 @@ function renderAll() {
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
-// CORRECTION FINALE : Remplir la variable globale au démarrage
-recoltes = [...RECOLTES_INITIALES];
-
-// Invalider cache calendrier à l'init
+// 1. Initialiser le cache du calendrier
 invalidateCalCache();
-// Construire le select saison UNE seule fois à l'init
+
+// 2. Construire le menu déroulant des saisons
 buildSaisonSelect();
+
+// 3. FORCE LE CHARGEMENT AUTOMATIQUE : 
+// Si au démarrage 'currentSaison' n'est pas définie ou vaut 'toutes', on force la première saison réelle trouvée (ex: Été 2026)
+const selectSaisonDOM = document.getElementById('saisonSelect');
+if (selectSaisonDOM && selectSaisonDOM.options.length > 1 && (!currentSaison || currentSaison === 'toutes')) {
+    // L'option 0 est "Toutes les saisons", l'option 1 est la saison la plus récente (ex: Été 2026)
+    currentSaison = selectSaisonDOM.options[1].value;
+    selectSaisonDOM.value = currentSaison;
+}
+
+// 4. Lancer l'affichage global
 renderAll();
+
 
 // Sync depuis Sheets au démarrage (rebuild select après sync)
 syncFromSheets();
