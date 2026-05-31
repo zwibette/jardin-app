@@ -130,10 +130,8 @@ td{padding:10px 12px;color:var(--text-dim)}
       <div class="total-lbl">récoltés au total</div>
     </div>
     <div class="total-meta">
-      <div class="total-meta">
-        <div class="tmeta"><span class="tmeta-val" id="lbl-nb-recoltes">0</span><span class="tmeta-lbl">apports</span></div>
-        <div class="tmeta"><span class="tmeta-val" id="lbl-nb-plants">0</span><span class="tmeta-lbl">plants actifs</span></div>
-      </div>
+      <div class="tmeta"><span class="tmeta-val" id="lbl-nb-recoltes">0</span><span class="tmeta-lbl">apports</span></div>
+      <div class="tmeta"><span class="tmeta-val" id="lbl-nb-plants">0</span><span class="tmeta-lbl">plants actifs</span></div>
     </div>
   </div>
 
@@ -163,26 +161,30 @@ td{padding:10px 12px;color:var(--text-dim)}
 </main>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-// Récupération de l'ID numérique ou du paramètre "nom" au cas où votre structure utilise les chaînes
+// Lecture ultra-robuste des paramètres de l'URL
+const urlQuery = window.location.search;
+const params = new URLSearchParams(urlQuery);
+
+// Récupération des formats courants d'URLs (?id=123, ?nom=Tomate, ou directement ?Tomate)
 const varieteId = parseInt(params.get('id')) || 0;
 const varieteNomParam = params.get('nom') ? params.get('nom').trim() : null;
+const urlBruteDecodee = decodeURIComponent(urlQuery.substring(1)).trim();
 
 let currentVariete = null;
 let recoltesMatch = [];
 let culturesMatch = [];
 let saisonActive = "2025-2026";
-let storageKeyUtilisee = "varietes_globales"; // Par défaut
+let storageKeyUtilisee = "varietes"; // Clé historique par défaut
 
 function fmtKg(v) { return v.toFixed(2).replace('.', ',') + ' kg'; }
 
 function initPage() {
-  // Sync saison active
+  // Synchronisation de la saison active
   const storedSaison = localStorage.getItem('saison_active');
   if(storedSaison) saisonActive = storedSaison;
   document.getElementById('saisonLabel').innerText = `SAISON ${saisonActive.replace('-', '–')}`;
 
-  // Détection adaptative de votre clé de stockage des variétés
+  // Analyse et récupération adaptative de la liste des variétés du LocalStorage
   let listV = [];
   if (localStorage.getItem('varietes')) {
     listV = JSON.parse(localStorage.getItem('varietes') || '[]');
@@ -192,44 +194,63 @@ function initPage() {
     storageKeyUtilisee = "varietes_globales";
   }
 
-  // Recherche adaptative (par ID ou par Nom pour éviter les erreurs de lien)
+  // STRATÉGIE DE RECHERCHE DE LA VARIÉTÉ DANS VOTRE BASE
+  // 1. Recherche par ID numérique
   if (varieteId > 0) {
     currentVariete = listV.find(v => v.id === varieteId);
   }
+  // 2. Recherche par paramètre 'nom' précis (?nom=...)
   if (!currentVariete && varieteNomParam) {
     currentVariete = listV.find(v => v.nom.toLowerCase() === varieteNomParam.toLowerCase());
   }
-  // Si toujours pas trouvé, on tente un repli sur le premier élément correspondant au nom dans l'URL si l'ID a changé
-  if (!currentVariete && params.get('id')) {
-    currentVariete = listV.find(v => v.nom.toLowerCase().includes(params.get('id').toLowerCase()));
+  // 3. Recherche sur l'URL brute complète (cas des liens simplifiés : ?Nom%20Du%20Legume)
+  if (!currentVariete && urlBruteDecodee && !urlBruteDecodee.includes('=')) {
+    currentVariete = listV.find(v => v.nom.toLowerCase() === urlBruteDecodee.toLowerCase() || v.id == urlBruteDecodee);
   }
-  
-  // Si l'application n'a rien trouvé, on génère un profil temporaire pour ne pas bloquer l'affichage
+  // 4. Recherche par approximation textuelle sur l'ID brut transmis
+  if (!currentVariete && params.get('id')) {
+    const fallbackIdStr = params.get('id').toLowerCase();
+    currentVariete = listV.find(v => v.nom.toLowerCase().includes(fallbackIdStr));
+  }
+
+  // SI LA VARIÉTÉ N'EXISTE PAS DANS LA LISTE FIXE :
+  // On extrait dynamiquement son nom depuis l'URL pour lui créer une fiche à la volée
   if(!currentVariete) {
+    let nomExtrait = "Variété Inconnue";
+    if (varieteNomParam) nomExtrait = varieteNomParam;
+    else if (urlBruteDecodee && !urlBruteDecodee.includes('=')) nomExtrait = urlBruteDecodee;
+    else if (params.get('id') && isNaN(params.get('id'))) nomExtrait = params.get('id');
+
     currentVariete = {
       id: varieteId || Date.now(),
-      nom: varieteNomParam || params.get('id') || "Variété Générique",
+      nom: nomExtrait,
       famille: "LÉGUME",
       note: "3",
       perpetuelle: false
     };
   }
 
-  // Remplissage de l'interface
+  // Remplissage de l'interface graphique
   document.getElementById('txt-title').innerText = currentVariete.nom;
   document.getElementById('txt-famille').innerText = currentVariete.famille || 'LÉGUME';
   document.getElementById('param-note').value = currentVariete.note || "3";
   document.getElementById('param-perpetuelle').checked = currentVariete.perpetuelle || false;
 
-  // Récupération de l'historique des récoltes
+  // EXTRACTION DES APPORTS (RÉCOLTES) LIÉS À CETTE VARIÉTÉ
   const allRecoltes = JSON.parse(localStorage.getItem('recoltes_jardin') || '[]');
-  recoltesMatch = allRecoltes.filter(r => r.varieteId === currentVariete.id || r.variete.toLowerCase() === currentVariete.nom.toLowerCase());
+  recoltesMatch = allRecoltes.filter(r => {
+    if (!r.variete) return false;
+    return r.varieteId === currentVariete.id || r.variete.toLowerCase() === currentVariete.nom.toLowerCase();
+  });
 
-  // Récupération des cultures planifiées correspondantes
+  // EXTRACTION DES PLANIFICATIONS DANS LE CALENDRIER
   const allCultures = JSON.parse(localStorage.getItem('cultures_planifiees') || '[]');
-  culturesMatch = allCultures.filter(c => c.culture.toLowerCase().includes(currentVariete.nom.toLowerCase()));
+  culturesMatch = allCultures.filter(c => {
+    if (!c.culture) return false;
+    return c.culture.toLowerCase().includes(currentVariete.nom.toLowerCase());
+  });
 
-  // Lancement des calculs
+  // Lancement des calculs statistiques et graphiques
   calculerStatsEtRendus();
 }
 
@@ -239,28 +260,25 @@ function sauverParametresVariete() {
   const noteSelectionnee = document.getElementById('param-note').value;
   const estPerpetuelle = document.getElementById('param-perpetuelle').checked;
 
-  // Sauvegarde adaptative dans la bonne clé localStorage
   let listV = JSON.parse(localStorage.getItem(storageKeyUtilisee) || '[]');
   let idx = listV.findIndex(v => v.id === currentVariete.id || v.nom.toLowerCase() === currentVariete.nom.toLowerCase());
   
-  if(idx === -1 && listV.length > 0) {
-    // Si non trouvé mais que la liste existe, on l'ajoute
+  if(idx === -1) {
     currentVariete.note = noteSelectionnee;
     currentVariete.perpetuelle = estPerpetuelle;
     listV.push(currentVariete);
-    idx = listV.length - 1;
-  } else if (idx !== -1) {
+  } else {
     listV[idx].note = noteSelectionnee;
     listV[idx].perpetuelle = estPerpetuelle;
   }
 
   localStorage.setItem(storageKeyUtilisee, JSON.stringify(listV));
   
-  // Propagation du statut perpétuel vers la table calendrier
+  // Propagation automatique de la "culture perpétuelle" vers l'échéancier/calendrier
   let allCultures = JSON.parse(localStorage.getItem('cultures_planifiees') || '[]');
   let modificationsCultures = false;
   allCultures.forEach(c => {
-    if(c.culture.toLowerCase().includes(currentVariete.nom.toLowerCase())) {
+    if(c.culture && c.culture.toLowerCase().includes(currentVariete.nom.toLowerCase())) {
       c.perpetuelle = estPerpetuelle;
       modificationsCultures = true;
     }
@@ -269,7 +287,7 @@ function sauverParametresVariete() {
     localStorage.setItem('cultures_planifiees', JSON.stringify(allCultures));
   }
 
-  alert("✨ Paramètres et persistance enregistrés !");
+  alert("✨ Paramètres et persistance enregistrés avec succès !");
 }
 
 function calculerStatsEtRendus() {
@@ -278,9 +296,10 @@ function calculerStatsEtRendus() {
   let distributionLieu = { serre: 0, bacs: 0, jardin: 0 };
 
   recoltesMatch.forEach(r => {
-    totalPoids += parseFloat(r.poids) || 0;
+    const p = parseFloat(r.poids) || 0;
+    totalPoids += p;
     if(distributionLieu[r.lieu] !== undefined) {
-      distributionLieu[r.lieu] += parseFloat(r.poids) || 0;
+      distributionLieu[r.lieu] += p;
     }
   });
 
@@ -292,6 +311,7 @@ function calculerStatsEtRendus() {
   document.getElementById('lbl-nb-recoltes').innerText = recoltesMatch.length;
   document.getElementById('lbl-nb-plants').innerText = plantsActifs;
 
+  // Cartes par Emplacement
   const lieuxContainer = document.getElementById('lieuxContainer');
   const icons = { serre: "🏠", bacs: "🪴", jardin: "🌳" };
   const labels = { serre: "Serre", bacs: "Bacs", jardin: "Jardin" };
@@ -310,13 +330,14 @@ function calculerStatsEtRendus() {
   }
   lieuxContainer.innerHTML = htmlLieux;
 
+  // Calcul rendement par pied
   const rendContainer = document.getElementById('rendementContainer');
   if(plantsActifs > 0) {
-    let moy = totalPoids / plantsActifs;
+    let moy = totalPoids / plantsActActive = totalPoids / plantsActifs;
     rendContainer.innerHTML = `
     <div class="rendement-card">
       <div>
-        <div class="rendement-val">${moy.toFixed(2).replace('.', ',')} kg / plant</div>
+        <div class="rendement-val">${(totalPoids / plantsActifs).toFixed(2).replace('.', ',')} kg / plant</div>
         <div class="rendement-lbl">Rendement moyen calculé</div>
         <div class="rendement-detail">Basé sur ${plantsActifs} plants actifs cette saison.</div>
       </div>
@@ -328,6 +349,7 @@ function calculerStatsEtRendus() {
     </div>`;
   }
 
+  // Historique des pesées
   const tableContainer = document.getElementById('tableContainer');
   if(recoltesMatch.length === 0) {
     tableContainer.innerHTML = `
