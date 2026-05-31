@@ -736,7 +736,7 @@ td:first-child { color: var(--text); font-weight: 500; }
 </main>
 
 <script>
-// Variable globale manquante pour stocker tes récoltes
+  // Variable globale manquante pour stocker tes récoltes
 let recoltes = [];
   
 // ── DONNÉES HISTORIQUES (depuis le PDF) ────────────────────
@@ -1590,6 +1590,7 @@ function renderAll() {
   populateFamFilter();
   renderTable();
 }
+
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
@@ -1610,11 +1611,7 @@ if (!recoltes || recoltes.length === 0) {
 invalidateCalCache();
 buildSaisonSelect();
 renderAll();
-
-
-});
   
-
 // Sync depuis Sheets au démarrage (rebuild select après sync)
 syncFromSheets();
 </script>
