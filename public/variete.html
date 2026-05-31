@@ -90,6 +90,7 @@ input[type="date"] { cursor: pointer; }
     </div>
     <div class="card-meta" id="metaContainer"></div>
 
+    <!-- ZONE PARAMÈTRES DE CULTURE AJOUTÉE -->
     <div style="background: var(--surface); border: 1px solid var(--border); padding: 14px; border-radius: 6px; margin-top: 14px;">
       <h3 style="font-family: 'Playfair Display', serif; color: var(--text-dim); margin-top: 0; margin-bottom: 12px; font-size: 1rem;">🛠️ Paramètres de culture</h3>
       
@@ -160,6 +161,7 @@ input[type="date"] { cursor: pointer; }
 const params = new URLSearchParams(window.location.search);
 const vegetal = params.get('v') || '';
 
+// Récupération de l'historique brut de l'application
 const RECOLTES_BRUTES = (window.opener && window.opener.RECOLTES_INITIALES) ? window.opener.RECOLTES_INITIALES : [];
 
 function fmtKg(g) {
@@ -260,7 +262,7 @@ function renderChartEvolution(sorted) {
   }
 }
 
-// ── LOGIQUE AVANCÉE DE RECHERCHE, CONFIGURATION ET FUSION ──
+// ── FONCTIONS LOGICIELLES AJOUTÉES POUR LES PARAMÈTRES ──
 function loadCultureParams() {
   document.getElementById('edit-nom').value = vegetal;
 
@@ -311,7 +313,6 @@ function saveCultureParams() {
     const calendarData = JSON.parse(localStorage.getItem('jardin_calendrier_v1') || '{}');
     const ancienneCle = window.calendarItemKey || vegetal;
     
-    // 1. Collecter les données saisies dans les champs
     const dateSemis = document.getElementById('edit-semis').value || null;
     const datePlant = document.getElementById('edit-plant').value || null;
     const lieuChoisi = document.getElementById('edit-lieu').value || 'jardin';
@@ -320,23 +321,19 @@ function saveCultureParams() {
 
     let destinationObj = {};
 
-    // 2. LOGIQUE DE FUSION : Si la cible existe déjà (changement de nom vers un nom existant)
+    // GESTION DE LA FUSION SI LE NOUVEAU NOM EXISTE DÉJÀ
     if (ancienneCle !== nouveauNom && calendarData[nouveauNom]) {
       const existingObj = calendarData[nouveauNom];
-      
-      // Fusion des dates (on prend la saisie, sinon la date existante)
       destinationObj.semis = dateSemis || existingObj.semis || null;
       destinationObj.plantation = datePlant || existingObj.plantation || null;
       destinationObj.lieu = lieuChoisi || existingObj.lieu || 'jardin';
       
-      // Somme cumulative des nombres de plants
       const anciensPlants = parseInt(existingObj.nbrPlants, 10) || 0;
       const nouveauxPlants = nbrPlants || 0;
       destinationObj.nbrPlants = (anciensPlants + nouveauxPlants) || null;
       
       statusDiv.textContent = "🔄 Fusion avec la culture existante...";
     } else {
-      // Cas classique de mise à jour simple ou création de clé
       destinationObj.semis = dateSemis;
       destinationObj.plantation = datePlant;
       destinationObj.lieu = lieuChoisi;
@@ -344,15 +341,11 @@ function saveCultureParams() {
       statusDiv.textContent = "✓ Modifications enregistrées avec succès !";
     }
 
-    // Si le nom a changé, on nettoie proprement l'ancienne clé
     if (ancienneCle !== nouveauNom) {
       delete calendarData[ancienneCle];
     }
     
-    // Injecter l'objet fusionné ou mis à jour
     calendarData[nouveauNom] = destinationObj;
-
-    // Sauvegarde dans le localStorage global
     localStorage.setItem('jardin_calendrier_v1', JSON.stringify(calendarData));
     
     statusDiv.style.color = "var(--green)";
@@ -393,6 +386,7 @@ function init() {
   renderChartLieu(lieuxMap);
   renderChartEvolution(sorted);
   
+  // Génération du tableau d'historique intact
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
   if(!sorted.length) {
