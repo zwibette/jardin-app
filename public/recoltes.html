@@ -736,9 +736,6 @@ td:first-child { color: var(--text); font-weight: 500; }
 </main>
 
 <script>
-// On crée la variable globale et on injecte directement l'historique dedans
-let recoltes = [...RECOLTES_INITIALES];
-  
 // ── DONNÉES HISTORIQUES (depuis le PDF) ────────────────────
 const FAMILLES = {
   'Feuille chêne rouge perez':'SALADES','Batavia verte perez':'SALADES','Batavia rouge perez':'SALADES',
@@ -861,7 +858,7 @@ function buildSaisonSelect() {
 
   // Collecter toutes les saisons présentes dans les récoltes
   const saisonsMap = {};
-// CORRECTION : On utilise RECOLTES_INITIALES pour ne pas faire planter le script
+  // CORRECTION : On utilise RECOLTES_INITIALES pour ne pas faire planter le script
   RECOLTES_INITIALES.forEach(r => {
     const s = getSaisonRecolte(r);
     if (s && !saisonsMap[s.id]) saisonsMap[s.id] = s;
@@ -1595,16 +1592,11 @@ function renderAll() {
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
-// 1. On remplit la variable maintenant que RECOLTES_INITIALES est bien lue par le script
-recoltes = [...RECOLTES_INITIALES];
-
-// 2. On lance la configuration de Claude
+// Invalider cache calendrier à l'init
 invalidateCalCache();
+// Construire le select saison UNE seule fois à l'init
 buildSaisonSelect();
 renderAll();
-
-}
-  
 // Sync depuis Sheets au démarrage (rebuild select après sync)
 syncFromSheets();
 </script>
