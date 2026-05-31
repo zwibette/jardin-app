@@ -842,11 +842,87 @@ function getSaisonRecolte(r) {
   return getSaisonFromDate(datePlant || r.date);
 }
 
+// ── LOGIQUE PERPÉTUELLES ─────────────────────────────────────
+// Fenêtres de récolte annuelles :
+//   Été   : 01/03 → 31/10 de l'année été
+//   Hiver : 01/11 de l'année N → 28-29/02 de l'année N+1
+
+function getCultureCalendrier(vegetal) {
+  const cal = getCalCache();
+  const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
+  const nv = norm(vegetal);
+  return cal.find(c => norm(c.culture) === nv) ||
+         cal.find(c => norm(c.culture).length > 6 && nv.startsWith(norm(c.culture))) ||
+         null;
+}
+
+function isPerpetuelle(vegetal) {
+  const entry = getCultureCalendrier(vegetal);
+  return entry?.estPerpetuelle === true;
+}
+
+// Retourne true si une récolte d'une plante perpétuelle
+// tombe dans la fenêtre saisonnière de la saison demandée
+function recoltePerpetuelleDansSaison(r, saisonId) {
+  const d = new Date(r.date);
+  const m = d.getMonth() + 1; // 1-12
+  const annee = d.getFullYear();
+
+  if (saisonId.startsWith('ete-')) {
+    const anneeEte = parseInt(saisonId.split('-')[1]);
+    // Fenêtre été : 01/03 → 31/10 de l'année été
+    if (annee !== anneeEte) return false;
+    return m >= 3 && m <= 10;
+  }
+
+  if (saisonId.startsWith('hiver-')) {
+    const parts = saisonId.split('-');
+    const anneeN = parseInt(parts[1]);   // ex: 2025
+    const anneeN1 = parseInt(parts[2]);  // ex: 2026
+    // Fenêtre hiver : 01/11/N → 28-29/02/N+1
+    if (annee === anneeN  && m >= 11) return true;
+    if (annee === anneeN1 && m <= 2)  return true;
+    return false;
+  }
+
+  return false;
+}
+
+// Vérifie que la plante était déjà plantée AVANT ou pendant la saison
+function etaitPlanteeAvantSaison(vegetal, saisonId) {
+  const entry = getCultureCalendrier(vegetal);
+  if (!entry) return true; // inconnu : on l'inclut
+  const datePlant = entry.plantation || entry.semis;
+  if (!datePlant) return true;
+
+  // Date de début de la saison
+  let debutSaison;
+  if (saisonId.startsWith('ete-')) {
+    const y = parseInt(saisonId.split('-')[1]);
+    debutSaison = new Date(y, 1, 2); // 02/02
+  } else {
+    const y = parseInt(saisonId.split('-')[1]);
+    debutSaison = new Date(y, 8, 1); // 01/09
+  }
+  return new Date(datePlant) <= debutSaison;
+}
+
 // Retourne le sous-ensemble de récoltes correspondant à la saison active
+// Les perpétuelles plantées avant la saison sont incluses avec fenêtre saisonnière
 function getRecoltesFiltered() {
-  // CORRECTION : On filtre directement depuis RECOLTES_INITIALES pour ne pas planter
-  if (currentSaison === 'toutes') return RECOLTES_INITIALES;
-  return RECOLTES_INITIALES.filter(r => {
+  if (currentSaison === 'toutes') return recoltes;
+
+  return recoltes.filter(r => {
+    const perp = isPerpetuelle(r.vegetal);
+
+    if (perp) {
+      // Plante perpétuelle : incluse si plantée avant/pendant la saison
+      // ET si la récolte tombe dans la fenêtre saisonnière
+      if (!etaitPlanteeAvantSaison(r.vegetal, currentSaison)) return false;
+      return recoltePerpetuelleDansSaison(r, currentSaison);
+    }
+
+    // Plante normale : classification par date de plantation
     const s = getSaisonRecolte(r);
     return s && s.id === currentSaison;
   });
@@ -1191,11 +1267,12 @@ function lieuBadge(l) {
 
 // ── STATS ────────────────────────────────────────────────────
 function computeStats() {
-  const total = recoltes.reduce((s,r)=>s+r.poids,0);
-  const serre = recoltes.filter(r=>r.lieu==='serre').reduce((s,r)=>s+r.poids,0);
-  const bacs  = recoltes.filter(r=>r.lieu==='bacs').reduce((s,r)=>s+r.poids,0);
-  const jardin= recoltes.filter(r=>r.lieu==='jardin').reduce((s,r)=>s+r.poids,0);
-  const varietes = new Set(recoltes.map(r=>r.vegetal)).size;
+  const rf = getRecoltesFiltered();
+  const total = rf.reduce((s,r)=>s+r.poids,0);
+  const serre = rf.filter(r=>r.lieu==='serre').reduce((s,r)=>s+r.poids,0);
+  const bacs  = rf.filter(r=>r.lieu==='bacs').reduce((s,r)=>s+r.poids,0);
+  const jardin= rf.filter(r=>r.lieu==='jardin').reduce((s,r)=>s+r.poids,0);
+  const varietes = new Set(rf.map(r=>r.vegetal)).size;
   return { total, serre, bacs, jardin, varietes };
 }
 
@@ -1208,7 +1285,7 @@ function renderStats() {
 
   // Header
   document.getElementById('hTotalKg').textContent = (s.total/1000).toFixed(1);
-  document.getElementById('hNbRecoltes').textContent = recoltes.length;
+  document.getElementById('hNbRecoltes').textContent = getRecoltesFiltered().length;
   document.getElementById('hNbVarietes').textContent = s.varietes;
 
   // Meilleur rendement/pied (dynamique depuis calendrier)
@@ -1236,7 +1313,7 @@ const PALETTE = ['#3d7a4f','#7ab990','#c47c2b','#3a6ea5','#b84040','#8a6a3a','#6
 
 function renderChartFamille() {
   const byFam = {};
-  recoltes.forEach(r => { byFam[r.famille] = (byFam[r.famille]||0) + r.poids; });
+  getRecoltesFiltered().forEach(r => { byFam[r.famille] = (byFam[r.famille]||0) + r.poids; });
   const sorted = Object.entries(byFam).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
   destroyChart('chartFamille');
   const ctx = document.getElementById('chartFamille').getContext('2d');
@@ -1276,7 +1353,7 @@ function renderChartLieu() {
 
 function renderChartEvolution() {
   const byMonth = {};
-  recoltes.forEach(r => {
+  getRecoltesFiltered().forEach(r => {
     const m = r.date.substring(0,7);
     byMonth[m] = (byMonth[m]||0) + r.poids;
   });
@@ -1306,7 +1383,7 @@ function renderChartEvolution() {
 
 function renderChartMois() {
   const byMonth = {};
-  recoltes.forEach(r => {
+  getRecoltesFiltered().forEach(r => {
     const m = r.date.substring(0,7);
     if (!byMonth[m]) byMonth[m] = { serre:0, bacs:0, jardin:0 };
     byMonth[m][r.lieu] = (byMonth[m][r.lieu]||0) + r.poids;
