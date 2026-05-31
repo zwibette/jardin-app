@@ -319,4 +319,312 @@ Réponds en français. Structure ta réponse avec des titres <h3>. Sois concret,
 1. En te basant sur l'historique de récoltes et la saisonnalité détectée, quand vais-je pouvoir récolter cette plante prochainement ?
 2. Quelles sont les conditions optimales à surveiller (température, humidité, durée depuis plantation) pour cette variété spécifiquement ?
 3. Y a-t-il des signaux visuels ou des indicateurs que je dois surveiller pour savoir que c'est le bon moment ?
-4. Des conseils spécifiques pour maximiser le rendement de la prochaine récolte c
+4. Des conseils spécifiques pour maximiser le rendement de la prochaine récolte compte tenu de la saison actuelle et du climat méditerranéen ?`;
+
+  try {
+    const res = await fetch('/api/conseils', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: systemPrompt, question })
+    });
+    const txt = await res.text();
+    if (!txt.trim()) throw new Error('Réponse vide');
+    const data = JSON.parse(txt);
+    if (!data.success) throw new Error(data.error || 'Erreur API');
+
+    const html = (data.text || '')
+      .replace(/[*][*](.*?)[*][*]/g, '<strong>$1</strong>')
+      .replace(/[*](.*?)[*]/g, '<em>$1</em>')
+      .replace(/^### (.*)/gm, '<h3>$1</h3>')
+      .replace(/^## (.*)/gm, '<h3>$1</h3>')
+      .replace(/^- (.*)/gm, '<div style="padding:3px 0 3px 14px;border-left:2px solid var(--border2);margin:2px 0">$1</div>')
+      .replace(/\n/g, '<br>');
+
+    body.innerHTML = html;
+    sources.style.display = 'flex';
+    btn.textContent = '↺ Actualiser';
+    btn.classList.remove('loading');
+    icon.textContent = '';
+
+  } catch(e) {
+    const surcharge = e.message?.includes('503') || e.message?.includes('UNAVAILABLE');
+    body.innerHTML = `<div style="color:${surcharge ? 'var(--amber)' : 'var(--red)'};font-size:.8rem;padding:10px 0">
+      ${surcharge ? '⏳ IA temporairement surchargée. Réessayez dans quelques secondes.' : '❌ Erreur : ' + e.message}
+    </div>`;
+    btn.classList.remove('loading');
+    icon.textContent = '✦';
+  }
+}
+
+function saveCultureParams() {
+  const statusDiv = document.getElementById('save-status');
+  const nouveauNom = document.getElementById('edit-nom').value.trim();
+
+  if (!nouveauNom) {
+    statusDiv.style.color = "var(--red)";
+    statusDiv.textContent = "⚠️ Le nom ne peut pas être vide.";
+    statusDiv.style.display = "block";
+    return;
+  }
+
+  try {
+    let cal = [];
+    try { cal = JSON.parse(localStorage.getItem(STORAGE_KEY_CAL) || '[]'); } catch(e) {}
+    
+    const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
+    const ancienneCle = vegetal;
+    
+    const dateSemis = document.getElementById('edit-semis').value || null;
+    const datePlant = document.getElementById('edit-plant').value || null;
+    const lieuChoisi = document.getElementById('edit-lieu').value || 'jardin';
+    const inputPlants = parseInt(document.getElementById('edit-nbr').value, 10);
+    const nbrPlants = isNaN(inputPlants) ? null : inputPlants;
+
+    const indexActuel = cal.findIndex(c => norm(c.culture) === norm(ancienneCle));
+    const indexCible = cal.findIndex(c => norm(c.culture) === norm(nouveauNom));
+
+    if (norm(ancienneCle) !== norm(nouveauNom) && indexCible !== -1) {
+      const existingObj = cal[indexCible];
+      existingObj.semis = dateSemis || existingObj.semis || null;
+      existingObj.plantation = datePlant || existingObj.plantation || null;
+      existingObj.lieu = lieuChoisi || existingObj.lieu || 'jardin';
+      
+      const anciensPlants = parseInt(existingObj.nbPlants, 10) || 0;
+      const nouveauxPlants = nbrPlants || 0;
+      existingObj.nbPlants = (anciensPlants + nouveauxPlants) || null;
+      
+      if (indexActuel !== -1) {
+        cal.splice(indexActuel, 1);
+      }
+      statusDiv.textContent = "🔄 Fusion effectuée avec la culture existante...";
+    } else {
+      const updatedObj = {
+        culture: nouveauNom,
+        famille: FAMILLES[nouveauNom] || (indexActuel !== -1 ? cal[indexActuel].famille : ''),
+        semis: dateSemis,
+        plantation: datePlant,
+        lieu: lieuChoisi,
+        nbPlants: nbrPlants,
+        recolteDebut: indexActuel !== -1 ? cal[indexActuel].recolteDebut : null,
+        recolteFin: indexActuel !== -1 ? cal[indexActuel].recolteFin : null
+      };
+
+      if (indexActuel !== -1) {
+        cal[indexActuel] = updatedObj;
+      } else {
+        cal.push(updatedObj);
+      }
+      statusDiv.textContent = "✓ Modifications enregistrées !";
+    }
+
+    localStorage.setItem(STORAGE_KEY_CAL, JSON.stringify(cal));
+    
+    if (norm(ancienneCle) !== norm(nouveauNom)) {
+      let recoltes = loadRecoltes();
+      recoltes.forEach(r => {
+        if (r.vegetal === ancienneCle) {
+          r.vegetal = nouveauNom;
+          r.famille = FAMILLES[nouveauNom] || r.famille || '';
+        }
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(recoltes));
+    }
+
+    statusDiv.style.color = "var(--green)";
+    statusDiv.style.display = "block";
+    
+    setTimeout(() => {
+      statusDiv.style.display = "none";
+      window.location.search = `?v=${encodeURIComponent(nouveauNom)}`;
+    }, 1200);
+
+  } catch (e) {
+    statusDiv.style.color = "var(--red)";
+    statusDiv.textContent = "⚠️ Erreur lors de la sauvegarde.";
+    statusDiv.style.display = "block";
+    console.error(e);
+  }
+}
+
+function render(recoltes, vegetal) {
+  const total    = recoltes.reduce((s,r)=>s+r.poids,0);
+  const bySerre  = recoltes.filter(r=>r.lieu==='serre').reduce((s,r)=>s+r.poids,0);
+  const byBacs   = recoltes.filter(r=>r.lieu==='bacs').reduce((s,r)=>s+r.poids,0);
+  const byJardin = recoltes.filter(r=>r.lieu==='jardin').reduce((s,r)=>s+r.poids,0);
+  const lieux    = [...new Set(recoltes.map(r=>r.lieu))];
+  const multiLieu = lieux.length > 1;
+  const avgNote  = recoltes.filter(r=>r.note).reduce((s,r,_,a)=>s+r.note/a.length,0);
+
+  const nbPlants   = getNbPlants(vegetal);
+  const calEntry   = getCultureEntry(vegetal);
+  const rPied      = nbPlants ? Math.round(total / nbPlants) : null;
+
+  const main = document.getElementById('mainContent');
+
+  let rendementHtml = '';
+  if (rPied !== null) {
+    rendementHtml = `
+    <div class="rendement-card">
+      <div>
+        <div class="rendement-val">${rPied} g/plant</div>
+        <div class="rendement-lbl">Rendement moyen</div>
+        <div class="rendement-detail">${fmtKg(total)} total · ${nbPlants} plants · saison ${calEntry?.semis?.slice(0,4)||'—'}</div>
+      </div>
+      ${calEntry ? `<div style="font-size:.72rem;color:var(--text-dim);text-align:right">
+        <div>Semis : ${fmtDate(calEntry.semis)}</div>
+        ${calEntry.plantation ? `<div>Plantation : ${fmtDate(calEntry.plantation)}</div>` : ''}
+        <div>Récolte prévue : ${fmtDate(calEntry.recolteDebut)} → ${fmtDate(calEntry.recolteFin)}</div>
+      </div>` : ''}
+    </div>`;
+  } else {
+    rendementHtml = `
+    <div class="rendement-missing">
+      <span style="font-size:1.2rem">📊</span>
+      <div>
+        <div style="color:var(--text-dim);font-weight:500;margin-bottom:2px">Rendement g/plant non calculable</div>
+        Renseignez le nombre de plants dans le formulaire ci-dessous ou dans le
+        <a href="/calendrier.html" style="color:var(--accent);text-decoration:none">Calendrier de plantation →</a>
+      </div>
+    </div>`;
+  }
+
+  const currentLieu = calEntry?.lieu || recoltes[0]?.lieu || 'jardin';
+
+  main.innerHTML = `
+    <div class="total-banner">
+      <div>
+        <div class="total-val">${fmtKg(total)}</div>
+        <div class="total-lbl">Total récolté</div>
+      </div>
+      <div class="total-meta">
+        <div class="tmeta"><span class="tmeta-val">${recoltes.length}</span><span class="tmeta-lbl">récoltes</span></div>
+        ${avgNote ? `<div class="tmeta"><span class="tmeta-val">${avgNote.toFixed(1)}</span><span class="tmeta-lbl">note moy.</span></div>` : ''}
+        ${rPied ? `<div class="tmeta"><span class="tmeta-val" style="color:var(--green)">${rPied}g</span><span class="tmeta-lbl">par plant</span></div>` : ''}
+        <div class="tmeta"><span class="tmeta-val">${lieux.length}</span><span class="tmeta-lbl">${lieux.length>1?'lieux':'lieu'}</span></div>
+      </div>
+    </div>
+
+    ${rendementHtml}
+
+    <div class="edit-panel">
+      <div class="stitle" style="margin-bottom:4px">🛠️ Paramètres de culture</div>
+      <div class="edit-grid">
+        <div class="edit-field">
+          <label>Nom de la variété</label>
+          <input type="text" id="edit-nom" value="${vegetal.replace(/"/g, '&quot;')}">
+        </div>
+        <div class="edit-field">
+          <label>Lieu de culture</label>
+          <select id="edit-lieu">
+            <option value="serre" ${currentLieu === 'serre' ? 'selected' : ''}>🏠 Serre</option>
+            <option value="bacs" ${currentLieu === 'bacs' ? 'selected' : ''}>🪴 Bacs surélevés</option>
+            <option value="jardin" ${currentLieu === 'jardin' ? 'selected' : ''}>🌳 Jardin</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label>Date Semis</label>
+          <input type="date" id="edit-semis" value="${calEntry?.semis || ''}">
+        </div>
+        <div class="edit-field">
+          <label>Date Plantation</label>
+          <input type="date" id="edit-plant" value="${calEntry?.plantation || ''}">
+        </div>
+        <div class="edit-field">
+          <label>Nombre plants</label>
+          <input type="number" id="edit-nbr" min="0" value="${calEntry?.nbPlants || ''}">
+        </div>
+      </div>
+      <button onclick="saveCultureParams()" class="edit-btn-save">💾 Enregistrer les modifications</button>
+      <div id="save-status" style="font-size: 0.75rem; margin-top: 8px; text-align: center; display: none;"></div>
+    </div>
+
+    ${multiLieu ? `
+    <div class="section">
+      <div class="stitle">Répartition par lieu</div>
+      <div class="lieux-grid">
+        ${bySerre>0?`<div class="lieu-card"><div class="lieu-icon">🏠</div><div class="lieu-val serre">${fmtKg(bySerre)}</div><div class="lieu-lbl">Serre</div><div class="lieu-pct">${(bySerre/total*100).toFixed(0)}%</div></div>`:''}
+        ${byBacs>0?`<div class="lieu-card"><div class="lieu-icon">🪴</div><div class="lieu-val bacs">${fmtKg(byBacs)}</div><div class="lieu-lbl">Bacs</div><div class="lieu-pct">${(byBacs/total*100).toFixed(0)}%</div></div>`:''}
+        ${byJardin>0?`<div class="lieu-card"><div class="lieu-icon">🌳</div><div class="lieu-val jardin">${fmtKg(byJardin)}</div><div class="lieu-lbl">Jardin</div><div class="lieu-pct">${(byJardin/total*100).toFixed(0)}%</div></div>`:''}
+      </div>
+    </div>` : ''}
+
+    <div class="section">
+      <div class="stitle">Graphiques</div>
+      <div class="charts-grid">
+        ${multiLieu ? `<div class="chart-card"><div class="chart-title">Répartition par lieu</div><div class="chart-wrap"><canvas id="chartDonut"></canvas></div></div>` : ''}
+        <div class="chart-card">
+          <div class="chart-title">Évolution des récoltes</div>
+          <div class="chart-wrap"><canvas id="chartEvol"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="stitle">Détail des récoltes</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Lieu</th><th>Poids</th><th>Note</th></tr></thead>
+          <tbody>
+            ${recoltes.map(r=>`
+              <tr>
+                <td>${fmtDate(r.date)}</td>
+                <td><span class="badge badge-${r.lieu}">${lieuLabel(r.lieu)}</span></td>
+                <td style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700">${fmtKg(r.poids)}</td>
+                <td><span class="stars">${stars(r.note)}</span></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  if (multiLieu) {
+    const lieuxData=[],lieuxLabels=[],lieuxColors=[];
+    if(bySerre>0){lieuxData.push(bySerre);lieuxLabels.push('Serre');lieuxColors.push('#3a6ea5');}
+    if(byBacs>0){lieuxData.push(byBacs);lieuxLabels.push('Bacs');lieuxColors.push('#c47c2b');}
+    if(byJardin>0){lieuxData.push(byJardin);lieuxLabels.push('Jardin');lieuxColors.push('#3d7a4f');}
+    new Chart(document.getElementById('chartDonut').getContext('2d'), {
+      type:'doughnut',
+      data:{ labels:lieuxLabels, datasets:[{data:lieuxData,backgroundColor:lieuxColors,borderWidth:0}] },
+      options:{ responsive:true,maintainAspectRatio:false,animation:false,
+        plugins:{ legend:{position:'bottom',labels:{color:'#8fb898',font:{size:10}}},
+          tooltip:{callbacks:{label:c=>c.label+': '+fmtKg(c.parsed)}} } }
+    });
+  }
+
+  const sorted = [...recoltes].sort((a,b)=>a.date.localeCompare(b.date));
+  if (multiLieu) {
+    const lieuxCfg=[{key:'serre',label:'Serre',color:'#3a6ea5'},{key:'bacs',label:'Bacs',color:'#c47c2b'},{key:'jardin',label:'Jardin',color:'#3d7a4f'}];
+    const labels=[...new Set(sorted.map(r=>r.date))];
+    const datasets=lieuxCfg.map(lc=>{
+      const byLieu=sorted.filter(r=>r.lieu===lc.key);
+      if(!byLieu.length) return null;
+      return { label:lc.label, data:labels.map(d=>{const m=byLieu.find(r=>r.date===d);return m?m.poids:null;}),
+        borderColor:lc.color,backgroundColor:lc.color+'20',borderWidth:2,pointRadius:4,
+        pointBackgroundColor:lc.color,fill:false,tension:0.3,spanGaps:true };
+    }).filter(Boolean);
+    new Chart(document.getElementById('chartEvol').getContext('2d'), {
+      type:'line',
+      data:{ labels:labels.map(d=>{const[,m,j]=d.split('-');return j+'/'+m;}), datasets },
+      options:{ responsive:true,maintainAspectRatio:false,animation:false,
+        plugins:{legend:{position:'bottom',labels:{color:'#8fb898',font:{size:10}}},
+          tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtKg(c.parsed.y)}}},
+        scales:{x:{ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},
+          y:{ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(255,255,255,.04)'}}} }
+    });
+  } else {
+    new Chart(document.getElementById('chartEvol').getContext('2d'), {
+      type:'bar',
+      data:{ labels:sorted.map(r=>{const[,m,j]=r.date.split('-');return j+'/'+m;}),
+        datasets:[{data:sorted.map(r=>r.poids),
+          backgroundColor:lieux[0]==='serre'?'#3a6ea5':lieux[0]==='bacs'?'#c47c2b':'#3d7a4f',borderRadius:6}] },
+      options:{ responsive:true,maintainAspectRatio:false,animation:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtKg(c.parsed.y)}}},
+        scales:{x:{ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},
+          y:{ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(255,255,255,.04)'}}} }
+    });
+  }
+}
+</script>
+</body>
+</html>
