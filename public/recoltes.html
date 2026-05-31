@@ -1468,7 +1468,7 @@ function renderTable() {
   const filterLieu = document.getElementById('filterLieu').value;
   const filterFam  = document.getElementById('filterFam').value;
 
-  let data = [...recoltes];
+  let data = [...getRecoltesFiltered()];
   if (filterLieu) data = data.filter(r=>r.lieu===filterLieu);
   if (filterFam)  data = data.filter(r=>r.famille===filterFam);
 
@@ -1556,10 +1556,12 @@ function toggleDetail(id) {
 
 // ── FILTRE FAMILLES ──────────────────────────────────────────
 function populateFamFilter() {
-  const fams = [...new Set(recoltes.map(r=>r.famille).filter(Boolean))].sort();
+  const fams = [...new Set(getRecoltesFiltered().map(r=>r.famille).filter(Boolean))].sort();
   const sel = document.getElementById('filterFam');
+  const current = sel.value; // conserver la sélection
   sel.innerHTML = '<option value="">Toutes familles</option>' +
     fams.map(f=>`<option value="${f}">${f}</option>`).join('');
+  if (fams.includes(current)) sel.value = current;
 }
 
 // ── ONGLETS GRAPHIQUES ───────────────────────────────────────
