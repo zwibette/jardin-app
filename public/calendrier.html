@@ -863,10 +863,15 @@ function renderListe() {
                 <label class="edit-label">Nb de plants</label>
                 <input class="edit-input" type="number" id="ec-nbplants-${c.id}" value="${c.nbPlants||''}" placeholder="ex: 6" min="1">
               </div>
+                <label class="edit-label">Type</label>
+                <div style="padding:7px 0;">
+                <input type="checkbox" id="ec-perpetuelle-${c.id}" ${c.estPerpetuelle ? 'checked' : ''}> Perpétuelle
+              </div>
               <div class="edit-field">
                 <label class="edit-label">Date de semis</label>
                 <input class="edit-input" type="date" id="ec-semis-${c.id}" value="${c.semis||''}">
               </div>
+              
               <div class="edit-field">
                 <label class="edit-label">Plantation</label>
                 <input class="edit-input" type="date" id="ec-plantation-${c.id}" value="${c.plantation||''}">
