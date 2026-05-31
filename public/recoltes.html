@@ -1590,37 +1590,28 @@ function renderAll() {
   populateFamFilter();
   renderTable();
 }
-
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
-// ── Initialisation et chargement automatique au démarrage ──────
-document.addEventListener("DOMContentLoaded", async () => {
-  // 1. Initialiser le cache du calendrier
-  invalidateCalCache();
+// ── Chargement automatique des données au démarrage ───────────
+try {
+  // On récupère les récoltes sauvegardées au format texte, sinon tableau vide
+  recoltes = JSON.parse(localStorage.getItem('recoltes') || '[]');
+} catch(e) {
+  recoltes = [];
+}
 
-  // 2. CHARGEMENT DES DONNÉES (on remplit la variable globale 'recoltes')
-  if (typeof chargerRecoltes === "function") {
-    await chargerRecoltes();
-  } else if (typeof refreshAll === "function") {
-    await refreshAll();
-  } else {
-    // Si tu utilises le localStorage sous une clé spécifique (ex: 'jardin_recoltes')
-    try {
-      recoltes = JSON.parse(localStorage.getItem('jardin_recoltes_v1') || localStorage.getItem('recoltes') || '[]');
-      if (!recoltes || recoltes.length === 0) {
-        recoltes = [...RECOLTES_INITIALES]; // Fallback sur tes données historiques du PDF
-      }
-    } catch(e) {
-      recoltes = [...RECOLTES_INITIALES];
-    }
-  }
+// Si c'est la première fois ou si c'est vide, charger l'historique initial
+if (!recoltes || recoltes.length === 0) {
+  recoltes = [...RECOLTES_INITIALES];
+}
 
-  // 3. Générer le sélecteur de saisons avec les données chargées
-  buildSaisonSelect();
+// Lancement de l'interface
+invalidateCalCache();
+buildSaisonSelect();
+renderAll();
 
-  // 4. Lancer l'affichage des tableaux et graphiques
-  renderAll();
+
 });
   
 
