@@ -895,12 +895,21 @@ function buildSaisonSelect() {
     sel.appendChild(opt);
   });
 
-  // Si currentSaison n'est pas dans la liste, forcer la saison actuelle
-  if (!saisonsMap[current] && current !== 'toutes') {
-    currentSaison = saisonNow ? saisonNow.id : 'toutes';
-    sel.value = currentSaison;
+  // CORRECTION : Si on est au démarrage (aucune saison valide sélectionnée), 
+  // on sélectionne automatiquement la saison la plus récente (la première de la liste)
+  if (current === 'toutes' || !saisonsMap[current]) {
+    if (sorted.length > 0) {
+      currentSaison = sorted[0].id;
+      sel.value = currentSaison;
+    } else {
+      currentSaison = 'toutes';
+      sel.value = 'toutes';
+    }
+  } else {
+    sel.value = current;
   }
 }
+  
 
 function changerSaison(val) {
   currentSaison = val;
