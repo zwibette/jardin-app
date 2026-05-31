@@ -743,7 +743,9 @@ async function refreshAll() {
   renderSerreMetrics();
   updateCommandStates();
   renderDevices();
-  await loadAndRenderCharts(currentRange);
+  
+  // CORRECTION ICI : On appelle la fonction sans la variable inexistante 'currentRange'
+  await loadAndRenderCharts();
 
   if (tuyaOk) {
     const online = devices.filter(d => d.online).length;
@@ -753,6 +755,7 @@ async function refreshAll() {
   }
   btn.classList.remove('spinning');
 }
+  
 
 function goRecoltes() { window.location.href = '/recoltes.html'; }
 
