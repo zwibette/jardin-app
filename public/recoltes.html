@@ -1611,11 +1611,15 @@ function renderAll() {
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
+// CORRECTION FINALE : Remplir la variable globale au démarrage
+recoltes = [...RECOLTES_INITIALES];
+
 // Invalider cache calendrier à l'init
 invalidateCalCache();
 // Construire le select saison UNE seule fois à l'init
 buildSaisonSelect();
 renderAll();
+
 // Sync depuis Sheets au démarrage (rebuild select après sync)
 syncFromSheets();
 </script>
