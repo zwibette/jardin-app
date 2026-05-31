@@ -90,7 +90,7 @@ input[type="date"] { cursor: pointer; }
     </div>
     <div class="card-meta" id="metaContainer"></div>
 
-    <!-- ZONE PARAMÈTRES DE CULTURE AJOUTÉE -->
+    <!-- MODULE DE CONFIGURATION PARAMÈTRES -->
     <div style="background: var(--surface); border: 1px solid var(--border); padding: 14px; border-radius: 6px; margin-top: 14px;">
       <h3 style="font-family: 'Playfair Display', serif; color: var(--text-dim); margin-top: 0; margin-bottom: 12px; font-size: 1rem;">🛠️ Paramètres de culture</h3>
       
@@ -161,8 +161,18 @@ input[type="date"] { cursor: pointer; }
 const params = new URLSearchParams(window.location.search);
 const vegetal = params.get('v') || '';
 
-// Récupération de l'historique brut de l'application
-const RECOLTES_BRUTES = (window.opener && window.opener.RECOLTES_INITIALES) ? window.opener.RECOLTES_INITIALES : [];
+// 🔒 DOUBLE SÉCURITÉ : On essaie l'opener, sinon on cherche dans le localStorage global
+let RECOLTES_BRUTES = [];
+if (window.opener && window.opener.RECOLTES_INITIALES && window.opener.RECOLTES_INITIALES.length > 0) {
+  RECOLTES_BRUTES = window.opener.RECOLTES_INITIALES;
+} else {
+  try {
+    // Tente de récupérer les récoltes sauvegardées au cas où le lien avec l'opener est perdu
+    RECOLTES_BRUTES = JSON.parse(localStorage.getItem('jardin_recoltes_v1') || '[]');
+  } catch(e) {
+    console.error("Impossible de récupérer les récoltes de secours :", e);
+  }
+}
 
 function fmtKg(g) {
   if(g >= 1000) return (g/1000).toFixed(2) + ' kg';
@@ -262,7 +272,6 @@ function renderChartEvolution(sorted) {
   }
 }
 
-// ── FONCTIONS LOGICIELLES AJOUTÉES POUR LES PARAMÈTRES ──
 function loadCultureParams() {
   document.getElementById('edit-nom').value = vegetal;
 
@@ -321,7 +330,6 @@ function saveCultureParams() {
 
     let destinationObj = {};
 
-    // GESTION DE LA FUSION SI LE NOUVEAU NOM EXISTE DÉJÀ
     if (ancienneCle !== nouveauNom && calendarData[nouveauNom]) {
       const existingObj = calendarData[nouveauNom];
       destinationObj.semis = dateSemis || existingObj.semis || null;
@@ -386,7 +394,6 @@ function init() {
   renderChartLieu(lieuxMap);
   renderChartEvolution(sorted);
   
-  // Génération du tableau d'historique intact
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
   if(!sorted.length) {
