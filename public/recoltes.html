@@ -1591,11 +1591,25 @@ function renderAll() {
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
-// Invalider cache calendrier à l'init
-invalidateCalCache();
-// Construire le select saison UNE seule fois à l'init
-buildSaisonSelect();
-renderAll();
+// ── Initialisation automatique au chargement ───────────────────
+document.addEventListener("DOMContentLoaded", async () => {
+  // Invalider cache calendrier à l'init
+  invalidateCalCache();
+  
+  // Appeler d'abord l'API ou le chargement global de tes données récoltes ici si tu as un refreshAll() ou un loadRecoltes()
+  if (typeof chargerRecoltes === "function") {
+    await chargerRecoltes(); 
+  } else if (typeof refreshAll === "function") {
+    await refreshAll();
+  }
+  
+  // Construire le select saison UNE seule fois à l'init
+  buildSaisonSelect();
+  
+  // Faire le rendu visuel
+  renderAll();
+});
+
 // Sync depuis Sheets au démarrage (rebuild select après sync)
 syncFromSheets();
 </script>
