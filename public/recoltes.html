@@ -861,7 +861,8 @@ function buildSaisonSelect() {
 
   // Collecter toutes les saisons présentes dans les récoltes
   const saisonsMap = {};
-  recoltes.forEach(r => {
+// CORRECTION : On utilise RECOLTES_INITIALES pour ne pas faire planter le script
+  RECOLTES_INITIALES.forEach(r => {
     const s = getSaisonRecolte(r);
     if (s && !saisonsMap[s.id]) saisonsMap[s.id] = s;
   });
