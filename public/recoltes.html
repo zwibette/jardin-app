@@ -1591,24 +1591,35 @@ function renderAll() {
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
-// ── Initialisation automatique au chargement ───────────────────
+// ── Initialisation et chargement automatique au démarrage ──────
 document.addEventListener("DOMContentLoaded", async () => {
-  // Invalider cache calendrier à l'init
+  // 1. Initialiser le cache du calendrier
   invalidateCalCache();
-  
-  // Appeler d'abord l'API ou le chargement global de tes données récoltes ici si tu as un refreshAll() ou un loadRecoltes()
+
+  // 2. CHARGEMENT DES DONNÉES (on remplit la variable globale 'recoltes')
   if (typeof chargerRecoltes === "function") {
-    await chargerRecoltes(); 
+    await chargerRecoltes();
   } else if (typeof refreshAll === "function") {
     await refreshAll();
+  } else {
+    // Si tu utilises le localStorage sous une clé spécifique (ex: 'jardin_recoltes')
+    try {
+      recoltes = JSON.parse(localStorage.getItem('jardin_recoltes_v1') || localStorage.getItem('recoltes') || '[]');
+      if (!recoltes || recoltes.length === 0) {
+        recoltes = [...RECOLTES_INITIALES]; // Fallback sur tes données historiques du PDF
+      }
+    } catch(e) {
+      recoltes = [...RECOLTES_INITIALES];
+    }
   }
-  
-  // Construire le select saison UNE seule fois à l'init
+
+  // 3. Générer le sélecteur de saisons avec les données chargées
   buildSaisonSelect();
-  
-  // Faire le rendu visuel
+
+  // 4. Lancer l'affichage des tableaux et graphiques
   renderAll();
 });
+  
 
 // Sync depuis Sheets au démarrage (rebuild select après sync)
 syncFromSheets();
