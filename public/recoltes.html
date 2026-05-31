@@ -856,9 +856,39 @@ function getCultureCalendrier(vegetal) {
          null;
 }
 
+// Liste des plantes connues comme perpétuelles (filet de sécurité
+// si elles ne sont pas encore cochées dans le calendrier)
+const PERPETUELLES_CONNUES = new Set([
+  // Aromatiques vivaces
+  'ciboulette perez', 'liveche', 'oseille', 'basilic perpetuel', 'persil',
+  'persil geant italie', 'thym', 'romarin', 'sauge', 'origan',
+  'estragon', 'menthe', 'cerfeuil', 'laurier', 'mélisse',
+  // Légumes vivaces
+  'artichaut imperial', 'topinambour', 'rhubarbe', 'epinards malabar',
+  'poiree rubis char', 'blette perez', 'blette lucullus',
+  'céleri perez',
+  // Petits fruits
+  'framboisier', 'groseillier', 'baie de goji', 'kiwai',
+  // Arbres/arbustes (si dans journal)
+  'figuier', 'abricotier', 'pommier',
+]);
+
 function isPerpetuelle(vegetal) {
+  // 1. Vérifier dans le calendrier (source de vérité utilisateur)
   const entry = getCultureCalendrier(vegetal);
-  return entry?.estPerpetuelle === true;
+  if (entry?.estPerpetuelle === true) return true;
+  if (entry && entry.estPerpetuelle === false) return false; // explicitement non-perpétuelle
+
+  // 2. Fallback sur la liste connue (si pas dans calendrier ou champ absent)
+  const norm = s => s.toLowerCase()
+    .replace(/[éèêëe]/g,'e').replace(/[àâa]/g,'a').replace(/[îï]/g,'i')
+    .replace(/[ôo]/g,'o').replace(/[ùûü]/g,'u').replace(/[ç]/g,'c')
+    .replace(/[^a-z ]/g,' ').trim();
+  const nv = norm(vegetal);
+  for (const p of PERPETUELLES_CONNUES) {
+    if (nv.includes(norm(p)) || norm(p).includes(nv)) return true;
+  }
+  return false;
 }
 
 // Retourne true si une récolte d'une plante perpétuelle
