@@ -765,13 +765,7 @@ const FAMILLES = {
 
 // ── RENDEMENT DYNAMIQUE (depuis jardin_calendrier_v1) ─────────
 // Aucune donnée figée — g/pied calculé depuis nb plants saisis dans le calendrier
-// CORRECTION UNIQUE : déclaration de la variable globale pour éviter le blocage
-let recoltes = [];
-
 const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
-
-  
-  const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
 
 function loadCalendrier() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY_CAL) || '[]'); } catch(e) { return []; }
@@ -850,16 +844,13 @@ function getSaisonRecolte(r) {
 
 // Retourne le sous-ensemble de récoltes correspondant à la saison active
 function getRecoltesFiltered() {
-  // CORRECTION : Si la variable globale recoltes est vide au démarrage, on pioche dans l'historique initial
-  const sourceData = (typeof recoltes !== 'undefined' && recoltes.length > 0) ? recoltes : RECOLTES_INITIALES;
-  
-  if (currentSaison === 'toutes') return sourceData;
-  return sourceData.filter(r => {
+  // CORRECTION : On filtre directement depuis RECOLTES_INITIALES pour ne pas planter
+  if (currentSaison === 'toutes') return RECOLTES_INITIALES;
+  return RECOLTES_INITIALES.filter(r => {
     const s = getSaisonRecolte(r);
     return s && s.id === currentSaison;
   });
 }
-
 
 // Construit et peuple le select avec toutes les saisons trouvées
 function buildSaisonSelect() {
@@ -868,8 +859,7 @@ function buildSaisonSelect() {
 
   // Collecter toutes les saisons présentes dans les récoltes
   const saisonsMap = {};
-  // CORRECTION : On utilise RECOLTES_INITIALES pour ne pas faire planter le script
-  RECOLTES_INITIALES.forEach(r => {
+  recoltes.forEach(r => {
     const s = getSaisonRecolte(r);
     if (s && !saisonsMap[s.id]) saisonsMap[s.id] = s;
   });
@@ -905,21 +895,12 @@ function buildSaisonSelect() {
     sel.appendChild(opt);
   });
 
-  // CORRECTION : Si on est au démarrage (aucune saison valide sélectionnée), 
-  // on sélectionne automatiquement la saison la plus récente (la première de la liste)
-  if (current === 'toutes' || !saisonsMap[current]) {
-    if (sorted.length > 0) {
-      currentSaison = sorted[0].id;
-      sel.value = currentSaison;
-    } else {
-      currentSaison = 'toutes';
-      sel.value = 'toutes';
-    }
-  } else {
-    sel.value = current;
+  // Si currentSaison n'est pas dans la liste, forcer la saison actuelle
+  if (!saisonsMap[current] && current !== 'toutes') {
+    currentSaison = saisonNow ? saisonNow.id : 'toutes';
+    sel.value = currentSaison;
   }
 }
-  
 
 function changerSaison(val) {
   currentSaison = val;
@@ -1611,27 +1592,23 @@ function renderAll() {
 // Date par défaut = aujourd'hui
 document.getElementById('inp-date').valueAsDate = new Date();
 
-// 1. Déclarer proprement la variable globale au démarrage pour éviter le crash
-window.recoltes = [...RECOLTES_INITIALES];
-
-// 2. Initialiser le calendrier
+// 1. Initialiser le cache du calendrier
 invalidateCalCache();
 
-// 3. Construire le menu déroulant (il va retrouver toutes ses saisons : Été 2026, Hiver...)
+// 2. Construire le menu déroulant (il va afficher toutes les saisons correctement)
 buildSaisonSelect();
 
-// 4. Sélectionner automatiquement la saison la plus récente au chargement
-const menuSaison = document.getElementById('saisonSelect');
-if (menuSaison && menuSaison.options.length > 1) {
-  // L'option 0 est "Toutes les saisons", l'option 1 est la saison la plus récente
-  currentSaison = menuSaison.options[1].value;
-  menuSaison.value = currentSaison;
+// 3. Forcer la variable de la saison sur la première option réelle trouvée (la plus récente)
+const sSelect = document.getElementById('saisonSelect');
+if (sSelect && sSelect.options.length > 1) {
+  currentSaison = sSelect.options[1].value; // Sélectionne la 1ère vraie saison (ex: ete-2026)
+  sSelect.value = currentSaison;
+} else {
+  currentSaison = 'toutes';
 }
 
-// 5. Lancer l'affichage automatique des tableaux et graphiques
+// 4. Lancer l'affichage automatique des tableaux et graphiques
 renderAll();
-
-
 
 // Sync depuis Sheets au démarrage (rebuild select après sync)
 syncFromSheets();
