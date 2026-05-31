@@ -1223,7 +1223,7 @@ function renderStats() {
     const bestTotal = Object.entries(byVeg).sort((a,b)=>b[1]-a[1])[0];
     document.getElementById('hMeilleur').textContent = bestTotal ? bestTotal[0].split(' ')[0] : '—';
   }
-
+}
 
 // ── CHARTS ───────────────────────────────────────────────────
 const chartInstances = {};
