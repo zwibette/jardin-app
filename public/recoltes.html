@@ -765,7 +765,13 @@ const FAMILLES = {
 
 // ── RENDEMENT DYNAMIQUE (depuis jardin_calendrier_v1) ─────────
 // Aucune donnée figée — g/pied calculé depuis nb plants saisis dans le calendrier
+// CORRECTION UNIQUE : déclaration de la variable globale pour éviter le blocage
+let recoltes = [];
+
 const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
+
+  
+  const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
 
 function loadCalendrier() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY_CAL) || '[]'); } catch(e) { return []; }
