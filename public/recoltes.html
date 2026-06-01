@@ -1242,18 +1242,33 @@ function addRecolte() {
   recoltes.unshift(newRec);
   saveRecoltes(recoltes);
   syncToSheets();
+  invalidateCalCache(); // forcer relecture du calendrier
 
   // Reset form
   document.getElementById('inp-vegetal').value = '';
   document.getElementById('inp-poids').value = '';
   document.getElementById('inp-note').value = '';
 
-  renderAll();
+  _rebuildAndRender();
   showToast('✓ Récolte ajoutée — ' + poids + 'g de ' + vegetal);
 }
 
 function _rebuildAndRender() {
+  const saison = currentSaison; // mémoriser avant rebuild
   buildSaisonSelect();
+  // Restaurer la saison sélectionnée si elle existe encore dans le menu
+  const sel = document.getElementById('saisonSelect');
+  if (sel) {
+    const opts = Array.from(sel.options).map(o => o.value);
+    if (opts.includes(saison)) {
+      currentSaison = saison;
+      sel.value = saison;
+    } else {
+      // Saison supprimée — prendre la plus récente
+      currentSaison = opts[1] || 'toutes';
+      sel.value = currentSaison;
+    }
+  }
   renderAll();
 }
 
@@ -1747,12 +1762,20 @@ invalidateCalCache();
 buildSaisonSelect();
 
 // 3. Forcer la variable de la saison sur la première option réelle trouvée (la plus récente)
+// Appliquer la saison du jour par défaut dans le select
 const sSelect = document.getElementById('saisonSelect');
-if (sSelect && sSelect.options.length > 1) {
-  currentSaison = sSelect.options[1].value; // Sélectionne la 1ère vraie saison (ex: ete-2026)
-  sSelect.value = currentSaison;
-} else {
-  currentSaison = 'toutes';
+if (sSelect) {
+  const opts = Array.from(sSelect.options).map(o => o.value);
+  // currentSaison a déjà été initialisé à la saison du jour
+  if (opts.includes(currentSaison)) {
+    sSelect.value = currentSaison;
+  } else if (opts.length > 1) {
+    currentSaison = opts[1]; // première saison réelle
+    sSelect.value = currentSaison;
+  } else {
+    currentSaison = 'toutes';
+    sSelect.value = 'toutes';
+  }
 }
 
 // 4. Lancer l'affichage automatique des tableaux et graphiques
