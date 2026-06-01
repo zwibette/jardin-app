@@ -883,20 +883,22 @@ const PERPETUELLES_CONNUES = new Set([
 ]);
 
 function isPerpetuelle(vegetal) {
-  // 1. Vérifier dans le calendrier (source de vérité utilisateur)
-  const entry = getCultureCalendrier(vegetal);
-  if (entry?.estPerpetuelle === true) return true;
-  if (entry && entry.estPerpetuelle === false) return false; // explicitement non-perpétuelle
-
-  // 2. Fallback sur la liste connue (si pas dans calendrier ou champ absent)
-  const norm = s => s.toLowerCase()
-    .replace(/[éèêëe]/g,'e').replace(/[àâa]/g,'a').replace(/[îï]/g,'i')
-    .replace(/[ôo]/g,'o').replace(/[ùûü]/g,'u').replace(/[ç]/g,'c')
+  const normStr = s => s.toLowerCase()
+    .replace(/[éèêë]/g,'e').replace(/[àâ]/g,'a').replace(/[îï]/g,'i')
+    .replace(/[ô]/g,'o').replace(/[ùûü]/g,'u').replace(/[ç]/g,'c')
     .replace(/[^a-z ]/g,' ').trim();
-  const nv = norm(vegetal);
+  const nv = normStr(vegetal);
+
+  // 1. Liste de référence en PRIORITÉ — correspondance exacte ou inclusion du mot-clé
   for (const p of PERPETUELLES_CONNUES) {
-    if (nv.includes(norm(p)) || norm(p).includes(nv)) return true;
+    if (nv === p || nv.includes(p) || p.includes(nv)) return true;
   }
+
+  // 2. Calendrier — seulement si correspondance EXACTE du nom de culture
+  const cal = getCalCache();
+  const exactEntry = cal.find(c => normStr(c.culture) === nv);
+  if (exactEntry?.estPerpetuelle === true) return true;
+
   return false;
 }
 
@@ -929,8 +931,14 @@ function recoltePerpetuelleDansSaison(r, saisonId) {
 
 // Vérifie que la plante était déjà plantée AVANT ou pendant la saison
 function etaitPlanteeAvantSaison(vegetal, saisonId) {
-  const entry = getCultureCalendrier(vegetal);
-  if (!entry) return true; // inconnu : on l'inclut
+  // Matching exact uniquement pour éviter les faux positifs
+  const normStr = s => s.toLowerCase()
+    .replace(/[éèêë]/g,'e').replace(/[àâ]/g,'a').replace(/[îï]/g,'i')
+    .replace(/[ô]/g,'o').replace(/[ùûü]/g,'u').replace(/[ç]/g,'c')
+    .replace(/[^a-z ]/g,' ').trim();
+  const cal = getCalCache();
+  const entry = cal.find(c => normStr(c.culture) === normStr(vegetal)) || null;
+  if (!entry) return true; // pas dans le calendrier → inclure par défaut
   const datePlant = entry.plantation || entry.semis;
   if (!datePlant) return true;
 
