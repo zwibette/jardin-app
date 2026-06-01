@@ -837,7 +837,12 @@ function getDatePlantationPourRecolte(recolteVegetal) {
 }
 
 function getSaisonRecolte(r) {
-  // Priorité : date de plantation du calendrier → sinon date de récolte
+  // Pour les perpétuelles : la saison est celle de la DATE DE RÉCOLTE
+  // (la plante existe dans toutes les saisons après sa plantation)
+  if (isPerpetuelle(r.vegetal)) {
+    return getSaisonFromDate(r.date);
+  }
+  // Pour les annuelles : la saison est celle de la date de PLANTATION
   const datePlant = getDatePlantationPourRecolte(r.vegetal);
   return getSaisonFromDate(datePlant || r.date);
 }
@@ -848,12 +853,16 @@ function getSaisonRecolte(r) {
 //   Hiver : 01/11 de l'année N → 28-29/02 de l'année N+1
 
 function getCultureCalendrier(vegetal) {
+  // Délégue à getCalEntryPourVegetal (définie plus bas, même logique)
+  // Redéfinie ici pour compatibilité avec isPerpetuelle / etaitPlanteeAvantSaison
   const cal = getCalCache();
-  const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
+  const norm = s => s.toLowerCase()
+    .replace(/[éèêëàâîïôùûüç]/g, c => ({é:'e',è:'e',ê:'e',ë:'e',à:'a',â:'a',î:'i',ï:'i',ô:'o',ù:'u',û:'u',ü:'u',ç:'c'}[c]||c))
+    .replace(/[^a-z0-9 ]/g,' ').trim();
   const nv = norm(vegetal);
-  return cal.find(c => norm(c.culture) === nv) ||
-         cal.find(c => norm(c.culture).length > 6 && nv.startsWith(norm(c.culture))) ||
-         null;
+  return cal.find(c => norm(c.culture) === nv)
+      || cal.find(c => { const nc = norm(c.culture); return nc.length > 6 && (nv.startsWith(nc) || nc.startsWith(nv)); })
+      || null;
 }
 
 // Liste des plantes connues comme perpétuelles (filet de sécurité
@@ -1147,10 +1156,32 @@ let sortAsc = false;
 
 // ── VÉGÉTAUX CONNUS (pour autocomplete) ─────────────────────
 function getVegetauxConnus() {
+  // Source 1 : calendrier (base de données centrale)
+  const cal = getCalCache();
+  const depuisCal = cal.map(c => c.culture);
+  // Source 2 : FAMILLES (fallback statique)
+  // Source 3 : récoltes déjà saisies
   return [...new Set([
+    ...depuisCal,
     ...Object.keys(FAMILLES),
     ...recoltes.map(r => r.vegetal)
-  ])].sort();
+  ])].sort((a, b) => a.localeCompare(b, 'fr'));
+}
+
+// Retourne l'entrée calendrier pour un végétal (matching exact puis souple)
+function getCalEntryPourVegetal(vegetal) {
+  const cal = getCalCache();
+  const norm = s => s.toLowerCase().replace(/[éèêëàâîïôùûüç]/g, c =>
+    ({é:'e',è:'e',ê:'e',ë:'e',à:'a',â:'a',î:'i',ï:'i',ô:'o',ù:'u',û:'u',ü:'u',ç:'c'}[c]||c)
+  ).replace(/[^a-z0-9 ]/g,' ').trim();
+  const nv = norm(vegetal);
+  return cal.find(c => norm(c.culture) === nv)
+      || cal.find(c => norm(c.culture).length > 5 && norm(c.culture) === nv)
+      || cal.find(c => {
+           const nc = norm(c.culture);
+           return nc.length > 6 && (nv.startsWith(nc) || nc.startsWith(nv));
+         })
+      || null;
 }
 
 // ── SUGGESTIONS ─────────────────────────────────────────────
@@ -1160,9 +1191,12 @@ function showSuggestions(val) {
   const matches = getVegetauxConnus().filter(v => v.toLowerCase().includes(val.toLowerCase())).slice(0,8);
   if (!matches.length) { el.style.display='none'; return; }
   el.innerHTML = matches.map(v => {
-    const fam = FAMILLES[v] || '';
+    const calEntry = getCalEntryPourVegetal(v);
+    const fam = FAMILLES[v] || calEntry?.famille || '';
+    const lieuIcon = { serre:'🏠', bacs:'🪴', jardin:'🌳' }[calEntry?.lieu] || '';
+    const perpIcon = calEntry?.estPerpetuelle || isPerpetuelle(v) ? ' ♾️' : '';
     return `<div class="suggestion-item" onmousedown="selectSuggestion('${v.replace(/'/g,"\\'")}')">
-      <span>${v}</span><span class="fam">${fam}</span>
+      <span>${v}${perpIcon}</span><span class="fam">${lieuIcon} ${fam}</span>
     </div>`;
   }).join('');
   el.style.display = 'block';
@@ -1171,9 +1205,14 @@ function showSuggestions(val) {
 function selectSuggestion(val) {
   document.getElementById('inp-vegetal').value = val;
   document.getElementById('suggestions').style.display = 'none';
-  // Auto-détecter le lieu si connu
-  const rec = recoltes.find(r => r.vegetal === val);
-  if (rec) document.getElementById('inp-lieu').value = rec.lieu;
+  // Auto-remplir lieu : calendrier > récolte passée
+  const calEntry = getCalEntryPourVegetal(val);
+  if (calEntry?.lieu) {
+    document.getElementById('inp-lieu').value = calEntry.lieu;
+  } else {
+    const rec = recoltes.find(r => r.vegetal === val);
+    if (rec) document.getElementById('inp-lieu').value = rec.lieu;
+  }
 }
 
 function hideSuggestions() {
