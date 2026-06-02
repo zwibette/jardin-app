@@ -559,6 +559,7 @@ td:first-child { color: var(--text); font-weight: 500; }
 <header>
   <div class="header-top">
     <a href="/" class="back-btn">← Dashboard</a>
+    <button onclick="showDiag()" style="background:transparent;border:none;color:var(--text-muted);font-size:.6rem;cursor:pointer;opacity:.4;letter-spacing:.05em" title="Diagnostic">⚙</button>
     <div style="display:flex;align-items:center;gap:10px">
       <a href="/calendrier.html" class="back-btn" style="background:rgba(163,230,53,.12);border-color:rgba(163,230,53,.3);color:var(--accent)">📅 Calendrier</a>
       <select class="saison-select" id="saisonSelect" onchange="changerSaison(this.value)" title="Filtrer par saison">
@@ -1252,22 +1253,12 @@ function addRecolte() {
   syncToSheets();
   invalidateCalCache();
 
-  console.log('[DEBUG] Récolte ajoutée:', JSON.stringify(newRec));
-  console.log('[DEBUG] isPerpetuelle:', isPerpetuelle(newRec.vegetal));
-  console.log('[DEBUG] getSaisonRecolte:', getSaisonRecolte(newRec)?.id);
-  console.log('[DEBUG] currentSaison avant rebuild:', currentSaison);
-
   // Reset form
   document.getElementById('inp-vegetal').value = '';
   document.getElementById('inp-poids').value = '';
   document.getElementById('inp-note').value = '';
 
   _rebuildAndRender();
-
-  console.log('[DEBUG] currentSaison après rebuild:', currentSaison);
-  console.log('[DEBUG] getRecoltesFiltered length:', getRecoltesFiltered().length);
-  console.log('[DEBUG] nouvelle récolte dans filtre:', getRecoltesFiltered().some(r => r.id === newRec.id));
-
   showToast('✓ Récolte ajoutée — ' + poids + 'g de ' + vegetal);
 }
 
@@ -1768,6 +1759,70 @@ function renderAll() {
   renderTop();
   populateFamFilter();
   renderTable();
+}
+
+// ── DIAGNOSTIC MOBILE ────────────────────────────────────────
+function showDiag() {
+  var cal = JSON.parse(localStorage.getItem('jardin_calendrier_v1') || '[]');
+  var recs = JSON.parse(localStorage.getItem('jardin_recoltes_v2') || '[]');
+  var normStr = function(s) {
+    return s.toLowerCase()
+      .replace(/[eéèêë]/g,'e').replace(/[aàâ]/g,'a').replace(/[iîï]/g,'i')
+      .replace(/[oô]/g,'o').replace(/[uùûü]/g,'u').replace(/c/g,'c')
+      .replace(/[^a-z ]/g,' ').trim();
+  };
+  var tests = ['Ciboulette perez','Fraise','Blette perez','Persil perez','Oseille'];
+  var lines = ['=== DIAGNOSTIC ==='];
+  lines.push('currentSaison: ' + currentSaison);
+  lines.push('Recoltes: ' + recs.length);
+  lines.push('Calendrier: ' + cal.length + ' cultures');
+  lines.push('');
+  lines.push('--- Perpetuelles ---');
+  tests.forEach(function(v) {
+    var perp = isPerpetuelle(v);
+    var nv = normStr(v);
+    var exact = cal.find(function(c) { return normStr(c.culture) === nv; });
+    var loose = cal.find(function(c) {
+      var nc = normStr(c.culture);
+      return nc !== nv && (nc.indexOf(nv) > -1 || nv.indexOf(nc) > -1);
+    });
+    var info = v + ': ' + (perp ? 'OUI' : 'non');
+    if (exact) info += ' [cal:' + exact.estPerpetuelle + ']';
+    if (loose) info += ' [FAUX:' + loose.culture + ']';
+    lines.push(info);
+  });
+  lines.push('');
+  lines.push('--- Dernieres recoltes ---');
+  recs.slice(0,5).forEach(function(r) { lines.push(r.date + ' ' + r.vegetal); });
+  lines.push('');
+  lines.push('--- Menu saisons ---');
+  Array.from(document.getElementById('saisonSelect').options).forEach(function(o) {
+    lines.push(o.value);
+  });
+  lines.push('');
+  lines.push('OK=copier / Annuler=reset calendrier');
+  var SEP = String.fromCharCode(10);
+  var msg = lines.join(SEP);
+  if (confirm(msg)) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(msg).then(function() { alert('Copie OK'); });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = msg;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      alert('Copie OK');
+    }
+  } else {
+    if (confirm('Reset calendrier uniquement ? (recoltes preservees)')) {
+      localStorage.removeItem('jardin_calendrier_v1');
+      invalidateCalCache();
+      _rebuildAndRender();
+      alert('Calendrier reinitialise.');
+    }
+  }
 }
 
 // Date par défaut = aujourd'hui
