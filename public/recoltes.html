@@ -1250,7 +1250,12 @@ function addRecolte() {
   recoltes.unshift(newRec);
   saveRecoltes(recoltes);
   syncToSheets();
-  invalidateCalCache(); // forcer relecture du calendrier
+  invalidateCalCache();
+
+  console.log('[DEBUG] Récolte ajoutée:', JSON.stringify(newRec));
+  console.log('[DEBUG] isPerpetuelle:', isPerpetuelle(newRec.vegetal));
+  console.log('[DEBUG] getSaisonRecolte:', getSaisonRecolte(newRec)?.id);
+  console.log('[DEBUG] currentSaison avant rebuild:', currentSaison);
 
   // Reset form
   document.getElementById('inp-vegetal').value = '';
@@ -1258,6 +1263,11 @@ function addRecolte() {
   document.getElementById('inp-note').value = '';
 
   _rebuildAndRender();
+
+  console.log('[DEBUG] currentSaison après rebuild:', currentSaison);
+  console.log('[DEBUG] getRecoltesFiltered length:', getRecoltesFiltered().length);
+  console.log('[DEBUG] nouvelle récolte dans filtre:', getRecoltesFiltered().some(r => r.id === newRec.id));
+
   showToast('✓ Récolte ajoutée — ' + poids + 'g de ' + vegetal);
 }
 
