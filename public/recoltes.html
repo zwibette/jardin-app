@@ -964,9 +964,8 @@ function getRecoltesFiltered() {
     const perp = isPerpetuelle(r.vegetal);
 
     if (perp) {
-      // Plante perpétuelle : incluse si plantée avant/pendant la saison
-      // ET si la récolte tombe dans la fenêtre saisonnière
-      if (!etaitPlanteeAvantSaison(r.vegetal, currentSaison)) return false;
+      // Plante perpétuelle : incluse si la récolte tombe dans la fenêtre saisonnière
+      // On ne vérifie PAS etaitPlanteeAvantSaison — trop de faux positifs avec le matching
       return recoltePerpetuelleDansSaison(r, currentSaison);
     }
 
