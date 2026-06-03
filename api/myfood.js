@@ -43,31 +43,26 @@ async function getToken() {
 }
 
 async function myfoodGet(path, unitId, token) {
-  // Tester les deux noms de paramètre que l'API peut attendre
-  const urls = [
-    `${BASE}${path}?id=${unitId}`,
-    `${BASE}${path}?productionUnitId=${unitId}`,
-    `${BASE}${path}?ProductionUnitId=${unitId}`,
+  const url = `${BASE}${path}?productionUnitId=${unitId}`;
+  // Tester plusieurs variantes de headers Authorization
+  const headerVariants = [
+    { 'authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+    { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+    { 'Authorization': token, 'Accept': 'application/json' },
+    { 'authorization': token, 'Accept': 'application/json' },
   ];
-  for (const url of urls) {
-    console.log('MyFood GET trying:', url);
-    const r = await fetch(url, {
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Accept': 'application/json',
-        'Accept-Language': 'fr-FR',
-      }
-    });
+  for (const headers of headerVariants) {
+    console.log('MyFood GET headers:', JSON.stringify(Object.keys(headers)), 'auth prefix:', headers.Authorization || headers.authorization ? (headers.Authorization || headers.authorization).slice(0,15) : 'none');
+    const r = await fetch(url, { headers });
     const raw = await r.text();
-    console.log('MyFood GET [' + url.split('?')[1] + '] status:', r.status, '| raw:', raw.slice(0, 80));
+    console.log('  → status:', r.status, '| JSON?', !raw.trim().startsWith('<'), '| raw:', raw.slice(0, 60));
     if (!raw.trim().startsWith('<')) {
-      // Réponse JSON — c'est le bon paramètre
       try { return JSON.parse(raw); } catch(e) {
         throw new Error('GET réponse non-JSON: ' + raw.slice(0, 200));
       }
     }
   }
-  throw new Error('Aucun paramètre ne retourne du JSON pour ' + path);
+  throw new Error('Aucune variante de header ne retourne du JSON');
 }
 
 module.exports = async function handler(req, res) {
