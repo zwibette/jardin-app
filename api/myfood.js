@@ -76,6 +76,7 @@ module.exports = async function handler(req, res) {
     const token = await getToken();
     const resp  = await myfoodGet('/api/v1/ProductUnit/GetProductUnitDetailForUser', unitId, token);
 
+    console.log('MyFood resp:', JSON.stringify(resp).slice(0, 400));
     const succeeded = resp?.succeeded || resp?.Succeeded;
     const d = resp?.data || resp?.Data;
 
@@ -96,7 +97,8 @@ module.exports = async function handler(req, res) {
     });
 
   } catch(e) {
+    console.error('MyFood catch:', e.message, e.stack?.slice(0, 300));
     _tokenCache = { token: null, expiresAt: 0 };
-    return res.status(500).json({ success: false, error: e.message });
+    return res.status(500).json({ success: false, error: e.message || 'Erreur inconnue' });
   }
 };
