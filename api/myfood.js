@@ -44,6 +44,7 @@ async function getToken() {
 
 async function myfoodGet(path, unitId, token) {
   const url = `${BASE}${path}?productionUnitId=${unitId}`;
+  console.log('MyFood GET url:', url);
   const r = await fetch(url, {
     headers: {
       'Authorization': 'Bearer ' + token,
@@ -51,7 +52,9 @@ async function myfoodGet(path, unitId, token) {
       'Accept-Language': 'fr-FR',
     }
   });
+  console.log('MyFood GET status:', r.status);
   const raw = await r.text();
+  console.log('MyFood GET raw (300c):', raw.slice(0, 300));
   let d;
   try { d = JSON.parse(raw); } catch(e) {
     throw new Error('GET réponse non-JSON [' + r.status + ']: ' + raw.slice(0, 200));
