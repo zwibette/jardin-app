@@ -569,6 +569,40 @@ function fmtTick(dateStr, range) {
 // ── Dashboard métriques ──────────────────────────────────────
 function renderAlerts() { document.getElementById('alertBanners').innerHTML = ''; }
 
+// ── MyFood API ────────────────────────────────────────────────
+async function fetchMyFood() {
+  try {
+    const r = await fetch('/api/myfood');
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'MyFood indisponible');
+    updateMyFoodMetrics(d);
+  } catch(e) {
+    console.warn('MyFood:', e.message);
+    // Affichage dégradé silencieux — les cartes restent à "—"
+  }
+}
+
+function updateMyFoodMetrics(d) {
+  // pH
+  if (d.ph !== null && d.ph !== undefined) {
+    document.getElementById('val-ph').textContent = d.ph.toFixed(1);
+    document.getElementById('unit-ph').textContent = 'pH · ' + (d.phTime || '');
+    const phDot = document.getElementById('dot-ph');
+    if      (d.ph < 6.2 || d.ph > 7.6) { phDot.className = 'dot dot-red';   }
+    else if (d.ph < 6.5 || d.ph > 7.2) { phDot.className = 'dot dot-amber'; }
+    else                                { phDot.className = 'dot dot-green'; }
+  }
+  // Température eau
+  if (d.waterTemp !== null && d.waterTemp !== undefined) {
+    document.getElementById('val-wtemp').textContent = d.waterTemp.toFixed(1) + '°';
+    document.getElementById('unit-wtemp').textContent = '°C · ' + (d.waterTempTime || '');
+    const wtDot = document.getElementById('dot-wtemp');
+    if      (d.waterTemp < 18 || d.waterTemp > 28) { wtDot.className = 'dot dot-red';   }
+    else if (d.waterTemp < 20 || d.waterTemp > 26) { wtDot.className = 'dot dot-amber'; }
+    else                                            { wtDot.className = 'dot dot-green'; }
+  }
+}
+
 function renderSerreMetrics() {
   const el = document.getElementById('serreMetrics');
   const sensor = getSerreTHSensor();
@@ -591,15 +625,15 @@ function renderSerreMetrics() {
       <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text);margin:6px 0 2px">${humV}</div>
       <div class="metric-unit">% — serre</div>
     </div>
-    <div class="metric-card" style="padding:12px 14px;opacity:.45;border-style:dashed">
-      <div class="metric-label"><span class="dot dot-gray"></span>🐟 pH eau</div>
-      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text-muted);margin:6px 0 2px">—</div>
-      <div class="metric-unit" style="color:var(--text-muted)">MyFood bientôt</div>
+    <div class="metric-card" style="padding:12px 14px" id="card-ph">
+      <div class="metric-label"><span class="dot dot-gray" id="dot-ph"></span>🐟 pH eau</div>
+      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text);margin:6px 0 2px" id="val-ph">—</div>
+      <div class="metric-unit" id="unit-ph">MyFood</div>
     </div>
-    <div class="metric-card" style="padding:12px 14px;opacity:.45;border-style:dashed">
-      <div class="metric-label"><span class="dot dot-gray"></span>🌊 Temp. eau</div>
-      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text-muted);margin:6px 0 2px">—</div>
-      <div class="metric-unit" style="color:var(--text-muted)">MyFood bientôt</div>
+    <div class="metric-card" style="padding:12px 14px" id="card-wtemp">
+      <div class="metric-label"><span class="dot dot-gray" id="dot-wtemp"></span>🌊 Temp. eau</div>
+      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text);margin:6px 0 2px" id="val-wtemp">—</div>
+      <div class="metric-unit" id="unit-wtemp">°C — bassin</div>
     </div>`;
 }
 
@@ -813,6 +847,7 @@ async function refreshAll() {
 
   renderAlerts();
   renderSerreMetrics();
+  fetchMyFood();
   updateCommandStates();
   renderDevices();
   await loadAndRenderCharts();
