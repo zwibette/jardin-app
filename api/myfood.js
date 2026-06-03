@@ -7,12 +7,6 @@ const BASE = 'https://hub.myfood.eu';
 
 let _tokenCache = { token: null, expiresAt: 0 };
 
-const HEADERS_AUTH = {
-  'Content-Type': 'application/json',
-  'Accept': 'application/json',
-  'Accept-Language': 'fr-FR',
-};
-
 async function getToken() {
   if (_tokenCache.token && Date.now() < _tokenCache.expiresAt - 60000) {
     return _tokenCache.token;
@@ -20,7 +14,10 @@ async function getToken() {
 
   const r = await fetch(`${BASE}/api/identity/token`, {
     method: 'POST',
-    headers: HEADERS_AUTH,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
     body: JSON.stringify({
       UserName: process.env.MYFOOD_EMAIL,
       Password: process.env.MYFOOD_PASSWORD,
@@ -30,39 +27,47 @@ async function getToken() {
   const raw = await r.text();
   let d;
   try { d = JSON.parse(raw); } catch(e) {
-    throw new Error('Auth réponse non-JSON [' + r.status + ']: ' + raw.slice(0, 200));
+    throw new Error('Auth non-JSON [' + r.status + ']: ' + raw.slice(0, 200));
   }
 
-  const token = d?.data?.token || d?.Data?.token || d?.data?.Token || d?.Data?.Token;
-  if (!token) {
-    throw new Error('Token absent: ' + JSON.stringify(d).slice(0, 300));
-  }
+  const token = d?.data?.token || d?.Data?.token;
+  if (!token) throw new Error('Token absent: ' + JSON.stringify(d).slice(0, 200));
 
   _tokenCache.token = token;
   _tokenCache.expiresAt = Date.now() + 50 * 60 * 1000;
   return token;
 }
 
-async function myfoodGet(path, unitId, token) {
-  // Tester toutes les combinaisons possibles : header casse + cookie + query param token
-  const variants = [
-    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json' } },
-  ];
+async function myfoodGet(path, params, token) {
+  const qs = new URLSearchParams(params).toString();
+  const url = `${BASE}${path}?${qs}`;
 
-  for (let i = 0; i < variants.length; i++) {
-    const base = path.includes('GetProductUnitDetailForUser') ? 'https://hub.mfood.eu' : BASE;
-  const url = `${base}${path}?productionUnitId=${unitId}`;
-    const r = await fetch(url, { headers: variants[i].headers });
-    const raw = await r.text();
-    const isJson = !raw.trim().startsWith('<');
-    console.log(`MyFood GET variant ${i} → status:${r.status} json:${isJson} raw:${raw.slice(0,60)}`);
-    if (isJson) {
-      try { return JSON.parse(raw); } catch(e) {
-        throw new Error('GET réponse non-JSON: ' + raw.slice(0, 200));
-      }
+  const r = await fetch(url, {
+    headers: {
+      'authorization': 'Bearer ' + token,
+      'Accept': 'application/json',
     }
+  });
+
+  const raw = await r.text();
+  console.log(`MyFood GET ${path} → ${r.status} | ${raw.slice(0, 120)}`);
+
+  if (raw.trim().startsWith('<')) {
+    throw new Error('HTML reçu [' + r.status + '] — auth refusée ou mauvais endpoint');
   }
-  throw new Error('Toutes les variantes retournent du HTML');
+
+  let d;
+  try { d = JSON.parse(raw); } catch(e) {
+    throw new Error('Non-JSON [' + r.status + ']: ' + raw.slice(0, 200));
+  }
+
+  // Erreur "Culture" → réessayer avec un nom de paramètre différent
+  const msgs = d?.Messages || d?.messages || [];
+  if (msgs.some(m => m.includes('Culture'))) {
+    throw new Error('Culture error — paramètre incorrect: ' + qs);
+  }
+
+  return d;
 }
 
 module.exports = async function handler(req, res) {
@@ -72,21 +77,40 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (!process.env.MYFOOD_EMAIL || !process.env.MYFOOD_PASSWORD) {
-    return res.status(500).json({ success: false, error: 'MYFOOD_EMAIL / MYFOOD_PASSWORD manquants' });
+    return res.status(500).json({ success: false, error: 'Variables env manquantes' });
   }
 
   const unitId = process.env.MYFOOD_UNIT_ID || '664';
 
   try {
     const token = await getToken();
-    const resp  = await myfoodGet('/api/v1/ProductUnit/GetProductUnitDetailForUser', unitId, token);
 
-    console.log('MyFood resp:', JSON.stringify(resp).slice(0, 400));
-    const succeeded = resp?.succeeded || resp?.Succeeded;
+    // Tester les différents noms de paramètre possibles
+    const paramVariants = [
+      { productionUnitId: unitId },
+      { ProductionUnitId: unitId },
+      { id: unitId },
+      { Id: unitId },
+    ];
+
+    let resp = null;
+    for (const params of paramVariants) {
+      try {
+        resp = await myfoodGet('/api/v1/ProductUnit/GetProductUnitDetailForUser', params, token);
+        break;
+      } catch(e) {
+        console.log('Param variant failed:', JSON.stringify(params), e.message);
+        resp = null;
+      }
+    }
+
+    if (!resp) {
+      return res.status(500).json({ success: false, error: 'Aucun paramètre ne fonctionne' });
+    }
+
     const d = resp?.data || resp?.Data;
-
-    if (!succeeded || !d) {
-      return res.status(500).json({ success: false, error: 'MyFood: ' + JSON.stringify(resp?.messages || resp?.Messages) });
+    if (!d) {
+      return res.status(500).json({ success: false, error: 'data absent: ' + JSON.stringify(resp).slice(0, 200) });
     }
 
     const get = (a, b) => d[a] ?? d[b] ?? null;
@@ -102,8 +126,8 @@ module.exports = async function handler(req, res) {
     });
 
   } catch(e) {
-    console.error('MyFood catch:', e.message, e.stack?.slice(0, 300));
     _tokenCache = { token: null, expiresAt: 0 };
-    return res.status(500).json({ success: false, error: e.message || 'Erreur inconnue' });
+    console.error('MyFood error:', e.message);
+    return res.status(500).json({ success: false, error: e.message });
   }
 };
