@@ -305,6 +305,27 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 const DEVICE_WATER_TIMER_ID = 'bf1ba1c9452ce49ca6umal';
 const DEVICE_PROG_LED_ID    = 'bf2de5244b7a2128ean6nq';
 
+// ── Seuils métier centralisés ────────────────────────────────
+const SEUILS = {
+  temp:  { critMin: 5,  warnMin: 8,  warnMax: 30, critMax: 32 },
+  humid: { critMin: 40, warnMin: 50, warnMax: 80, critMax: 90 },
+};
+
+function statusTemp(v)  {
+  if (v === null) return 'gray';
+  if (v < SEUILS.temp.critMin  || v > SEUILS.temp.critMax)  return 'red';
+  if (v < SEUILS.temp.warnMin  || v > SEUILS.temp.warnMax)  return 'amber';
+  return 'green';
+}
+function statusHumid(v) {
+  if (v === null) return 'gray';
+  if (v < SEUILS.humid.critMin || v > SEUILS.humid.critMax) return 'red';
+  if (v < SEUILS.humid.warnMin || v > SEUILS.humid.warnMax) return 'amber';
+  return 'green';
+}
+const STATUS_DOT   = { green: 'dot-green', amber: 'dot-amber', red: 'dot-red', gray: 'dot-gray' };
+const STATUS_COLOR = { green: 'var(--green)', amber: 'var(--amber)', red: 'var(--red)', gray: 'var(--text-muted)' };
+
 // ── État global ──────────────────────────────────────────────
 let devices = [];
 let lastRefresh = null;
@@ -611,18 +632,17 @@ function renderSerreMetrics() {
   const hum  = getStat(sensor, 'va_humidity');
   const tempC = temp !== null ? Math.round(temp) + '°' : '—';
   const humV  = hum  !== null ? hum + '%' : '—';
-  let tDot = 'dot-green', hDot = 'dot-green';
-  if (temp !== null) { if (temp < 15||temp > 35) tDot='dot-red'; else if (temp < 18||temp > 30) tDot='dot-amber'; }
-  if (hum  !== null) { if (hum  < 40||hum  > 90) hDot='dot-red'; else if (hum  < 50||hum  > 80) hDot='dot-amber'; }
+  const tSt = statusTemp(temp);
+  const hSt = statusHumid(hum);
   el.innerHTML = `
     <div class="metric-card" style="padding:12px 14px">
-      <div class="metric-label"><span class="dot ${tDot}"></span>🌡️ Temp. air</div>
-      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text);margin:6px 0 2px">${tempC}</div>
+      <div class="metric-label"><span class="dot ${STATUS_DOT[tSt]}"></span>🌡️ Temp. air</div>
+      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:${STATUS_COLOR[tSt]};margin:6px 0 2px">${tempC}</div>
       <div class="metric-unit">°C — serre</div>
     </div>
     <div class="metric-card" style="padding:12px 14px">
-      <div class="metric-label"><span class="dot ${hDot}"></span>💧 Humidité</div>
-      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text);margin:6px 0 2px">${humV}</div>
+      <div class="metric-label"><span class="dot ${STATUS_DOT[hSt]}"></span>💧 Humidité</div>
+      <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:${STATUS_COLOR[hSt]};margin:6px 0 2px">${humV}</div>
       <div class="metric-unit">% — serre</div>
     </div>
     <div class="metric-card" style="padding:12px 14px" id="card-ph">
@@ -653,10 +673,33 @@ function chartOpts(color, unit, range) {
     }
   };
 }
-function chartDs(data, color, history) {
-  return { data, borderColor: color, backgroundColor: color + '18',
-    borderWidth: 2, pointRadius: history.length > 100 ? 0 : 2,
-    pointBackgroundColor: color, fill: true, tension: 0.4 };
+function chartDs(data, color, history, pointColors) {
+  const usePointColors = pointColors && pointColors.length === data.length;
+  return {
+    data,
+    borderColor: color,
+    backgroundColor: color + '18',
+    borderWidth: 2,
+    pointRadius: history.length > 100 ? 0 : 3,
+    pointBackgroundColor: usePointColors ? pointColors : color,
+    pointBorderColor: usePointColors ? pointColors : color,
+    pointRadius: history.length > 100 ? 0 : usePointColors ? pointColors.map(c => c !== color ? 5 : 3) : 3,
+    fill: true,
+    tension: 0.4
+  };
+}
+
+function tempPointColors(history) {
+  return history.map(p => {
+    const st = statusTemp(p.temp);
+    return STATUS_COLOR[st];
+  });
+}
+function humidPointColors(history) {
+  return history.map(p => {
+    const st = statusHumid(p.hum);
+    return STATUS_COLOR[st];
+  });
 }
 
 function renderChartTemp(history, range) {
@@ -666,7 +709,7 @@ function renderChartTemp(history, range) {
   if (charts.temp) charts.temp.destroy();
   if (!history.length) { renderChartEmpty(ctx, 'temp'); return; }
   charts.temp = new Chart(ctx, { type:'line',
-    data:{ labels, datasets:[chartDs(temps,'#4ade80',history)] },
+    data:{ labels, datasets:[chartDs(temps,'#4ade80',history,tempPointColors(history))] },
     options: chartOpts('#4ade80','°C', range) });
 }
 
@@ -677,7 +720,7 @@ function renderChartHum(history, range) {
   if (charts.hum) charts.hum.destroy();
   if (!history.length) { renderChartEmpty(ctx, 'hum'); return; }
   charts.hum = new Chart(ctx, { type:'line',
-    data:{ labels, datasets:[chartDs(hums,'#60a5fa',history)] },
+    data:{ labels, datasets:[chartDs(hums,'#60a5fa',history,humidPointColors(history))] },
     options: chartOpts('#60a5fa','%', range) });
 }
 
