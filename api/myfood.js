@@ -73,8 +73,8 @@ module.exports = async function handler(req, res) {
 
   try {
     const token = await getToken();
+    console.log('MyFood token ok, length:', token ? token.length : 'NULL');
     const resp  = await myfoodGet('/api/v1/ProductUnit/GetProductUnitDetailForUser', unitId, token);
-
     console.log('MyFood detail:', JSON.stringify(resp).slice(0, 400));
 
     // Accepter data ou Data
