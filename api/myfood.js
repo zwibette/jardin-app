@@ -92,21 +92,23 @@ module.exports = async function handler(req, res) {
 
   try {
     const token = await getToken();
-    const data  = await myfoodGet('/api/v1/ProductUnit/GetProductUnitDetailForUser', unitId, token);
+    const raw2 = await myfoodGet('/api/v1/ProductUnit/GetProductUnitDetailForUser', unitId, token);
+    console.log('MyFood detail raw:', JSON.stringify(raw2).slice(0, 300));
 
-    if (!data.succeeded) {
-      return res.status(500).json({ success: false, error: 'MyFood API: ' + JSON.stringify(data.messages) });
+    const succeeded2 = raw2.succeeded || raw2.Succeeded;
+    if (!succeeded2) {
+      return res.status(500).json({ success: false, error: 'MyFood API: ' + JSON.stringify(raw2.messages || raw2.Messages) });
     }
 
-    const d = data.data;
+    const d = raw2.data || raw2.Data;
     return res.json({
       success: true,
-      ph:           d.currentPhValue          ?? null,
-      phTime:       d.currentPhCaptureTime     ?? null,
-      waterTemp:    d.currentWaterTempValue    ?? null,
-      waterTempTime:d.currentWaterTempCaptureTime ?? null,
-      airTemp:      d.currentAirTempValue      ?? null,
-      humidity:     d.currentHumidityValue     ?? null,
+      ph:           d.currentPhValue           ?? d.CurrentPhValue          ?? null,
+      phTime:       d.currentPhCaptureTime      ?? d.CurrentPhCaptureTime    ?? null,
+      waterTemp:    d.currentWaterTempValue     ?? d.CurrentWaterTempValue   ?? null,
+      waterTempTime:d.currentWaterTempCaptureTime ?? d.CurrentWaterTempCaptureTime ?? null,
+      airTemp:      d.currentAirTempValue       ?? d.CurrentAirTempValue     ?? null,
+      humidity:     d.currentHumidityValue      ?? d.CurrentHumidityValue    ?? null,
     });
 
   } catch(e) {
