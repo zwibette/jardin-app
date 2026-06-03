@@ -72,6 +72,19 @@ async function myfoodGet(path, params, token) {
   return d;
 }
 
+async function myfoodGetWithTokenInUrl(path, params, token) {
+  const qs = new URLSearchParams(params).toString();
+  const url = `${BASE}${path}?${qs}`;
+  console.log('MyFood GET (token in url):', url.replace(token, 'TOKEN'));
+  const r = await fetch(url, {
+    headers: { 'Accept': 'application/json', 'Accept-Language': 'en-US' }
+  });
+  const raw = await r.text();
+  console.log(`MyFood GET token-url → ${r.status} | ${raw.slice(0, 120)}`);
+  if (raw.trim().startsWith('<')) throw new Error('HTML reçu');
+  return JSON.parse(raw);
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -103,6 +116,19 @@ module.exports = async function handler(req, res) {
       } catch(e) {
         console.log('Param variant failed:', JSON.stringify(params), e.message);
         resp = null;
+      }
+    }
+
+    // Si toujours null, tenter avec le token en query string
+    if (!resp) {
+      try {
+        resp = await myfoodGetWithTokenInUrl(
+          '/api/v1/ProductUnit/GetProductUnitDetailForUser',
+          { productionUnitId: unitId, token },
+          token
+        );
+      } catch(e) {
+        console.log('Token-in-URL failed:', e.message);
       }
     }
 
