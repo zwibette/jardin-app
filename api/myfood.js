@@ -46,10 +46,13 @@ async function getToken() {
 async function myfoodGet(path, unitId, token) {
   // Tester toutes les combinaisons possibles : header casse + cookie + query param token
   const variants = [
-    { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'fr-FR' } },
-    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'fr-FR' } },
-    { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'fr-FR', 'Cookie': 'token=' + token } },
-    { headers: { 'Authorization': token, 'Accept': 'application/json', 'Accept-Language': 'fr-FR' } },
+    // Combinaison gagnante du test précédent : authorization minuscule SANS Accept-Language
+    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json' } },
+    // Variantes supplémentaires
+    { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } },
+    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'en-US' } },
+    { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'en-US' } },
+    { headers: { 'authorization': 'Bearer ' + token } },
   ];
 
   for (let i = 0; i < variants.length; i++) {
