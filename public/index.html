@@ -683,7 +683,6 @@ function chartDs(data, color, history, pointColors) {
     pointRadius: history.length > 100 ? 0 : 3,
     pointBackgroundColor: usePointColors ? pointColors : color,
     pointBorderColor: usePointColors ? pointColors : color,
-    pointRadius: history.length > 100 ? 0 : usePointColors ? pointColors.map(c => c !== color ? 5 : 3) : 3,
     fill: true,
     tension: 0.4
   };
@@ -692,13 +691,13 @@ function chartDs(data, color, history, pointColors) {
 function tempPointColors(history) {
   return history.map(p => {
     const st = statusTemp(p.temp);
-    return STATUS_COLOR[st];
+    return st === 'green' ? '#4ade80' : STATUS_COLOR[st];
   });
 }
 function humidPointColors(history) {
   return history.map(p => {
     const st = statusHumid(p.hum);
-    return STATUS_COLOR[st];
+    return st === 'green' ? '#60a5fa' : STATUS_COLOR[st];
   });
 }
 
