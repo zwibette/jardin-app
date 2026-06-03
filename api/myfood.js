@@ -46,14 +46,12 @@ async function getToken() {
 async function myfoodGet(path, unitId, token) {
   // Tester toutes les combinaisons possibles : header casse + cookie + query param token
   const variants = [
-    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'en-US,en;q=0.9' } },
-    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'en' } },
-    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'fr' } },
-    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8' } },
+    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json' } },
   ];
 
   for (let i = 0; i < variants.length; i++) {
-    const url = `${BASE}${path}?productionUnitId=${unitId}`;
+    const base = path.includes('GetProductUnitDetailForUser') ? 'https://hub.mfood.eu' : BASE;
+  const url = `${base}${path}?productionUnitId=${unitId}`;
     const r = await fetch(url, { headers: variants[i].headers });
     const raw = await r.text();
     const isJson = !raw.trim().startsWith('<');
