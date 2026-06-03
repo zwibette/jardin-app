@@ -47,6 +47,7 @@ async function myfoodGet(path, params, token) {
     headers: {
       'authorization': 'Bearer ' + token,
       'Accept': 'application/json',
+      'Accept-Language': 'en-US',
     }
   });
 
