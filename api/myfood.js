@@ -44,20 +44,27 @@ async function getToken() {
 }
 
 async function myfoodGet(path, unitId, token) {
-  const url = `${BASE}${path}?productionUnitId=${unitId}`;
-  const r = await fetch(url, {
-    headers: {
-      'authorization': 'Bearer ' + token,
-      'Accept': 'application/json',
-      'Accept-Language': 'fr-FR',
+  // Tester toutes les combinaisons possibles : header casse + cookie + query param token
+  const variants = [
+    { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'fr-FR' } },
+    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'fr-FR' } },
+    { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'fr-FR', 'Cookie': 'token=' + token } },
+    { headers: { 'Authorization': token, 'Accept': 'application/json', 'Accept-Language': 'fr-FR' } },
+  ];
+
+  for (let i = 0; i < variants.length; i++) {
+    const url = `${BASE}${path}?productionUnitId=${unitId}`;
+    const r = await fetch(url, { headers: variants[i].headers });
+    const raw = await r.text();
+    const isJson = !raw.trim().startsWith('<');
+    console.log(`MyFood GET variant ${i} → status:${r.status} json:${isJson} raw:${raw.slice(0,60)}`);
+    if (isJson) {
+      try { return JSON.parse(raw); } catch(e) {
+        throw new Error('GET réponse non-JSON: ' + raw.slice(0, 200));
+      }
     }
-  });
-  const raw = await r.text();
-  let d;
-  try { d = JSON.parse(raw); } catch(e) {
-    throw new Error('GET réponse non-JSON [' + r.status + ']: ' + raw.slice(0, 200));
   }
-  return d;
+  throw new Error('Toutes les variantes retournent du HTML');
 }
 
 module.exports = async function handler(req, res) {
