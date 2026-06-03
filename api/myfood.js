@@ -30,7 +30,7 @@ async function getToken() {
     } catch(e) { /* fall through to re-login */ }
   }
   // Login complet — double slash comme dans la doc officielle
-  const r = await fetch(`${BASE}//api/identity/token`, {
+  const r = await fetch(`${BASE}/api/identity/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
