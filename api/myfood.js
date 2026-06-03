@@ -38,8 +38,8 @@ async function getToken() {
       'Accept-Language': 'fr-FR',
     },
     body: JSON.stringify({
-      email: process.env.MYFOOD_EMAIL,
-      password: process.env.MYFOOD_PASSWORD,
+      UserName: process.env.MYFOOD_EMAIL,
+      Password: process.env.MYFOOD_PASSWORD,
     })
   });
   const raw = await r.text();
