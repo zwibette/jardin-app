@@ -30,21 +30,24 @@ async function getToken() {
     } catch(e) { /* fall through to re-login */ }
   }
   // Login complet — double slash comme dans la doc officielle
-  const r = await fetch(`${BASE}/api/identity/token`, {
+  const authUrl = `${BASE}/api/identity/token`;
+  const authBody = { UserName: process.env.MYFOOD_EMAIL, Password: process.env.MYFOOD_PASSWORD };
+  console.log('MyFood auth URL:', authUrl);
+  console.log('MyFood auth body:', JSON.stringify(authBody));
+  const r = await fetch(authUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Accept': 'application/json',
       'Accept-Language': 'fr-FR',
     },
-    body: JSON.stringify({
-      UserName: process.env.MYFOOD_EMAIL,
-      Password: process.env.MYFOOD_PASSWORD,
-    })
+    body: JSON.stringify(authBody)
   });
+  console.log('MyFood auth status:', r.status, r.url);
   const raw = await r.text();
+  console.log('MyFood auth raw (200c):', raw.slice(0, 200));
   let d;
-  try { d = JSON.parse(raw); } catch(e) { throw new Error('MyFood réponse non-JSON: ' + raw.slice(0,200)); }
+  try { d = JSON.parse(raw); } catch(e) { throw new Error('MyFood réponse non-JSON [' + r.status + '] ' + raw.slice(0,300)); }
   if (!d.succeeded || !d.data?.token) {
     throw new Error('MyFood auth échouée: ' + JSON.stringify(d));
   }
