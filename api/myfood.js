@@ -29,18 +29,25 @@ async function getToken() {
       }
     } catch(e) { /* fall through to re-login */ }
   }
-  // Login complet
-  const r = await fetch(`${BASE}/api/identity/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: process.env.MYFOOD_EMAIL,
-      password: process.env.MYFOOD_PASSWORD
-    })
-  });
-  const d = await r.json();
-  if (!d.succeeded || !d.data?.token) {
-    throw new Error('MyFood auth échouée: ' + JSON.stringify(d.messages));
+  // Login complet — on tente email/password puis userName/password
+  const bodies = [
+    { email: process.env.MYFOOD_EMAIL, password: process.env.MYFOOD_PASSWORD },
+    { userName: process.env.MYFOOD_EMAIL, password: process.env.MYFOOD_PASSWORD },
+    { username: process.env.MYFOOD_EMAIL, password: process.env.MYFOOD_PASSWORD },
+  ];
+  let d = null;
+  for (const body of bodies) {
+    const r = await fetch(`${BASE}/api/identity/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    d = await r.json();
+    if (d.succeeded && d.data?.token) break;
+  }
+  if (!d || !d.succeeded || !d.data?.token) {
+    // Exposer la réponse complète pour diagnostic
+    throw new Error('MyFood auth échouée: ' + JSON.stringify(d));
   }
   _storeToken(d.data);
   return _tokenCache.token;
