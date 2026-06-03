@@ -29,24 +29,23 @@ async function getToken() {
       }
     } catch(e) { /* fall through to re-login */ }
   }
-  // Login complet — on tente email/password puis userName/password
-  const bodies = [
-    { email: process.env.MYFOOD_EMAIL, password: process.env.MYFOOD_PASSWORD },
-    { userName: process.env.MYFOOD_EMAIL, password: process.env.MYFOOD_PASSWORD },
-    { username: process.env.MYFOOD_EMAIL, password: process.env.MYFOOD_PASSWORD },
-  ];
-  let d = null;
-  for (const body of bodies) {
-    const r = await fetch(`${BASE}/api/identity/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    d = await r.json();
-    if (d.succeeded && d.data?.token) break;
-  }
-  if (!d || !d.succeeded || !d.data?.token) {
-    // Exposer la réponse complète pour diagnostic
+  // Login complet — double slash comme dans la doc officielle
+  const r = await fetch(`${BASE}//api/identity/token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Accept': 'application/json',
+      'Accept-Language': 'fr-FR',
+    },
+    body: JSON.stringify({
+      email: process.env.MYFOOD_EMAIL,
+      password: process.env.MYFOOD_PASSWORD,
+    })
+  });
+  const raw = await r.text();
+  let d;
+  try { d = JSON.parse(raw); } catch(e) { throw new Error('MyFood réponse non-JSON: ' + raw.slice(0,200)); }
+  if (!d.succeeded || !d.data?.token) {
     throw new Error('MyFood auth échouée: ' + JSON.stringify(d));
   }
   _storeToken(d.data);
@@ -64,7 +63,11 @@ function _storeToken(data) {
 async function myfoodGet(path, unitId, token) {
   const url = `${BASE}${path}?productionUnitId=${unitId}`;
   const r = await fetch(url, {
-    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/json',
+      'Accept-Language': 'fr-FR',
+    }
   });
   if (!r.ok) throw new Error('MyFood HTTP ' + r.status + ' sur ' + path);
   return r.json();
