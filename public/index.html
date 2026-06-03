@@ -45,11 +45,9 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .dot-amber{background:var(--amber);box-shadow:0 0 5px var(--amber)}
 .dot-red{background:var(--red);box-shadow:0 0 5px var(--red)}
 .dot-gray{background:var(--text-muted)}
-/* CHART */
 .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
 .chart-title{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .chart-wrap{position:relative;height:140px}
-/* RANGE SELECTOR */
 .range-selector{display:flex;gap:4px}
 .range-btn{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.06em;padding:3px 9px;border-radius:6px;cursor:pointer;transition:all .2s}
 .range-btn.active{background:var(--green-dark);border-color:var(--green);color:var(--green)}
@@ -57,11 +55,10 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .chart-overlay{position:absolute;inset:0;background:rgba(10,18,11,.7);display:flex;align-items:center;justify-content:center;border-radius:8px;z-index:2}
 .history-info{font-size:.58rem;color:var(--text-muted);letter-spacing:.05em}
 .history-loading{color:var(--amber)}.history-err{color:var(--red)}
-/* COMMANDES */
 .cmd-section{margin-bottom:16px}
 .cmd-title{font-family:'Fraunces',serif;font-size:.95rem;font-weight:300;font-style:italic;color:var(--text-dim);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
-.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:500px){.cmd-grid{grid-template-columns:1fr}}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:600px){.cmd-grid{grid-template-columns:1fr}}
 .cmd-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s}
 .cmd-card:hover{border-color:var(--green-dark)}
 .cmd-name{font-size:.75rem;color:var(--text);line-height:1.3}
@@ -77,7 +74,6 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .status-badge{font-size:.62rem;padding:3px 8px;border-radius:10px;letter-spacing:.05em}
 .badge-on{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:var(--green)}
 .badge-off{background:rgba(74,107,82,.1);border:1px solid var(--border);color:var(--text-muted)}
-/* APPAREILS */
 .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 .device-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .device-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
@@ -200,7 +196,7 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
       <div class="cmd-grid">
         <div class="cmd-card">
           <div>
-            <div class="cmd-name">Arrosage Bas Rhône</div>
+            <div class="cmd-name">Arrosage bas-Rhône 💧</div>
             <div class="cmd-desc">Smart Water Timer · Canal 2</div>
           </div>
           <div class="cmd-row">
@@ -213,7 +209,20 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
         </div>
         <div class="cmd-card">
           <div>
-            <div class="cmd-name">Bain à remous</div>
+            <div class="cmd-name">Brumisation 🫧</div>
+            <div class="cmd-desc">Smart Water Timer · Canal 1</div>
+          </div>
+          <div class="cmd-row">
+            <span class="status-badge" id="badge-brumisation">—</span>
+            <label class="big-toggle">
+              <input type="checkbox" id="toggle-brumisation" onchange="cmdBrumisation(this.checked)" disabled>
+              <span class="big-toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div>
+            <div class="cmd-name">Bain à remous 🌊</div>
             <div class="cmd-desc">Prog LED Ventil · Canal 4</div>
           </div>
           <div class="cmd-row">
@@ -300,7 +309,6 @@ const DEVICE_PROG_LED_ID    = 'bf2de5244b7a2128ean6nq';
 let devices = [];
 let lastRefresh = null;
 let charts = { temp: null, hum: null };
-let isLoadingChart = false; // legacy — remplacé par isLoadingTemp/isLoadingHum
 
 // ── localStorage — backup local + collecte ───────────────────
 const HISTORY_KEY = 'jardin_history_v1';
@@ -318,12 +326,70 @@ function addLocalPoint(temp, hum) {
   while (h.length > MAX_LOCAL) h.shift();
   saveLocal(h);
 }
+
+// ── Rééchantillonnage temporel régulier ──────────────────────
+// Retourne les créneaux cibles pour une plage donnée
+function getTargetSlots(range) {
+  const now = Date.now();
+  const slots = [];
+
+  if (range === '24h') {
+    // Toutes les 30 minutes sur les dernières 24h
+    const start = now - 86400000;
+    for (let t = start; t <= now; t += 30 * 60 * 1000) slots.push(t);
+  } else if (range === '3d') {
+    // Toutes les 3 heures sur les 3 derniers jours
+    const start = now - 3 * 86400000;
+    for (let t = start; t <= now; t += 3 * 60 * 60 * 1000) slots.push(t);
+  } else if (range === '7d') {
+    // Chaque jour : un point à 7h et un à 15h
+    const start = new Date(now - 7 * 86400000);
+    start.setHours(0, 0, 0, 0);
+    for (let d = new Date(start); d.getTime() <= now; d.setDate(d.getDate() + 1)) {
+      const at7  = new Date(d); at7.setHours(7, 0, 0, 0);
+      const at15 = new Date(d); at15.setHours(15, 0, 0, 0);
+      if (at7.getTime()  <= now) slots.push(at7.getTime());
+      if (at15.getTime() <= now) slots.push(at15.getTime());
+    }
+  } else if (range === '30d') {
+    // Un point par jour à 11h
+    const start = new Date(now - 30 * 86400000);
+    start.setHours(0, 0, 0, 0);
+    for (let d = new Date(start); d.getTime() <= now; d.setDate(d.getDate() + 1)) {
+      const at11 = new Date(d); at11.setHours(11, 0, 0, 0);
+      if (at11.getTime() <= now) slots.push(at11.getTime());
+    }
+  }
+  return slots;
+}
+
+// Pour chaque créneau cible, trouve le point de données le plus proche
+// dans une fenêtre de tolérance (moitié de l'intervalle)
+function resampleToSlots(history, range) {
+  const slots = getTargetSlots(range);
+  if (!slots.length || !history.length) return [];
+
+  // Tolérance : moitié de l'intervalle entre slots
+  const tolerances = { '24h': 15 * 60 * 1000, '3d': 90 * 60 * 1000, '7d': 4 * 60 * 60 * 1000, '30d': 12 * 60 * 60 * 1000 };
+  const tol = tolerances[range] || 15 * 60 * 1000;
+
+  const result = [];
+  for (const slotMs of slots) {
+    let best = null, bestDist = Infinity;
+    for (const p of history) {
+      const d = Math.abs(new Date(p.t).getTime() - slotMs);
+      if (d < bestDist && d <= tol) { best = p; bestDist = d; }
+    }
+    if (best) result.push(best);
+  }
+  return result;
+}
+
 function filterLocal(history, range) {
   const ms = { '24h': 86400000, '3d': 259200000, '7d': 604800000, '30d': 2592000000 };
   const cutoff = Date.now() - (ms[range] || ms['24h']);
   const filtered = history.filter(p => new Date(p.t).getTime() >= cutoff);
-  const step = range === '30d' ? 12 : range === '7d' ? 3 : 1;
-  return filtered.filter((_, i) => i % step === 0);
+  return resampleToSlots(filtered, range);
 }
 
 // ── Google Sheets : écriture async (silencieuse) ─────────────
@@ -350,7 +416,6 @@ let isLoadingHum  = false;
 function setRangeTemp(range, btn) {
   if (isLoadingTemp) return;
   currentRangeTemp = range;
-  // Réinitialiser uniquement les boutons du graphique temp
   btn.closest('.range-selector').querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   loadAndRenderTemp(range);
@@ -365,12 +430,13 @@ function setRangeHum(range, btn) {
 }
 
 async function fetchHistoryData(range) {
-  // Adapter 3j → sheets stocke en 24h/7d/30d — on filtre côté client
+  // Pour 3j on demande 7d à l'API et on filtre/rééchantillonne côté client
   const apiRange = range === '3d' ? '7d' : range;
   const data = await fetchHistory(apiRange);
-  if (range === '3d' && data.data) {
-    const cutoff = Date.now() - 3 * 86400000;
-    data.data = data.data.filter(p => new Date(p.t).getTime() >= cutoff);
+  if (data.data && data.data.length > 0) {
+    // Rééchantillonnage sur les données Sheets
+    const resampled = resampleToSlots(data.data, range);
+    data.data = resampled;
   }
   return data;
 }
@@ -437,9 +503,7 @@ async function loadAndRenderHum(range) {
   isLoadingHum = false;
 }
 
-// Charge les deux graphiques (appelé au refresh global)
-async function loadAndRenderCharts(range) {
-  // range ignoré — chaque graphique a sa propre plage
+async function loadAndRenderCharts() {
   await Promise.all([
     loadAndRenderTemp(currentRangeTemp),
     loadAndRenderHum(currentRangeHum),
@@ -590,26 +654,24 @@ function renderChartEmpty(ctx, key) {
   ctx.fillText('Aucune donnée pour cette période', ctx.canvas.width/2, ctx.canvas.height/2);
 }
 
-// Compat legacy (appelé depuis le setInterval 30min)
-function renderCharts(history) {
-  renderChartTemp(history, currentRangeTemp);
-  renderChartHum(history, currentRangeHum);
-}
-function renderChartsEmpty() {
-  renderChartEmpty(document.getElementById('chartTemp').getContext('2d'), 'temp');
-  renderChartEmpty(document.getElementById('chartHum').getContext('2d'), 'hum');
-}
-
 // ── Commandes dashboard ──────────────────────────────────────
 function updateCommandStates() {
   const wt = getDeviceById(DEVICE_WATER_TIMER_ID);
   const pl = getDeviceById(DEVICE_PROG_LED_ID);
   if (wt) {
-    const on = getStat(wt,'switch_2') === true;
-    const t = document.getElementById('toggle-rhone'), b = document.getElementById('badge-rhone');
-    t.checked = on; t.disabled = !wt.online;
-    b.textContent = on ? 'Actif' : 'Inactif';
-    b.className = 'status-badge ' + (on ? 'badge-on' : 'badge-off');
+    // Arrosage bas-Rhône → canal 2
+    const onRhone = getStat(wt,'switch_2') === true;
+    const tRhone = document.getElementById('toggle-rhone'), bRhone = document.getElementById('badge-rhone');
+    tRhone.checked = onRhone; tRhone.disabled = !wt.online;
+    bRhone.textContent = onRhone ? 'Actif' : 'Inactif';
+    bRhone.className = 'status-badge ' + (onRhone ? 'badge-on' : 'badge-off');
+
+    // Brumisation → canal 1
+    const onBrumi = getStat(wt,'switch_1') === true;
+    const tBrumi = document.getElementById('toggle-brumisation'), bBrumi = document.getElementById('badge-brumisation');
+    tBrumi.checked = onBrumi; tBrumi.disabled = !wt.online;
+    bBrumi.textContent = onBrumi ? 'Actif' : 'Inactif';
+    bBrumi.className = 'status-badge ' + (onBrumi ? 'badge-on' : 'badge-off');
   }
   if (pl) {
     const on = getStat(pl,'switch_4') === true;
@@ -619,6 +681,7 @@ function updateCommandStates() {
     b.className = 'status-badge ' + (on ? 'badge-on' : 'badge-off');
   }
 }
+
 async function cmdRhone(val) {
   document.getElementById('toggle-rhone').disabled = true;
   await controlDevice(DEVICE_WATER_TIMER_ID,'switch_2',val);
@@ -626,6 +689,15 @@ async function cmdRhone(val) {
   if (d?.status_list) { const s=d.status_list.find(x=>x.code==='switch_2'); if(s) s.value=val; }
   updateCommandStates(); document.getElementById('toggle-rhone').disabled = false;
 }
+
+async function cmdBrumisation(val) {
+  document.getElementById('toggle-brumisation').disabled = true;
+  await controlDevice(DEVICE_WATER_TIMER_ID,'switch_1',val);
+  const d = getDeviceById(DEVICE_WATER_TIMER_ID);
+  if (d?.status_list) { const s=d.status_list.find(x=>x.code==='switch_1'); if(s) s.value=val; }
+  updateCommandStates(); document.getElementById('toggle-brumisation').disabled = false;
+}
+
 async function cmdRemous(val) {
   document.getElementById('toggle-remous').disabled = true;
   await controlDevice(DEVICE_PROG_LED_ID,'switch_4',val);
@@ -732,8 +804,8 @@ async function refreshAll() {
       const hum  = getStat(sensor, 'va_humidity');
       const now  = Date.now();
       if (temp !== null && hum !== null && (now - lastHistoryRecord) >= 30 * 60 * 1000) {
-        addLocalPoint(temp, hum);   // backup localStorage
-        pushToSheets(temp, hum);    // persistance Google Sheets
+        addLocalPoint(temp, hum);
+        pushToSheets(temp, hum);
         lastHistoryRecord = now;
       }
     }
@@ -743,8 +815,6 @@ async function refreshAll() {
   renderSerreMetrics();
   updateCommandStates();
   renderDevices();
-  
-  // CORRECTION ICI : On appelle la fonction sans la variable inexistante 'currentRange'
   await loadAndRenderCharts();
 
   if (tuyaOk) {
@@ -755,7 +825,6 @@ async function refreshAll() {
   }
   btn.classList.remove('spinning');
 }
-  
 
 function goRecoltes() { window.location.href = '/recoltes.html'; }
 
