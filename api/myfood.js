@@ -43,23 +43,31 @@ async function getToken() {
 }
 
 async function myfoodGet(path, unitId, token) {
-  const url = `${BASE}${path}?productionUnitId=${unitId}`;
-  console.log('MyFood GET url:', url);
-  const r = await fetch(url, {
-    headers: {
-      'Authorization': 'Bearer ' + token,
-      'Accept': 'application/json',
-      'Accept-Language': 'fr-FR',
+  // Tester les deux noms de paramètre que l'API peut attendre
+  const urls = [
+    `${BASE}${path}?id=${unitId}`,
+    `${BASE}${path}?productionUnitId=${unitId}`,
+    `${BASE}${path}?ProductionUnitId=${unitId}`,
+  ];
+  for (const url of urls) {
+    console.log('MyFood GET trying:', url);
+    const r = await fetch(url, {
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/json',
+        'Accept-Language': 'fr-FR',
+      }
+    });
+    const raw = await r.text();
+    console.log('MyFood GET [' + url.split('?')[1] + '] status:', r.status, '| raw:', raw.slice(0, 80));
+    if (!raw.trim().startsWith('<')) {
+      // Réponse JSON — c'est le bon paramètre
+      try { return JSON.parse(raw); } catch(e) {
+        throw new Error('GET réponse non-JSON: ' + raw.slice(0, 200));
+      }
     }
-  });
-  console.log('MyFood GET status:', r.status);
-  const raw = await r.text();
-  console.log('MyFood GET raw (300c):', raw.slice(0, 300));
-  let d;
-  try { d = JSON.parse(raw); } catch(e) {
-    throw new Error('GET réponse non-JSON [' + r.status + ']: ' + raw.slice(0, 200));
   }
-  return d;
+  throw new Error('Aucun paramètre ne retourne du JSON pour ' + path);
 }
 
 module.exports = async function handler(req, res) {
