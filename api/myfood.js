@@ -17,6 +17,7 @@ async function getToken() {
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+      'Accept-Language': 'en-US',
     },
     body: JSON.stringify({
       UserName: process.env.MYFOOD_EMAIL,
