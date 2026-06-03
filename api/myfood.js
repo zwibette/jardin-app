@@ -46,13 +46,10 @@ async function getToken() {
 async function myfoodGet(path, unitId, token) {
   // Tester toutes les combinaisons possibles : header casse + cookie + query param token
   const variants = [
-    // Combinaison gagnante du test précédent : authorization minuscule SANS Accept-Language
-    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json' } },
-    // Variantes supplémentaires
-    { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } },
-    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'en-US' } },
-    { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'en-US' } },
-    { headers: { 'authorization': 'Bearer ' + token } },
+    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'en-US,en;q=0.9' } },
+    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'en' } },
+    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'fr' } },
+    { headers: { 'authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8' } },
   ];
 
   for (let i = 0; i < variants.length; i++) {
