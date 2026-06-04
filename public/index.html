@@ -123,6 +123,19 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .mb{margin-bottom:16px}
 .alert-banner{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:.72rem;color:var(--red)}
 .alert-banner.warn{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.3);color:var(--amber)}
+.serre-brief{border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--border)}
+.brief-ok  {border-color:#166534;background:rgba(74,222,128,.07)}
+.brief-warn{border-color:#92400e;background:rgba(251,191,36,.07)}
+.brief-crit{border-color:#991b1b;background:rgba(248,113,113,.07)}
+.sb-head{margin-bottom:8px}
+.sb-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.brief-ok .sb-title{color:#4ade80}.brief-warn .sb-title{color:var(--amber)}.brief-crit .sb-title{color:var(--red)}
+.sb-items{display:flex;flex-direction:column;gap:5px}
+.sb-row{display:flex;align-items:flex-start;gap:7px;font-size:.76rem;color:var(--text-dim);line-height:1.4}
+.sb-row.ok{color:#4ade80}.sb-row.warn{color:var(--amber)}.sb-row.crit{color:var(--red)}
+.sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.sb-dot.ok{background:#4ade80}.sb-dot.warn{background:var(--amber)}.sb-dot.crit{background:var(--red)}
+.sb-meta{font-size:.62rem;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -145,6 +158,7 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 
   <!-- DASHBOARD -->
   <div class="section active" id="tab-dashboard">
+    <div id="serreBrief"></div>
     <div id="alertBanners"></div>
     <div class="dash-grid" id="serreMetrics">
       <div class="loading" style="grid-column:1/-1"><div class="loading-ring"></div>Lecture capteurs…</div>
@@ -305,6 +319,112 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 const DEVICE_WATER_TIMER_ID = 'bf1ba1c9452ce49ca6umal';
 const DEVICE_PROG_LED_ID    = 'bf2de5244b7a2128ean6nq';
 
+// ── Seuils centralisés (source unique de vérité) ─────────────
+const SEUILS = {
+  temp:  { ok: [15, 32], warn: [10, 35], unit: '°C', label: 'Température serre' },
+  hum:   { ok: [45, 85], warn: [35, 90], unit: '%',  label: 'Humidité serre' },
+};
+
+function getStatut(val, seuil) {
+  if (val === null) return null;
+  if (val < seuil.warn[0] || val > seuil.warn[1]) return 'crit';
+  if (val < seuil.ok[0]   || val > seuil.ok[1])   return 'warn';
+  return 'ok';
+}
+
+function serreBriefMsg(val, seuil, statut) {
+  if (!statut) return null;
+  const v = val + seuil.unit;
+  if (statut === 'ok')   return seuil.label + ' ' + v + ' — dans la plage cible';
+  if (val < seuil.ok[0]) return seuil.label + ' ' + v + ' — trop basse';
+  if (val > seuil.ok[1]) return seuil.label + ' ' + v + ' — trop haute';
+  return seuil.label + ' ' + v;
+}
+
+function actionRecommandee(alertes) {
+  if (!alertes.length) return null;
+  const msgs = [];
+  const hasTempHigh = alertes.some(a => a.key === 'temp' && a.val > SEUILS.temp.ok[1]);
+  const hasHumHigh  = alertes.some(a => a.key === 'hum'  && a.val > SEUILS.hum.ok[1]);
+  const hasHumLow   = alertes.some(a => a.key === 'hum'  && a.val < SEUILS.hum.ok[0]);
+  const hasTempLow  = alertes.some(a => a.key === 'temp' && a.val < SEUILS.temp.ok[0]);
+  if (hasTempHigh && hasHumHigh) msgs.push('Ouvrir les aérations et ventiler immédiatement');
+  else if (hasTempHigh) msgs.push('Ouvrir la porte et activer le ventilateur');
+  else if (hasHumHigh) msgs.push('Aérer la serre pour réduire l\'humidité');
+  if (hasHumLow) msgs.push('Augmenter l\'arrosage ou activer la brumisation');
+  if (hasTempLow) msgs.push('Fermer la porte et vérifier le chauffage');
+  return msgs[0] || null;
+}
+
+async function fetchMeteo() {
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=43.61&longitude=3.87&current=temperature_2m,weathercode&daily=temperature_2m_max&timezone=Europe/Paris&forecast_days=1');
+    const d = await r.json();
+    return {
+      temp: d.current?.temperature_2m,
+      max:  d.daily?.temperature_2m_max?.[0],
+      code: d.current?.weathercode,
+    };
+  } catch(e) { return null; }
+}
+
+function meteoLabel(code, temp, max) {
+  if (code === null || code === undefined) return '';
+  const desc = code <= 1 ? 'Ensoleillé' : code <= 3 ? 'Nuageux' : code <= 67 ? 'Pluie' : code <= 77 ? 'Neige' : 'Orageux';
+  return 'Météo : ' + (temp !== null ? Math.round(temp) + '°C' : '') + (max !== null ? ' (max ' + Math.round(max) + '°C)' : '') + ', ' + desc;
+}
+
+async function renderSerreBrief() {
+  const el = document.getElementById('serreBrief');
+  if (!el) return;
+
+  const sensor = getSerreTHSensor();
+  const temp   = sensor ? getStat(sensor, 'va_temperature') : null;
+  const hum    = sensor ? getStat(sensor, 'va_humidity')    : null;
+
+  const alertes = [];
+  ['temp', 'hum'].forEach(key => {
+    const val = key === 'temp' ? temp : hum;
+    const st  = getStatut(val, SEUILS[key]);
+    if (st && st !== 'ok') alertes.push({ key, val, statut: st });
+  });
+
+  const globalSt = alertes.some(a => a.statut === 'crit') ? 'crit'
+                 : alertes.length ? 'warn' : 'ok';
+
+  const titles = { ok: '✅ La serre va bien', warn: '⚠️ ' + alertes.length + ' point' + (alertes.length > 1 ? 's' : '') + ' à surveiller', crit: '🚨 Intervention urgente requise' };
+  const bgClass = { ok: 'brief-ok', warn: 'brief-warn', crit: 'brief-crit' };
+
+  const meteo = await fetchMeteo();
+  const meteoStr = meteo ? meteoLabel(meteo.code, meteo.temp, meteo.max) : '';
+
+  const items = [];
+  if (globalSt === 'ok') {
+    if (temp !== null) items.push({ st: 'ok', txt: 'Température ' + temp + '°C — dans la plage cible' });
+    if (hum  !== null) items.push({ st: 'ok', txt: 'Humidité ' + hum + '% — optimal' });
+  } else {
+    alertes.forEach(a => items.push({ st: a.statut, txt: serreBriefMsg(a.val, SEUILS[a.key], a.statut) }));
+    const action = actionRecommandee(alertes);
+    if (action) items.push({ st: globalSt, txt: action, isAction: true });
+  }
+
+  const ts = lastRefresh ? 'Mis à jour ' + new Date(lastRefresh).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}) : '';
+
+  el.innerHTML = `
+    <div class="serre-brief ${bgClass[globalSt]}">
+      <div class="sb-head">
+        <div class="sb-title">${titles[globalSt]}</div>
+      </div>
+      <div class="sb-items">
+        ${items.map(i => `<div class="sb-row ${i.st}">
+          <span class="sb-dot ${i.st}"></span>
+          <span>${i.txt}</span>
+        </div>`).join('')}
+      </div>
+      ${(meteoStr || ts) ? `<div class="sb-meta">${meteoStr ? '<span>' + meteoStr + '</span>' : ''}${ts ? '<span>' + ts + '</span>' : ''}</div>` : ''}
+    </div>`;
+}
+  
 // ── Seuils métier centralisés ────────────────────────────────
 const SEUILS = {
   temp:  { critMin: 5,  warnMin: 8,  warnMax: 30, critMax: 32 },
@@ -889,6 +1009,7 @@ async function refreshAll() {
 
   renderAlerts();
   renderSerreMetrics();
+  await renderSerreBrief();
   fetchMyFood();
   updateCommandStates();
   renderDevices();
