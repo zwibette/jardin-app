@@ -56,10 +56,37 @@ module.exports = async function handler(req, res) {
       }
     });
     const raw = await r.text();
+    console.log('MyFood GET status:', r.status, '| raw:', raw.slice(0, 200));
 
     if (raw.trim().startsWith('<')) {
-      // L'API retourne du HTML — session navigateur probablement requise
-      return res.status(503).json({ success: false, error: 'MyFood API inaccessible depuis serveur' });
+      // Invalider le cache et réessayer une fois avec un nouveau token
+      _tokenCache = { token: null, expiresAt: 0 };
+      const token2 = await getToken();
+      const r2 = await fetch(url, {
+        headers: {
+          'Authorization': 'Bearer ' + token2,
+          'Accept': 'application/json',
+          'Accept-Language': 'en-US',
+        }
+      });
+      const raw2 = await r2.text();
+      console.log('MyFood GET retry status:', r2.status, '| raw:', raw2.slice(0, 200));
+      if (raw2.trim().startsWith('<')) {
+        return res.status(503).json({ success: false, error: 'MyFood HTML reçu après retry' });
+      }
+      const resp2 = JSON.parse(raw2);
+      const d2 = resp2?.data || resp2?.Data;
+      if (!d2) return res.status(500).json({ success: false, error: 'data absent (retry)' });
+      const get2 = (a, b) => d2[a] ?? d2[b] ?? null;
+      return res.json({
+        success: true,
+        ph:           get2('currentPhValue',              'CurrentPhValue'),
+        phTime:       get2('currentPhCaptureTime',         'CurrentPhCaptureTime'),
+        waterTemp:    get2('currentWaterTempValue',        'CurrentWaterTempValue'),
+        waterTempTime:get2('currentWaterTempCaptureTime',  'CurrentWaterTempCaptureTime'),
+        airTemp:      get2('currentAirTempValue',          'CurrentAirTempValue'),
+        humidity:     get2('currentHumidityValue',         'CurrentHumidityValue'),
+      });
     }
 
     const resp = JSON.parse(raw);
