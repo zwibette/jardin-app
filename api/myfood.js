@@ -47,10 +47,10 @@ module.exports = async function handler(req, res) {
 
   try {
     const token = await getToken();
-    const url = `${BASE}/api/v1/ProductUnit/GetProductUnitDetailForUser?productionUnitId=${unitId}`;
+    const url = `${BASE}/api/v1/ProductUnit/GetProductUnitDetailForUser?ProductUnitId=${unitId}`;
     const r = await fetch(url, {
       headers: {
-        'authorization': 'Bearer ' + token,
+        'Authorization': 'Bearer ' + token,
         'Accept': 'application/json',
         'Accept-Language': 'en-US',
       }
