@@ -47,47 +47,41 @@ module.exports = async function handler(req, res) {
 
   try {
     const token = await getToken();
-    const url = `${BASE}/api/v1/ProductUnit/GetProductUnitDetailForUser?ProductUnitId=${unitId}`;
-    const r = await fetch(url, {
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Accept': 'application/json',
-        'Accept-Language': 'en-US',
-      }
-    });
-    const raw = await r.text();
-    console.log('MyFood GET status:', r.status, '| raw:', raw.slice(0, 200));
+    const baseVariants = [
+      'https://hub.myfood.eu',
+      'https://api.myfood.eu',
+      'https://hub.myfood.eu/api',
+    ];
+    const pathVariants = [
+      '/api/v1/ProductUnit/GetProductUnitDetailForUser',
+      '/v1/ProductUnit/GetProductUnitDetailForUser',
+      '/ProductUnit/GetProductUnitDetailForUser',
+    ];
+    const paramVariants = ['ProductUnitId', 'productionUnitId', 'id'];
 
-    if (raw.trim().startsWith('<')) {
-      // Invalider le cache et réessayer une fois avec un nouveau token
-      _tokenCache = { token: null, expiresAt: 0 };
-      const token2 = await getToken();
-      const r2 = await fetch(url, {
-        headers: {
-          'Authorization': 'Bearer ' + token2,
-          'Accept': 'application/json',
-          'Accept-Language': 'en-US',
+    let raw = null, finalUrl = null;
+    outer: for (const base of baseVariants) {
+      for (const path of pathVariants) {
+        for (const param of paramVariants) {
+          const testUrl = `${base}${path}?${param}=${unitId}`;
+          try {
+            const tr = await fetch(testUrl, {
+              headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'en-US' }
+            });
+            const testRaw = await tr.text();
+            console.log(`Try ${testUrl} → ${tr.status} | json:${!testRaw.trim().startsWith('<')} | ${testRaw.slice(0,60)}`);
+            if (!testRaw.trim().startsWith('<') && tr.status === 200) {
+              raw = testRaw; finalUrl = testUrl; break outer;
+            }
+          } catch(e) { console.log(`Try ${testUrl} → error: ${e.message}`); }
         }
-      });
-      const raw2 = await r2.text();
-      console.log('MyFood GET retry status:', r2.status, '| raw:', raw2.slice(0, 200));
-      if (raw2.trim().startsWith('<')) {
-        return res.status(503).json({ success: false, error: 'MyFood HTML reçu après retry' });
       }
-      const resp2 = JSON.parse(raw2);
-      const d2 = resp2?.data || resp2?.Data;
-      if (!d2) return res.status(500).json({ success: false, error: 'data absent (retry)' });
-      const get2 = (a, b) => d2[a] ?? d2[b] ?? null;
-      return res.json({
-        success: true,
-        ph:           get2('currentPhValue',              'CurrentPhValue'),
-        phTime:       get2('currentPhCaptureTime',         'CurrentPhCaptureTime'),
-        waterTemp:    get2('currentWaterTempValue',        'CurrentWaterTempValue'),
-        waterTempTime:get2('currentWaterTempCaptureTime',  'CurrentWaterTempCaptureTime'),
-        airTemp:      get2('currentAirTempValue',          'CurrentAirTempValue'),
-        humidity:     get2('currentHumidityValue',         'CurrentHumidityValue'),
-      });
     }
+
+    if (!raw) {
+      return res.status(503).json({ success: false, error: 'Aucun endpoint ne retourne du JSON' });
+    }
+    console.log('MyFood SUCCESS url:', finalUrl, '| raw:', raw.slice(0, 200));
 
     const resp = JSON.parse(raw);
     const d = resp?.data || resp?.Data;
