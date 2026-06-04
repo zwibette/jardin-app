@@ -1,10 +1,11 @@
 // ── Variables d'environnement requises ───────────────────────
-// MYFOOD_EMAIL      : login hub MyFood
-// MYFOOD_PASSWORD   : mot de passe hub MyFood
-// MYFOOD_UNIT_ID    : identifiant de la serre (ex: 664)
+// MYFOOD_EMAIL    : login hub MyFood
+// MYFOOD_PASSWORD : mot de passe hub MyFood
+// MYFOOD_UNIT_ID  : identifiant de la serre (664)
 //
-// NOTE : L'API MyFood nécessite des cookies de session navigateur
-// en plus du Bearer token. En attente de clarification du support MyFood.
+// NOTE : L'API hub.myfood.eu est une application Blazor WebAssembly
+// qui retourne du HTML pour toutes les routes depuis un serveur Node.js.
+// En attente de solution (Sigfox ou clarification support MyFood).
 
 const BASE = 'https://hub.myfood.eu';
 let _tokenCache = { token: null, expiresAt: 0 };
@@ -47,41 +48,19 @@ module.exports = async function handler(req, res) {
 
   try {
     const token = await getToken();
-    const baseVariants = [
-      'https://hub.myfood.eu',
-      'https://api.myfood.eu',
-      'https://hub.myfood.eu/api',
-    ];
-    const pathVariants = [
-      '/api/v1/ProductUnit/GetProductUnitDetailForUser',
-      '/v1/ProductUnit/GetProductUnitDetailForUser',
-      '/ProductUnit/GetProductUnitDetailForUser',
-    ];
-    const paramVariants = ['ProductUnitId', 'productionUnitId', 'id'];
-
-    let raw = null, finalUrl = null;
-    outer: for (const base of baseVariants) {
-      for (const path of pathVariants) {
-        for (const param of paramVariants) {
-          const testUrl = `${base}${path}?${param}=${unitId}`;
-          try {
-            const tr = await fetch(testUrl, {
-              headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json', 'Accept-Language': 'en-US' }
-            });
-            const testRaw = await tr.text();
-            console.log(`Try ${testUrl} → ${tr.status} | json:${!testRaw.trim().startsWith('<')} | ${testRaw.slice(0,60)}`);
-            if (!testRaw.trim().startsWith('<') && tr.status === 200) {
-              raw = testRaw; finalUrl = testUrl; break outer;
-            }
-          } catch(e) { console.log(`Try ${testUrl} → error: ${e.message}`); }
-        }
+    const url = `${BASE}/api/v1/ProductUnit/GetProductUnitDetailForUser?ProductUnitId=${unitId}`;
+    const r = await fetch(url, {
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US',
       }
-    }
+    });
+    const raw = await r.text();
 
-    if (!raw) {
-      return res.status(503).json({ success: false, error: 'Aucun endpoint ne retourne du JSON' });
+    if (raw.trim().startsWith('<')) {
+      return res.status(503).json({ success: false, error: 'MyFood API inaccessible (Blazor WASM)' });
     }
-    console.log('MyFood SUCCESS url:', finalUrl, '| raw:', raw.slice(0, 200));
 
     const resp = JSON.parse(raw);
     const d = resp?.data || resp?.Data;
