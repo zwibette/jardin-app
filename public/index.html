@@ -45,6 +45,22 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .dot-amber{background:var(--amber);box-shadow:0 0 5px var(--amber)}
 .dot-red{background:var(--red);box-shadow:0 0 5px var(--red)}
 .dot-gray{background:var(--text-muted)}
+/* ── SERRE BRIEF ── */
+.serre-brief{border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--border)}
+.brief-ok  {border-color:#166534;background:rgba(74,222,128,.07)}
+.brief-warn{border-color:#92400e;background:rgba(251,191,36,.07)}
+.brief-crit{border-color:#991b1b;background:rgba(248,113,113,.07)}
+.brief-loading{background:var(--surface);border:1px solid var(--border)}
+.sb-head{margin-bottom:8px}
+.sb-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.brief-ok .sb-title{color:#4ade80}.brief-warn .sb-title{color:var(--amber)}.brief-crit .sb-title{color:var(--red)}
+.sb-items{display:flex;flex-direction:column;gap:5px}
+.sb-row{display:flex;align-items:flex-start;gap:7px;font-size:.76rem;color:var(--text-dim);line-height:1.4}
+.sb-row.ok{color:#4ade80}.sb-row.warn{color:var(--amber)}.sb-row.crit{color:var(--red)}
+.sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.sb-dot.ok{background:#4ade80}.sb-dot.warn{background:var(--amber)}.sb-dot.crit{background:var(--red)}
+.sb-meta{font-size:.62rem;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap}
+/* ── FIN SERRE BRIEF ── */
 .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
 .chart-title{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .chart-wrap{position:relative;height:140px}
@@ -146,6 +162,16 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
   <!-- DASHBOARD -->
   <div class="section active" id="tab-dashboard">
     <div id="alertBanners"></div>
+
+    <!-- ENCADRÉ ÉTAT SERRE -->
+    <div id="serreBrief">
+      <div class="serre-brief brief-loading">
+        <div class="sb-head">
+          <div class="sb-title" style="color:var(--text-muted)">Analyse de la serre en cours…</div>
+        </div>
+      </div>
+    </div>
+
     <div class="dash-grid" id="serreMetrics">
       <div class="loading" style="grid-column:1/-1"><div class="loading-ring"></div>Lecture capteurs…</div>
     </div>
@@ -311,7 +337,7 @@ const SEUILS = {
   humid: { critMin: 40, warnMin: 50, warnMax: 80, critMax: 90 },
 };
 
-function statusTemp(v)  {
+function statusTemp(v) {
   if (v === null) return 'gray';
   if (v < SEUILS.temp.critMin  || v > SEUILS.temp.critMax)  return 'red';
   if (v < SEUILS.temp.warnMin  || v > SEUILS.temp.warnMax)  return 'amber';
@@ -326,14 +352,110 @@ function statusHumid(v) {
 const STATUS_DOT   = { green: 'dot-green', amber: 'dot-amber', red: 'dot-red', gray: 'dot-gray' };
 const STATUS_COLOR = { green: '#4ade80', amber: '#fbbf24', red: '#f87171', gray: '#4a6b52' };
 
+// ── Serre Brief ──────────────────────────────────────────────
+function serreBriefMsg(val, key, st) {
+  const unit  = key === 'temp' ? '°C' : '%';
+  const label = key === 'temp' ? 'Température' : 'Humidité';
+  if (st === 'green') return label + ' ' + val + unit + ' — dans la plage cible';
+  const seuil = key === 'temp' ? SEUILS.temp : SEUILS.humid;
+  if (val < seuil.warnMin) return label + ' ' + val + unit + ' — trop basse';
+  if (val > seuil.warnMax) return label + ' ' + val + unit + ' — trop haute';
+  return label + ' ' + val + unit;
+}
+
+function actionRecommandee(alertes) {
+  if (!alertes.length) return null;
+  const hasTempHigh = alertes.some(a => a.key === 'temp' && a.val > SEUILS.temp.warnMax);
+  const hasHumHigh  = alertes.some(a => a.key === 'hum'  && a.val > SEUILS.humid.warnMax);
+  const hasHumLow   = alertes.some(a => a.key === 'hum'  && a.val < SEUILS.humid.warnMin);
+  const hasTempLow  = alertes.some(a => a.key === 'temp' && a.val < SEUILS.temp.warnMin);
+  if (hasTempHigh && hasHumHigh) return 'Ouvrir les aérations et ventiler immédiatement';
+  if (hasTempHigh) return 'Ouvrir la porte et activer le ventilateur';
+  if (hasHumHigh)  return 'Aérer la serre pour réduire l\'humidité';
+  if (hasHumLow)   return 'Activer la brumisation ou augmenter l\'arrosage';
+  if (hasTempLow)  return 'Fermer la porte et vérifier le chauffage';
+  return null;
+}
+
+async function fetchMeteo() {
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=43.61&longitude=3.87&current=temperature_2m,weathercode&daily=temperature_2m_max&timezone=Europe/Paris&forecast_days=1');
+    const d = await r.json();
+    return { temp: d.current?.temperature_2m, max: d.daily?.temperature_2m_max?.[0], code: d.current?.weathercode };
+  } catch(e) { return null; }
+}
+
+function meteoLabel(meteo) {
+  if (!meteo) return '';
+  const codes = {0:'Ensoleillé',1:'Dégagé',2:'Nuageux',3:'Couvert',45:'Brouillard',48:'Brouillard',51:'Bruine',53:'Bruine',55:'Bruine',61:'Pluie',63:'Pluie',65:'Pluie',80:'Averses',81:'Averses',82:'Averses',95:'Orageux'};
+  const desc = codes[meteo.code] || (meteo.code <= 3 ? 'Dégagé' : meteo.code <= 67 ? 'Pluie' : 'Variable');
+  const t  = meteo.temp != null ? Math.round(meteo.temp) + '°C' : '';
+  const mx = meteo.max  != null ? ', max ' + Math.round(meteo.max) + '°C' : '';
+  return 'Météo : ' + t + mx + ' — ' + desc;
+}
+
+async function renderSerreBrief() {
+  const el = document.getElementById('serreBrief');
+  if (!el) return;
+
+  const sensor = getSerreTHSensor();
+  const temp = sensor ? getStat(sensor, 'va_temperature') : null;
+  const hum  = sensor ? getStat(sensor, 'va_humidity')    : null;
+  const tSt  = statusTemp(temp);
+  const hSt  = statusHumid(hum);
+
+  const alertes = [];
+  if (tSt !== 'green' && tSt !== 'gray') alertes.push({ key: 'temp', val: temp, st: tSt });
+  if (hSt !== 'green' && hSt !== 'gray') alertes.push({ key: 'hum',  val: hum,  st: hSt });
+
+  const globalSt = alertes.some(a => a.st === 'red') ? 'crit'
+                 : alertes.length ? 'warn' : 'ok';
+
+  const titles = {
+    ok:   '✅ La serre va bien',
+    warn: '⚠️ ' + alertes.length + ' point' + (alertes.length > 1 ? 's' : '') + ' à surveiller',
+    crit: '🚨 Intervention urgente requise',
+  };
+
+  const meteo    = await fetchMeteo();
+  const meteoStr = meteoLabel(meteo);
+
+  const items = [];
+  if (globalSt === 'ok') {
+    if (temp !== null) items.push({ st: 'ok',  txt: 'Température ' + temp + '°C — dans la plage cible' });
+    if (hum  !== null) items.push({ st: 'ok',  txt: 'Humidité ' + hum + '% — optimal' });
+    if (temp === null && hum === null) items.push({ st: 'ok', txt: 'Capteurs en ligne' });
+  } else {
+    alertes.forEach(a => {
+      const dotSt = a.st === 'red' ? 'crit' : 'warn';
+      items.push({ st: dotSt, txt: serreBriefMsg(a.val, a.key, a.st) });
+    });
+    const action = actionRecommandee(alertes);
+    if (action) items.push({ st: globalSt, txt: '→ ' + action });
+  }
+
+  const ts = lastRefresh
+    ? 'Mis à jour ' + new Date(lastRefresh).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
+    : '';
+
+  el.innerHTML = `
+    <div class="serre-brief brief-${globalSt}">
+      <div class="sb-head"><div class="sb-title">${titles[globalSt]}</div></div>
+      <div class="sb-items">
+        ${items.map(i => `<div class="sb-row ${i.st}"><span class="sb-dot ${i.st}"></span><span>${i.txt}</span></div>`).join('')}
+      </div>
+      ${(meteoStr || ts) ? `<div class="sb-meta">${meteoStr ? '<span>' + meteoStr + '</span>' : ''}${ts ? '<span>' + ts + '</span>' : ''}</div>` : ''}
+    </div>`;
+}
+
 // ── État global ──────────────────────────────────────────────
 let devices = [];
 let lastRefresh = null;
 let charts = { temp: null, hum: null };
 
-// ── localStorage — backup local + collecte ───────────────────
+// ── localStorage ─────────────────────────────────────────────
 const HISTORY_KEY = 'jardin_history_v1';
-const MAX_LOCAL   = 1440; // 30j à 30min
+const MAX_LOCAL   = 1440;
 
 function loadLocal() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; }
@@ -348,24 +470,18 @@ function addLocalPoint(temp, hum) {
   saveLocal(h);
 }
 
-// ── Rééchantillonnage temporel régulier ──────────────────────
-// Retourne les créneaux cibles pour une plage donnée
+// ── Rééchantillonnage temporel ───────────────────────────────
 function getTargetSlots(range) {
   const now = Date.now();
   const slots = [];
-
   if (range === '24h') {
-    // Toutes les 30 minutes sur les dernières 24h
     const start = now - 86400000;
     for (let t = start; t <= now; t += 30 * 60 * 1000) slots.push(t);
   } else if (range === '3d') {
-    // Toutes les 3 heures sur les 3 derniers jours
     const start = now - 3 * 86400000;
     for (let t = start; t <= now; t += 3 * 60 * 60 * 1000) slots.push(t);
   } else if (range === '7d') {
-    // Chaque jour : un point à 7h et un à 15h
-    const start = new Date(now - 7 * 86400000);
-    start.setHours(0, 0, 0, 0);
+    const start = new Date(now - 7 * 86400000); start.setHours(0, 0, 0, 0);
     for (let d = new Date(start); d.getTime() <= now; d.setDate(d.getDate() + 1)) {
       const at7  = new Date(d); at7.setHours(7, 0, 0, 0);
       const at15 = new Date(d); at15.setHours(15, 0, 0, 0);
@@ -373,9 +489,7 @@ function getTargetSlots(range) {
       if (at15.getTime() <= now) slots.push(at15.getTime());
     }
   } else if (range === '30d') {
-    // Un point par jour à 11h
-    const start = new Date(now - 30 * 86400000);
-    start.setHours(0, 0, 0, 0);
+    const start = new Date(now - 30 * 86400000); start.setHours(0, 0, 0, 0);
     for (let d = new Date(start); d.getTime() <= now; d.setDate(d.getDate() + 1)) {
       const at11 = new Date(d); at11.setHours(11, 0, 0, 0);
       if (at11.getTime() <= now) slots.push(at11.getTime());
@@ -384,16 +498,11 @@ function getTargetSlots(range) {
   return slots;
 }
 
-// Pour chaque créneau cible, trouve le point de données le plus proche
-// dans une fenêtre de tolérance (moitié de l'intervalle)
 function resampleToSlots(history, range) {
   const slots = getTargetSlots(range);
   if (!slots.length || !history.length) return [];
-
-  // Tolérance : moitié de l'intervalle entre slots
   const tolerances = { '24h': 15 * 60 * 1000, '3d': 90 * 60 * 1000, '7d': 4 * 60 * 60 * 1000, '30d': 12 * 60 * 60 * 1000 };
   const tol = tolerances[range] || 15 * 60 * 1000;
-
   const result = [];
   for (const slotMs of slots) {
     let best = null, bestDist = Infinity;
@@ -409,18 +518,15 @@ function resampleToSlots(history, range) {
 function filterLocal(history, range) {
   const ms = { '24h': 86400000, '3d': 259200000, '7d': 604800000, '30d': 2592000000 };
   const cutoff = Date.now() - (ms[range] || ms['24h']);
-  const filtered = history.filter(p => new Date(p.t).getTime() >= cutoff);
-  return resampleToSlots(filtered, range);
+  return resampleToSlots(history.filter(p => new Date(p.t).getTime() >= cutoff), range);
 }
 
-// ── Google Sheets : écriture async (silencieuse) ─────────────
+// ── Google Sheets ────────────────────────────────────────────
 async function pushToSheets(temp, hum) {
-  try {
-    await fetch('/api/sheets?action=append_history&temp=' + temp + '&hum=' + hum);
-  } catch(e) { console.warn('Sheets push failed:', e.message); }
+  try { await fetch('/api/sheets?action=append_history&temp=' + temp + '&hum=' + hum); }
+  catch(e) { console.warn('Sheets push failed:', e.message); }
 }
 
-// ── Google Sheets : lecture historique ──────────────────────
 async function fetchHistory(range) {
   const res = await fetch('/api/sheets?action=get_history&range=' + range);
   const data = await res.json();
@@ -428,7 +534,7 @@ async function fetchHistory(range) {
   return data;
 }
 
-// ── Sélecteurs de plage indépendants ────────────────────────
+// ── Sélecteurs de plage ──────────────────────────────────────
 let currentRangeTemp = '24h';
 let currentRangeHum  = '24h';
 let isLoadingTemp = false;
@@ -451,14 +557,9 @@ function setRangeHum(range, btn) {
 }
 
 async function fetchHistoryData(range) {
-  // Pour 3j on demande 7d à l'API et on filtre/rééchantillonne côté client
   const apiRange = range === '3d' ? '7d' : range;
   const data = await fetchHistory(apiRange);
-  if (data.data && data.data.length > 0) {
-    // Rééchantillonnage sur les données Sheets
-    const resampled = resampleToSlots(data.data, range);
-    data.data = resampled;
-  }
+  if (data.data && data.data.length > 0) data.data = resampleToSlots(data.data, range);
   return data;
 }
 
@@ -467,27 +568,17 @@ async function loadAndRenderTemp(range) {
   isLoadingTemp = true;
   document.getElementById('overlayTemp').style.display = 'flex';
   const infoEl = document.getElementById('chartTempInfo');
-  infoEl.className = 'history-info history-loading';
-  infoEl.textContent = 'Chargement…';
-
+  infoEl.className = 'history-info history-loading'; infoEl.textContent = 'Chargement…';
   let history = [];
   try {
     const data = await fetchHistoryData(range);
-    if (data.data && data.data.length > 0) {
-      history = data.data;
-      infoEl.className = 'history-info';
-      infoEl.textContent = history.length + ' pts';
-    } else {
-      history = filterLocal(loadLocal(), range);
-      infoEl.className = 'history-info';
-      infoEl.textContent = history.length + ' pts (local)';
-    }
+    if (data.data && data.data.length > 0) { history = data.data; infoEl.className = 'history-info'; infoEl.textContent = history.length + ' pts'; }
+    else { history = filterLocal(loadLocal(), range); infoEl.className = 'history-info'; infoEl.textContent = history.length + ' pts (local)'; }
   } catch(e) {
     history = filterLocal(loadLocal(), range);
     infoEl.className = history.length ? 'history-info' : 'history-info history-err';
     infoEl.textContent = history.length ? history.length + ' pts (local)' : 'Erreur';
   }
-
   renderChartTemp(history, range);
   document.getElementById('overlayTemp').style.display = 'none';
   isLoadingTemp = false;
@@ -498,37 +589,24 @@ async function loadAndRenderHum(range) {
   isLoadingHum = true;
   document.getElementById('overlayHum').style.display = 'flex';
   const infoEl = document.getElementById('chartHumInfo');
-  infoEl.className = 'history-info history-loading';
-  infoEl.textContent = 'Chargement…';
-
+  infoEl.className = 'history-info history-loading'; infoEl.textContent = 'Chargement…';
   let history = [];
   try {
     const data = await fetchHistoryData(range);
-    if (data.data && data.data.length > 0) {
-      history = data.data;
-      infoEl.className = 'history-info';
-      infoEl.textContent = history.length + ' pts';
-    } else {
-      history = filterLocal(loadLocal(), range);
-      infoEl.className = 'history-info';
-      infoEl.textContent = history.length + ' pts (local)';
-    }
+    if (data.data && data.data.length > 0) { history = data.data; infoEl.className = 'history-info'; infoEl.textContent = history.length + ' pts'; }
+    else { history = filterLocal(loadLocal(), range); infoEl.className = 'history-info'; infoEl.textContent = history.length + ' pts (local)'; }
   } catch(e) {
     history = filterLocal(loadLocal(), range);
     infoEl.className = history.length ? 'history-info' : 'history-info history-err';
     infoEl.textContent = history.length ? history.length + ' pts (local)' : 'Erreur';
   }
-
   renderChartHum(history, range);
   document.getElementById('overlayHum').style.display = 'none';
   isLoadingHum = false;
 }
 
 async function loadAndRenderCharts() {
-  await Promise.all([
-    loadAndRenderTemp(currentRangeTemp),
-    loadAndRenderHum(currentRangeHum),
-  ]);
+  await Promise.all([loadAndRenderTemp(currentRangeTemp), loadAndRenderHum(currentRangeHum)]);
 }
 
 // ── Navigation ───────────────────────────────────────────────
@@ -597,14 +675,10 @@ async function fetchMyFood() {
     const d = await r.json();
     if (!d.success) throw new Error(d.error || 'MyFood indisponible');
     updateMyFoodMetrics(d);
-  } catch(e) {
-    console.warn('MyFood:', e.message);
-    // Affichage dégradé silencieux — les cartes restent à "—"
-  }
+  } catch(e) { console.warn('MyFood:', e.message); }
 }
 
 function updateMyFoodMetrics(d) {
-  // pH
   if (d.ph !== null && d.ph !== undefined) {
     document.getElementById('val-ph').textContent = d.ph.toFixed(1);
     document.getElementById('unit-ph').textContent = 'pH · ' + (d.phTime || '');
@@ -613,7 +687,6 @@ function updateMyFoodMetrics(d) {
     else if (d.ph < 6.5 || d.ph > 7.2) { phDot.className = 'dot dot-amber'; }
     else                                { phDot.className = 'dot dot-green'; }
   }
-  // Température eau
   if (d.waterTemp !== null && d.waterTemp !== undefined) {
     document.getElementById('val-wtemp').textContent = d.waterTemp.toFixed(1) + '°';
     document.getElementById('unit-wtemp').textContent = '°C · ' + (d.waterTempTime || '');
@@ -676,29 +749,18 @@ function chartOpts(color, unit, range) {
 function chartDs(data, color, history, pointColors) {
   const usePointColors = pointColors && pointColors.length === data.length;
   return {
-    data,
-    borderColor: color,
-    backgroundColor: color + '18',
-    borderWidth: 2,
+    data, borderColor: color, backgroundColor: color + '18', borderWidth: 2,
     pointRadius: history.length > 100 ? 0 : 3,
     pointBackgroundColor: usePointColors ? pointColors : color,
     pointBorderColor: usePointColors ? pointColors : color,
-    fill: true,
-    tension: 0.4
+    fill: true, tension: 0.4
   };
 }
-
 function tempPointColors(history) {
-  return history.map(p => {
-    const st = statusTemp(p.temp);
-    return st === 'green' ? '#4ade80' : STATUS_COLOR[st];
-  });
+  return history.map(p => { const st = statusTemp(p.temp); return st === 'green' ? '#4ade80' : STATUS_COLOR[st]; });
 }
 function humidPointColors(history) {
-  return history.map(p => {
-    const st = statusHumid(p.hum);
-    return st === 'green' ? '#60a5fa' : STATUS_COLOR[st];
-  });
+  return history.map(p => { const st = statusHumid(p.hum); return st === 'green' ? '#60a5fa' : STATUS_COLOR[st]; });
 }
 
 function renderChartTemp(history, range) {
@@ -735,14 +797,11 @@ function updateCommandStates() {
   const wt = getDeviceById(DEVICE_WATER_TIMER_ID);
   const pl = getDeviceById(DEVICE_PROG_LED_ID);
   if (wt) {
-    // Arrosage bas-Rhône → canal 2
     const onRhone = getStat(wt,'switch_2') === true;
     const tRhone = document.getElementById('toggle-rhone'), bRhone = document.getElementById('badge-rhone');
     tRhone.checked = onRhone; tRhone.disabled = !wt.online;
     bRhone.textContent = onRhone ? 'Actif' : 'Inactif';
     bRhone.className = 'status-badge ' + (onRhone ? 'badge-on' : 'badge-off');
-
-    // Brumisation → canal 1
     const onBrumi = getStat(wt,'switch_1') === true;
     const tBrumi = document.getElementById('toggle-brumisation'), bBrumi = document.getElementById('badge-brumisation');
     tBrumi.checked = onBrumi; tBrumi.disabled = !wt.online;
@@ -765,7 +824,6 @@ async function cmdRhone(val) {
   if (d?.status_list) { const s=d.status_list.find(x=>x.code==='switch_2'); if(s) s.value=val; }
   updateCommandStates(); document.getElementById('toggle-rhone').disabled = false;
 }
-
 async function cmdBrumisation(val) {
   document.getElementById('toggle-brumisation').disabled = true;
   await controlDevice(DEVICE_WATER_TIMER_ID,'switch_1',val);
@@ -773,7 +831,6 @@ async function cmdBrumisation(val) {
   if (d?.status_list) { const s=d.status_list.find(x=>x.code==='switch_1'); if(s) s.value=val; }
   updateCommandStates(); document.getElementById('toggle-brumisation').disabled = false;
 }
-
 async function cmdRemous(val) {
   document.getElementById('toggle-remous').disabled = true;
   await controlDevice(DEVICE_PROG_LED_ID,'switch_4',val);
@@ -892,6 +949,10 @@ async function refreshAll() {
   fetchMyFood();
   updateCommandStates();
   renderDevices();
+
+  // Encadré état serre (non bloquant)
+  renderSerreBrief();
+
   await loadAndRenderCharts();
 
   if (tuyaOk) {
