@@ -1151,21 +1151,23 @@ async function analyserPhoto() {
   else if (_currentStades.plante)  stadeActuel='plantation réalisée';
   else if (_currentStades.seme)    stadeActuel='semis réalisé';
 
-  const sysPrompt = `Tu es un expert phytopathologiste et maraîcher. Tu analyses des photos de plantes pour diagnostiquer leur état de santé, détecter les carences, maladies et ravageurs.
+  const sysPrompt = `Tu es un expert phytopathologiste et maraîcher. Tu analyses des photos de plantes pour diagnostiquer leur état de santé.
 
-Contexte : jardinier à Montpellier (zone 9b, climat méditerranéen, ${season}).
-Plante photographiée : ${vegetal} (${famille}) — Lieu : ${lieuLabel(_currentLieu)}.
-${lieuContextIA(_currentLieu)}
-Stade : ${stadeActuel}.
+Règles de réponse STRICTES :
+- Sois CONCIS et DIRECT : va à l'essentiel, pas de phrases creuses ni de répétitions
+- Structure claire avec titres h3
+- Si tout va bien, dis-le en une phrase et donne un conseil d'entretien pratique
+- Si un problème est détecté, nomme-le précisément, explique brièvement, et donne l'action corrective immédiate
+- Termine par une courte invitation : "Pour en savoir plus sur [sujet], dis-moi."
+- Maximum 200 mots
 
-Analyse la photo avec précision. Réponds en français avec des titres h3. Maximum 350 mots.`;
+Contexte : jardinier à Montpellier (zone 9b, ${season}). Plante : ${vegetal} (${famille}) en ${lieuLabel(_currentLieu)}. Stade : ${stadeActuel}.
+${lieuContextIA(_currentLieu)}`;
 
-  const question = `Analyse visuellement cette photo de mon plant de ${vegetal} cultivé en ${lieuLabel(_currentLieu)}.
-Dis-moi :
-1. L'état général de la plante (bonne santé, stress, problème détecté)
-2. Si tu détectes une carence (azote, fer, magnésium…), une maladie (mildiou, botrytis, oïdium…) ou un ravageur (pucerons, aleurodes, araignées rouges…), décris-le précisément
-3. Les actions correctives immédiates adaptées à ce lieu (${lieuLabel(_currentLieu)})
-4. Ce qu'il faut surveiller dans les prochains jours`;
+  const question = `Analyse cette photo de mon plant de ${vegetal} en ${lieuLabel(_currentLieu)} et dis-moi :
+1. Son état général en une phrase
+2. Tout problème visible (carence, maladie, ravageur) avec son nom précis et l'action corrective immédiate adaptée à ce lieu
+3. Un point de vigilance pour les prochains jours`;
 
   try {
     // Passage par le proxy /api/conseils (mode vision) pour éviter les CORS
