@@ -213,9 +213,24 @@ td{padding:10px 12px;color:var(--text-dim)}
   <div class="predict-card">
     <div class="predict-header">
       <div class="predict-title" id="predictTitle">🌱 Les besoins de ton plant en ce moment</div>
-      <button class="predict-btn" id="predictBtn" onclick="lancerAnalyse()">
-        <span id="predictBtnIcon">✦</span> Analyser avec l'IA
-      </button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="predict-btn" id="predictBtn" onclick="lancerAnalyse()">
+          <span id="predictBtnIcon">✦</span> Analyser
+        </button>
+        <!-- Bouton photo -->
+        <label class="predict-btn" id="photoLabel" style="cursor:pointer;position:relative" title="Photographier la plante pour diagnostic visuel">
+          📷 Photo
+          <input type="file" id="photoInput" accept="image/*" capture="environment" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="onPhotoSelected(this)">
+        </label>
+        <!-- Miniature + supprimer -->
+        <div id="photoPreviewWrap" style="display:none;position:relative">
+          <img id="photoPreview" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border2);display:block">
+          <button onclick="clearPhoto()" style="position:absolute;top:-5px;right:-5px;background:var(--red);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:.6rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
+        </div>
+        <button id="photoAnalyseBtn" class="predict-btn" onclick="analyserPhoto()" style="display:none;border-color:rgba(163,230,53,.4);color:var(--accent)">
+          🔍 Diagnostiquer
+        </button>
+      </div>
     </div>
     <div class="predict-body" id="predictBody">
       <div class="predict-placeholder">
@@ -952,7 +967,29 @@ function renommerVariete(ancienNom) {
   }
 }
 
-// ── CONSEILS IA ───────────────────────────────────────────────
+// ── CONTEXTE LIEU pour l'IA ──────────────────────────────────
+// Chaque lieu a ses contraintes spécifiques qui doivent orienter les conseils.
+function lieuContextIA(lieu) {
+  const ctx = {
+    serre: `La plante est cultivée en SERRE AQUAPONIQUE MyFood City (système fermé, hydroponique, tour de culture verticale).
+Caractéristiques : lumière filtrée par polycarbonate, hygrométrie élevée et stable, pas de pluie, eau de bassin enrichie en nitrates par les poissons (pH 6.8–7.2), température plus stable qu'en extérieur.
+Contraintes spécifiques serre : surveillance accrue des maladies fongiques (botrytis, mildiou) favorisées par l'humidité, risque de pucerons et aleurodes sans prédateurs naturels, arrosage intégré par circuit aquaponique, pas de gel possible mais surchauffe estivale fréquente >35°C.
+Conseils à adapter : aération, contrôle pH eau, densité de plantation, taille pour aération, traitements biologiques uniquement (pas de pesticides chimiques pour ne pas nuire aux poissons).`,
+
+    bacs: `La plante est cultivée en BACS SURÉLEVÉS (plein air, substrat terreau/compost, arrosage Bas Rhône automatisé).
+Caractéristiques : exposition plein soleil, substrat drainant mais à faible réserve en eau, forte amplitude thermique jour/nuit, exposée aux intempéries et au vent.
+Contraintes spécifiques bacs : asséchement rapide du substrat en été, lessivage des nutriments, gel possible en hiver sur les racines, exposition aux ravageurs extérieurs (limaces, chenilles, pucerons).
+Conseils à adapter : fréquence d'arrosage (quotidien en été), amendements réguliers (compost, engrais), paillage pour conserver l'humidité, protection hivernale si gel annoncé.`,
+
+    jardin: `La plante est cultivée au POTAGER EXTÉRIEUR pleine terre (sol méditerranéen, arrosage Bas Rhône, zone 9b).
+Caractéristiques : sol limoneux-argileux, pH légèrement basique, fort ensoleillement, vent tramontane/mistral possible, été sec et chaud (jusqu'à 38°C), hivers doux.
+Contraintes spécifiques potager : sécheresse estivale, sol pouvant se compacter, présence de ravageurs variés (doryphores, limaces, noctuelles), maladies fongiques après pluies printanières.
+Conseils à adapter : paillage épais, irrigation au pied, rotation des cultures, buttes ou lasagnes pour améliorer la rétention, traitements préventifs biologiques.`,
+  };
+  return ctx[lieu] || `La plante est cultivée en extérieur à Montpellier (zone 9b, climat méditerranéen).`;
+}
+
+// ── ANALYSE IA (texte) ────────────────────────────────────────
 async function lancerAnalyse() {
   const btn     = document.getElementById('predictBtn');
   const body    = document.getElementById('predictBody');
@@ -972,7 +1009,10 @@ async function lancerAnalyse() {
   const pheno     = calcPheno(calEntry, _currentStades, famille);
   const allRec    = loadRecoltes();
   const recVar    = allRec.filter(r=>r.vegetal===vegetal).sort((a,b)=>a.date.localeCompare(b.date));
+  // Récoltes par lieu
+  const recLieu   = recVar.filter(r=>r.lieu===_currentLieu);
   const totalPoids= recVar.reduce((s,r)=>s+r.poids,0);
+  const poidsLieu = recLieu.reduce((s,r)=>s+r.poids,0);
   const today     = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
   const month     = new Date().getMonth()+1;
   const season    = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
@@ -991,26 +1031,34 @@ async function lancerAnalyse() {
     const hist=JSON.parse(localStorage.getItem('jardin_history_v1')||'[]');
     if (hist.length) {
       const r=hist.slice(-6);
-      capteurCtx=`température serre ${(r.reduce((s,p)=>s+p.temp,0)/r.length).toFixed(1)}°C, humidité ${(r.reduce((s,p)=>s+p.hum,0)/r.length).toFixed(0)}%`;
+      capteurCtx=`température ${(r.reduce((s,p)=>s+p.temp,0)/r.length).toFixed(1)}°C, humidité ${(r.reduce((s,p)=>s+p.hum,0)/r.length).toFixed(0)}%`;
     }
   } catch(e) {}
 
-  const sysPrompt = `Tu es un expert maraîcher et agronome conseillant un jardinier à Montpellier (zone méditerranéenne, USDA 9b). Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône automatisé, capteurs Tuya.
+  const sysPrompt = `Tu es un expert maraîcher et agronome conseillant un jardinier à Montpellier (zone méditerranéenne, USDA 9b).
 
-Plante : ${vegetal} (${famille}) — Lieu : ${lieuLabel(_currentLieu)}
+=== CONTEXTE DU LIEU DE CULTURE ===
+${lieuContextIA(_currentLieu)}
+
+=== DONNÉES DE LA PLANTE ===
+Variété : ${vegetal} (${famille})
 Stade actuel : ${stadeActuel}
 ${pheno.dateSemis     ?'- Semé le : '+pheno.dateSemis:''}
-${pheno.datePlantation?'- Planté le : '+pheno.datePlantation+(joursDepuisPlt!==null?' ('+joursDepuisPlt+'j)':''):''}
+${pheno.datePlantation?'- Planté le : '+pheno.datePlantation+(joursDepuisPlt!==null?' — '+joursDepuisPlt+'j en place':''):''}
 ${pheno.dateRecDebut  ?'- Récolte prévue dès : '+pheno.dateRecDebut:''}
 ${calEntry?.nbPlants  ?'- Nb de plants : '+calEntry.nbPlants:''}
-Récoltes effectuées : ${recVar.length} (${totalPoids}g total)
-Conditions : ${today}, ${season}, capteurs serre : ${capteurCtx}
+Récoltes dans ce lieu : ${recLieu.length} (${poidsLieu}g) — Total toutes zones : ${totalPoids}g
+${calEntry?.notes     ?'- Notes : '+calEntry.notes:''}
 
-Réponds en français avec des titres h3. Sois concret et actionnable. Maximum 400 mots.`;
+=== CONDITIONS ACTUELLES ===
+Date : ${today} (${season})
+Capteurs serre : ${capteurCtx}
 
-  const question = `En fonction du stade actuel (${stadeActuel}) de mon plant de ${vegetal} à Montpellier en ${season}, donne-moi :
-1. Les actions prioritaires à faire maintenant (arrosage, fertilisation, taille, tuteurage, etc.)
-2. Les points de vigilance spécifiques à cette variété à ce stade (maladies, ravageurs, stress)
+Adapte tes conseils SPÉCIFIQUEMENT au lieu de culture indiqué. Réponds en français avec des titres h3. Sois concret et actionnable. Maximum 400 mots.`;
+
+  const question = `En fonction du stade actuel (${stadeActuel}) de mon plant de ${vegetal} cultivé en ${lieuLabel(_currentLieu)} à Montpellier en ${season}, donne-moi :
+1. Les actions prioritaires à faire maintenant dans ce contexte précis (${lieuLabel(_currentLieu)})
+2. Les points de vigilance spécifiques à cette variété dans ce lieu à ce stade
 3. Ce que je dois observer visuellement sur la plante
 4. Un conseil de timing : dois-je agir maintenant ou attendre ?`;
 
@@ -1020,17 +1068,8 @@ Réponds en français avec des titres h3. Sois concret et actionnable. Maximum 4
     if (!txt.trim()) throw new Error('Réponse vide');
     const data = JSON.parse(txt);
     if (!data.success) throw new Error(data.error||'Erreur API');
-
-    const html = (data.text||'')
-      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g,'<em>$1</em>')
-      .replace(/^### (.*)/gm,'<h3>$1</h3>')
-      .replace(/^## (.*)/gm,'<h3>$1</h3>')
-      .replace(/^- (.*)/gm,'<div style="padding:3px 0 3px 14px;border-left:2px solid var(--border2);margin:2px 0">$1</div>')
-      .replace(/\n/g,'<br>');
-
+    const html = mdToHtml(data.text||'');
     body.innerHTML = html;
-    // Sauvegarder en cache
     saveIACache(vegetal, html);
     sources.style.display = 'flex';
     btn.textContent = '↺ Actualiser';
@@ -1043,6 +1082,130 @@ Réponds en français avec des titres h3. Sois concret et actionnable. Maximum 4
     </div>`;
     btn.classList.remove('loading');
     icon.textContent = '✦';
+  }
+}
+
+// ── UTILITAIRE MARKDOWN → HTML ────────────────────────────────
+function mdToHtml(text) {
+  return (text||'')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/^### (.*)/gm,'<h3>$1</h3>')
+    .replace(/^## (.*)/gm,'<h3>$1</h3>')
+    .replace(/^- (.*)/gm,'<div style="padding:3px 0 3px 14px;border-left:2px solid var(--border2);margin:2px 0">$1</div>')
+    .replace(/\n/g,'<br>');
+}
+
+// ── GESTION PHOTO ─────────────────────────────────────────────
+let _photoBase64 = null;
+let _photoMime   = 'image/jpeg';
+
+function onPhotoSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  _photoMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = e => {
+    // Base64 sans le préfixe data:...;base64,
+    _photoBase64 = e.target.result.split(',')[1];
+    // Miniature
+    const preview = document.getElementById('photoPreview');
+    const wrap    = document.getElementById('photoPreviewWrap');
+    const analyseBtn = document.getElementById('photoAnalyseBtn');
+    preview.src = e.target.result;
+    wrap.style.display    = 'block';
+    analyseBtn.style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto() {
+  _photoBase64 = null;
+  document.getElementById('photoInput').value = '';
+  document.getElementById('photoPreviewWrap').style.display = 'none';
+  document.getElementById('photoAnalyseBtn').style.display  = 'none';
+}
+
+async function analyserPhoto() {
+  if (!_photoBase64) return;
+  const btn     = document.getElementById('photoAnalyseBtn');
+  const body    = document.getElementById('predictBody');
+  const sources = document.getElementById('predictSources');
+
+  btn.classList.add('loading');
+  btn.textContent = '⟳ Analyse…';
+  sources.style.display = 'none';
+  body.innerHTML = `<div class="predict-loading">
+    <div style="width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite"></div>
+    <span>Analyse visuelle en cours…</span>
+  </div>`;
+
+  const calEntry  = getCultureEntry(vegetal, _currentLieu);
+  const famille   = FAMILLES[vegetal]||calEntry?.famille||'';
+  const month     = new Date().getMonth()+1;
+  const season    = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+
+  let stadeActuel = 'non renseigné';
+  if (_currentStades.termine) stadeActuel='terminé';
+  else if (_currentStades.recolte) stadeActuel='en récolte';
+  else if (_currentStades.plante)  stadeActuel='plantation réalisée';
+  else if (_currentStades.seme)    stadeActuel='semis réalisé';
+
+  const sysPrompt = `Tu es un expert phytopathologiste et maraîcher. Tu analyses des photos de plantes pour diagnostiquer leur état de santé, détecter les carences, maladies et ravageurs.
+
+Contexte : jardinier à Montpellier (zone 9b, climat méditerranéen, ${season}).
+Plante photographiée : ${vegetal} (${famille}) — Lieu : ${lieuLabel(_currentLieu)}.
+${lieuContextIA(_currentLieu)}
+Stade : ${stadeActuel}.
+
+Analyse la photo avec précision. Réponds en français avec des titres h3. Maximum 350 mots.`;
+
+  const question = `Analyse visuellement cette photo de mon plant de ${vegetal} cultivé en ${lieuLabel(_currentLieu)}.
+Dis-moi :
+1. L'état général de la plante (bonne santé, stress, problème détecté)
+2. Si tu détectes une carence (azote, fer, magnésium…), une maladie (mildiou, botrytis, oïdium…) ou un ravageur (pucerons, aleurodes, araignées rouges…), décris-le précisément
+3. Les actions correctives immédiates adaptées à ce lieu (${lieuLabel(_currentLieu)})
+4. Ce qu'il faut surveiller dans les prochains jours`;
+
+  try {
+    // Appel API avec image (Gemini supporte les images en base64 dans parts)
+    const requestBody = {
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: _photoMime, data: _photoBase64 }
+          },
+          { type: 'text', text: sysPrompt + '\n\nQuestion : ' + question }
+        ]
+      }]
+    };
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+    const data = await res.json();
+    const text = data.content?.find(b=>b.type==='text')?.text || '';
+    if (!text) throw new Error(data.error?.message || 'Réponse vide');
+
+    const html = `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(163,230,53,.06);border:1px solid rgba(163,230,53,.2);border-radius:8px;font-size:.72rem;color:var(--accent)">
+      📷 Analyse visuelle de la photo — ${vegetal} en ${lieuLabel(_currentLieu)}
+    </div>` + mdToHtml(text);
+
+    body.innerHTML = html;
+    // Pas de mise en cache photo (diagnostic ponctuel)
+    sources.style.display = 'flex';
+    btn.textContent = '🔍 Diagnostiquer';
+    btn.classList.remove('loading');
+  } catch(e) {
+    body.innerHTML = `<div style="color:var(--red);font-size:.8rem;padding:10px 0">❌ Erreur analyse photo : ${e.message}</div>`;
+    btn.textContent = '🔍 Diagnostiquer';
+    btn.classList.remove('loading');
   }
 }
 </script>
