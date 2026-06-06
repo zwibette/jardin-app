@@ -118,20 +118,17 @@ main{max-width:1100px;margin:0 auto;padding:20px 16px 60px;position:relative;z-i
 
 .empty{text-align:center;padding:30px;color:var(--text-muted);font-size:.82rem}
 
-/* #8: tableau cultures planifiées responsive mobile */
-@media(max-width:640px) {
-  .liste-table thead th.col-famille,
-  .liste-table tbody td.col-famille,
+/* Tableau cultures planifiées responsive mobile */
+/* Famille et Plants toujours visibles — Semis et Récolte masqués sur petit écran */
+@media(max-width:600px) {
   .liste-table thead th.col-semis,
   .liste-table tbody td.col-semis,
   .liste-table thead th.col-recolte,
   .liste-table tbody td.col-recolte { display:none }
-  .liste-table thead th.col-plants,
-  .liste-table tbody td.col-plants { display:none }
 }
 @media(max-width:400px) {
   .liste-table thead th.col-actions,
-  .liste-table tbody td.col-actions { width:48px }
+  .liste-table tbody td.col-actions { width:40px }
 }
 </style>
 </head>
