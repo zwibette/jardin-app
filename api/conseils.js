@@ -24,7 +24,7 @@ module.exports = async function handler(req, res) {
             { text: prompt },
           ],
         }],
-        generationConfig: { maxOutputTokens: 1024, temperature: 0.4 },
+        generationConfig: { maxOutputTokens: 2048, temperature: 0.4 },
       };
 
       const response = await fetch(
