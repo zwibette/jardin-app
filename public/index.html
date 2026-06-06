@@ -45,6 +45,7 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .dot-amber{background:var(--amber);box-shadow:0 0 5px var(--amber)}
 .dot-red{background:var(--red);box-shadow:0 0 5px var(--red)}
 .dot-gray{background:var(--text-muted)}
+
 /* ── SERRE BRIEF ── */
 .serre-brief{border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--border)}
 .brief-ok  {border-color:#166534;background:rgba(74,222,128,.07)}
@@ -59,8 +60,46 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .sb-row.ok{color:#4ade80}.sb-row.warn{color:var(--amber)}.sb-row.crit{color:var(--red)}
 .sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
 .sb-dot.ok{background:#4ade80}.sb-dot.warn{background:var(--amber)}.sb-dot.crit{background:var(--red)}
-.sb-meta{font-size:.62rem;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap}
+.sb-meta{font-size:.62rem;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+
+/* ── LIEU MÉTÉO ÉDITABLE ── */
+.lieu-meteo-wrap{display:inline-flex;align-items:center;gap:5px}
+.lieu-meteo-label{
+  color:var(--accent);
+  text-decoration:underline dotted;
+  text-decoration-color:rgba(163,230,53,.5);
+  text-underline-offset:3px;
+  cursor:pointer;
+  transition:color .15s;
+  font-weight:500;
+}
+.lieu-meteo-label:hover{color:var(--green)}
+.lieu-meteo-input{
+  background:var(--bg3);
+  border:1px solid var(--accent);
+  border-radius:5px;
+  color:var(--text);
+  font-family:'DM Mono',monospace;
+  font-size:.62rem;
+  padding:2px 7px;
+  outline:none;
+  width:160px;
+  box-shadow:0 0 0 2px rgba(163,230,53,.15);
+}
+.lieu-meteo-save{
+  background:var(--green-dark);
+  border:1px solid var(--green);
+  color:var(--green);
+  font-family:'DM Mono',monospace;
+  font-size:.58rem;
+  padding:2px 7px;
+  border-radius:4px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.lieu-meteo-save:hover{background:rgba(74,222,128,.2)}
 /* ── FIN SERRE BRIEF ── */
+
 .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
 .chart-title{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .chart-wrap{position:relative;height:140px}
@@ -331,6 +370,42 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 const DEVICE_WATER_TIMER_ID = 'bf1ba1c9452ce49ca6umal';
 const DEVICE_PROG_LED_ID    = 'bf2de5244b7a2128ean6nq';
 
+// ── LIEU MÉTÉO (persistant, partagé à toute l'IA) ────────────
+const LIEU_KEY = 'jardin_lieu_meteo_v1';
+let lieuMeteo = localStorage.getItem(LIEU_KEY) || 'Saint-Brès 34670';
+
+// Coordonnées mises en cache après géocodage pour éviter des appels répétés
+const COORDS_KEY = 'jardin_lieu_coords_v1';
+let lieuCoords = null;
+try { lieuCoords = JSON.parse(localStorage.getItem(COORDS_KEY)); } catch(e) {}
+
+function saveLieu(val) {
+  lieuMeteo = val.trim() || lieuMeteo;
+  localStorage.setItem(LIEU_KEY, lieuMeteo);
+  // Invalider les coordonnées — seront recalculées au prochain fetchMeteo
+  lieuCoords = null;
+  localStorage.removeItem(COORDS_KEY);
+}
+
+// ── Géocodage Open-Meteo (gratuit, sans clé) ─────────────────
+async function geocodeLieu(lieu) {
+  // Si on a déjà des coordonnées valides pour ce lieu, les réutiliser
+  if (lieuCoords && lieuCoords.lieu === lieu) return lieuCoords;
+  try {
+    const r = await fetch(
+      'https://geocoding-api.open-meteo.com/v1/search?name=' +
+      encodeURIComponent(lieu) + '&count=1&language=fr&format=json'
+    );
+    const d = await r.json();
+    const res = d.results?.[0];
+    if (!res) return null;
+    const coords = { lieu, lat: res.latitude, lon: res.longitude, name: res.name, country: res.country_code };
+    lieuCoords = coords;
+    localStorage.setItem(COORDS_KEY, JSON.stringify(coords));
+    return coords;
+  } catch(e) { return null; }
+}
+
 // ── Seuils métier centralisés ────────────────────────────────
 const SEUILS = {
   temp:  { critMin: 5,  warnMin: 8,  warnMax: 30, critMax: 32 },
@@ -377,24 +452,102 @@ function actionRecommandee(alertes) {
   return null;
 }
 
+// ── Météo : géocodage + données ──────────────────────────────
+// Retourne { temp, max, code, lieu } ou null
 async function fetchMeteo() {
   try {
-    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=43.61&longitude=3.87&current=temperature_2m,weathercode&daily=temperature_2m_max&timezone=Europe/Paris&forecast_days=1');
+    const coords = await geocodeLieu(lieuMeteo);
+    const lat = coords ? coords.lat : 43.61; // fallback Montpellier
+    const lon = coords ? coords.lon : 3.87;
+    const r = await fetch(
+      'https://api.open-meteo.com/v1/forecast?latitude=' + lat +
+      '&longitude=' + lon +
+      '&current=temperature_2m,weathercode&daily=temperature_2m_max&timezone=Europe/Paris&forecast_days=1'
+    );
     const d = await r.json();
-    return { temp: d.current?.temperature_2m, max: d.daily?.temperature_2m_max?.[0], code: d.current?.weathercode };
+    return {
+      temp: d.current?.temperature_2m,
+      max:  d.daily?.temperature_2m_max?.[0],
+      code: d.current?.weathercode,
+      lieu: lieuMeteo,
+    };
   } catch(e) { return null; }
 }
 
-function meteoLabel(meteo) {
-  if (!meteo) return '';
-  const codes = {0:'Ensoleillé',1:'Dégagé',2:'Nuageux',3:'Couvert',45:'Brouillard',48:'Brouillard',51:'Bruine',53:'Bruine',55:'Bruine',61:'Pluie',63:'Pluie',65:'Pluie',80:'Averses',81:'Averses',82:'Averses',95:'Orageux'};
-  const desc = codes[meteo.code] || (meteo.code <= 3 ? 'Dégagé' : meteo.code <= 67 ? 'Pluie' : 'Variable');
-  const t  = meteo.temp != null ? Math.round(meteo.temp) + '°C' : '';
-  const mx = meteo.max  != null ? ', max ' + Math.round(meteo.max) + '°C' : '';
-  return 'Météo : ' + t + mx + ' — ' + desc;
+// ── Rendu de la ligne météo avec lieu cliquable ───────────────
+function meteoLineHTML(meteo) {
+  const codes = {0:'Ensoleillé',1:'Dégagé',2:'Nuageux',3:'Couvert',45:'Brouillard',48:'Brouillard',
+    51:'Bruine',53:'Bruine',55:'Bruine',61:'Pluie',63:'Pluie',65:'Pluie',
+    80:'Averses',81:'Averses',82:'Averses',95:'Orageux'};
+
+  // Partie météo (données ou fallback)
+  let meteoTxt = '';
+  if (meteo) {
+    const desc = codes[meteo.code] || (meteo.code <= 3 ? 'Dégagé' : meteo.code <= 67 ? 'Pluie' : 'Variable');
+    const t  = meteo.temp != null ? Math.round(meteo.temp) + '°C' : '';
+    const mx = meteo.max  != null ? ', max ' + Math.round(meteo.max) + '°C' : '';
+    meteoTxt = ' : ' + t + mx + ' — ' + desc;
+  }
+
+  // Lieu cliquable (label) + formulaire inline caché
+  return `<span class="lieu-meteo-wrap" id="lieuWrap">
+    <span>Météo à </span>
+    <span class="lieu-meteo-label" id="lieuLabel" onclick="openLieuEdit()" title="Cliquer pour modifier le lieu">${escHtml(lieuMeteo)}</span>
+    <span id="lieuMeteoTxt">${meteoTxt}</span>
+    <span id="lieuForm" style="display:none;align-items:center;gap:5px">
+      <input class="lieu-meteo-input" id="lieuInput" type="text" value="${escHtml(lieuMeteo)}"
+        onkeydown="if(event.key==='Enter') saveLieuEdit(); if(event.key==='Escape') closeLieuEdit();"
+        placeholder="Ville ou code postal">
+      <button class="lieu-meteo-save" onclick="saveLieuEdit()">✓ OK</button>
+      <button class="lieu-meteo-save" style="background:transparent;border-color:var(--border);color:var(--text-muted)" onclick="closeLieuEdit()">✕</button>
+    </span>
+  </span>`;
 }
 
-async function renderSerreBrief() {
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openLieuEdit() {
+  document.getElementById('lieuLabel').style.display = 'none';
+  document.getElementById('lieuMeteoTxt').style.display = 'none';
+  const form = document.getElementById('lieuForm');
+  form.style.display = 'inline-flex';
+  const inp = document.getElementById('lieuInput');
+  inp.value = lieuMeteo;
+  inp.focus();
+  inp.select();
+}
+
+function closeLieuEdit() {
+  const label = document.getElementById('lieuLabel');
+  const txt   = document.getElementById('lieuMeteoTxt');
+  const form  = document.getElementById('lieuForm');
+  if (!label || !form) return;
+  label.style.display = '';
+  txt.style.display   = '';
+  form.style.display  = 'none';
+}
+
+async function saveLieuEdit() {
+  const inp = document.getElementById('lieuInput');
+  if (!inp) return;
+  const val = inp.value.trim();
+  if (!val) { closeLieuEdit(); return; }
+  saveLieu(val);
+  closeLieuEdit();
+  // Mettre à jour le label immédiatement, puis rafraîchir la météo
+  const labelEl = document.getElementById('lieuLabel');
+  if (labelEl) labelEl.textContent = lieuMeteo;
+  const txtEl = document.getElementById('lieuMeteoTxt');
+  if (txtEl) txtEl.textContent = ' — mise à jour…';
+  // Recalculer la météo avec le nouveau lieu
+  const meteo = await fetchMeteo();
+  renderSerreBrief(meteo);
+}
+
+// ── Serre Brief (accepte optionnellement une météo pré-fetchée) ─
+async function renderSerreBrief(meteoData) {
   const el = document.getElementById('serreBrief');
   if (!el) return;
 
@@ -417,8 +570,8 @@ async function renderSerreBrief() {
     crit: '🚨 Intervention urgente requise',
   };
 
-  const meteo    = await fetchMeteo();
-  const meteoStr = meteoLabel(meteo);
+  // Fetch météo si non fournie
+  const meteo = meteoData !== undefined ? meteoData : await fetchMeteo();
 
   const items = [];
   if (globalSt === 'ok') {
@@ -444,7 +597,10 @@ async function renderSerreBrief() {
       <div class="sb-items">
         ${items.map(i => `<div class="sb-row ${i.st}"><span class="sb-dot ${i.st}"></span><span>${i.txt}</span></div>`).join('')}
       </div>
-      ${(meteoStr || ts) ? `<div class="sb-meta">${meteoStr ? '<span>' + meteoStr + '</span>' : ''}${ts ? '<span>' + ts + '</span>' : ''}</div>` : ''}
+      <div class="sb-meta">
+        ${meteoLineHTML(meteo)}
+        ${ts ? '<span>' + ts + '</span>' : ''}
+      </div>
     </div>`;
 }
 
@@ -649,11 +805,6 @@ function getCat(d) {
   if (c==='sj') return 'water'; if (c==='mcs') return 'door';
   if (c==='cz') return 'plug'; if (c==='ggq') return 'valve';
   return 'other';
-}
-function fmt(dateStr) {
-  if (!dateStr) return '—';
-  try { return new Date(dateStr).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
-  catch(e) { return '—'; }
 }
 function fmtTick(dateStr, range) {
   if (!dateStr) return '';
@@ -950,7 +1101,7 @@ async function refreshAll() {
   updateCommandStates();
   renderDevices();
 
-  // Encadré état serre (non bloquant)
+  // Encadré état serre (non bloquant — fetchMeteo interne)
   renderSerreBrief();
 
   await loadAndRenderCharts();
@@ -965,6 +1116,12 @@ async function refreshAll() {
 }
 
 function goRecoltes() { window.location.href = '/recoltes.html'; }
+
+// ── Contexte lieu pour les prompts IA ─────────────────────────
+// Retourne une phrase de contexte géographique à injecter dans chaque prompt
+function lieuContextPrompt() {
+  return 'Lieu du jardinier : ' + lieuMeteo + ' (France). ';
+}
 
 // ── Conseils IA ───────────────────────────────────────────────
 let recosCacheTime = 0;
@@ -997,10 +1154,10 @@ async function genererRecos() {
   const hour = new Date().getHours();
   const moment = hour<12?'matin':hour<18?'après-midi':'soir';
 
-  const sysPrompt = `Tu es un expert en maraîchage, permaculture et aquaponie conseillant un jardinier à Montpellier (climat méditerranéen, zone 9b). Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône automatisé. Arbres fruitiers : abricotier, 2 figuiers, 2 pommiers colonnaires, noisetier, amandier, pêchers, nectarinier, mandarinier, citronnier, kiwai, 3 bananiers. Cultures : tomates, aubergines, courgettes, poivrons, piments, concombres, melons, pastèques, salades, blettes, aromatiques.
+  const sysPrompt = `Tu es un expert en maraîchage, permaculture et aquaponie. ${lieuContextPrompt()}Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône automatisé. Arbres fruitiers : abricotier, 2 figuiers, 2 pommiers colonnaires, noisetier, amandier, pêchers, nectarinier, mandarinier, citronnier, kiwai, 3 bananiers. Cultures : tomates, aubergines, courgettes, poivrons, piments, concombres, melons, pastèques, salades, blettes, aromatiques.
 Données : ${today} (${season}, ${moment}), temp serre=${temp!==null?temp+'°C':'inconnue'}, humidité=${hum!==null?hum+'%':'inconnue'}, porte=${doorOpen!==null?(doorOpen?'ouverte':'fermée'):'inconnue'}, arrosage=${rhoneOn!==null?(rhoneOn?'actif':'inactif'):'inconnu'}, récoltes récentes : ${recoltesSummary||'aucune'}.`;
 
-  const question = `Génère 4 recommandations JSON pour ce jardinier (${today}, ${moment}, ${season}, Montpellier). Réponds UNIQUEMENT avec un tableau JSON valide. Format : [{"emoji":"🌡️","urgence":"urgent","titre":"Titre max 6 mots","description":"1 phrase concrète."},...] urgence = urgent|semaine|info.`;
+  const question = `Génère 4 recommandations JSON pour ce jardinier (${today}, ${moment}, ${season}, ${lieuMeteo}). Réponds UNIQUEMENT avec un tableau JSON valide. Format : [{"emoji":"🌡️","urgence":"urgent","titre":"Titre max 6 mots","description":"1 phrase concrète."},...] urgence = urgent|semaine|info.`;
 
   try {
     const r = await fetch('/api/conseils', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({system:sysPrompt,question,mode:'json'}) });
@@ -1070,7 +1227,7 @@ async function askConseils(questionOverride) {
   const month = new Date().getMonth()+1;
   const season = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
 
-  const sysPrompt = `Tu es un expert en maraîchage, permaculture et aquaponie, conseillant un jardinier à Montpellier (zone 9b). Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône, arbres fruitiers variés. Date : ${today} (${season}). Temp serre : ${temp!==null?temp+'°C':'non dispo'}. Humidité : ${hum!==null?hum+'%':'non dispo'}. Arrosage : ${rhoneOn!==null?(rhoneOn?'actif':'inactif'):'inconnu'}. Récoltes : ${recoltesSummary||'non dispo'}. Réponds en français, sections avec titres HTML h3, balises span class conseils-tag tag-urgent/tag-semaine/tag-info. Max 400 mots.`;
+  const sysPrompt = `Tu es un expert en maraîchage, permaculture et aquaponie. ${lieuContextPrompt()}Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône, arbres fruitiers variés. Date : ${today} (${season}). Temp serre : ${temp!==null?temp+'°C':'non dispo'}. Humidité : ${hum!==null?hum+'%':'non dispo'}. Arrosage : ${rhoneOn!==null?(rhoneOn?'actif':'inactif'):'inconnu'}. Récoltes : ${recoltesSummary||'non dispo'}. Réponds en français, sections avec titres HTML h3, balises span class conseils-tag tag-urgent/tag-semaine/tag-info. Max 400 mots.`;
 
   try {
     const r = await fetch('/api/conseils', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({system:sysPrompt,question}) });
