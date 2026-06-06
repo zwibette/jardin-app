@@ -32,13 +32,24 @@ main{max-width:900px;margin:0 auto;padding:20px 16px 40px;position:relative;z-in
 .section{margin-bottom:24px}
 
 /* ── BANNIÈRE TOTAUX ── */
-.total-banner{background:var(--surface);border:2px solid var(--green);color:var(--text);border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
-.total-val{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;line-height:1}
+.total-banner{background:var(--surface);border:2px solid var(--green);color:var(--text);border-radius:14px;padding:18px 20px;margin-bottom:20px}
+/* Ligne 1 : total général */
+.banner-row1{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.total-val{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:700;line-height:1}
 .total-lbl{font-size:.7rem;opacity:.7;letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
-.total-meta{display:flex;gap:20px;flex-wrap:wrap}
-.tmeta{text-align:center}
-.tmeta-val{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;display:block}
-.tmeta-lbl{font-size:.62rem;opacity:.7;letter-spacing:.08em;text-transform:uppercase}
+.banner-row1-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+/* Ligne(s) 2+ : détail par lieu */
+.banner-lieux{display:flex;flex-direction:column;gap:8px;padding-top:12px}
+.banner-lieu-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.banner-lieu-icon{font-size:1.2rem;flex-shrink:0;width:24px;text-align:center}
+.banner-lieu-poids{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;min-width:70px}
+.banner-lieu-poids.serre{color:var(--blue)}
+.banner-lieu-poids.bacs{color:var(--amber)}
+.banner-lieu-poids.jardin{color:var(--green)}
+.banner-lieu-metas{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.lmeta{display:flex;flex-direction:column;align-items:center;min-width:48px}
+.lmeta-val{font-size:.88rem;font-weight:700;color:var(--text)}
+.lmeta-lbl{font-size:.55rem;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-top:1px}
 
 /* ── RENDEMENT COLORÉ ── */
 .rendement-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;border:1px solid}
@@ -601,7 +612,7 @@ function buildMainNoRecoltes(veg, calEntry, famille) {
     <div class="stitle">📅 Suivi de culture</div>
     <div class="pheno-card"><div id="phenoContent">${renderStades()}${buildPhenoSlider(calEntry,_currentStades,famille)}</div></div>
   </div>
-  ${buildEditPanel(veg, calEntry, _currentLieu)}`;
+  ${buildEditPanel(veg)}`;
 }
 
 // ── RENDU PRINCIPAL ───────────────────────────────────────────
@@ -612,37 +623,69 @@ function render(recoltes, vegetal, calEntry, famille) {
   const byJardin  = recoltes.filter(r=>r.lieu==='jardin').reduce((s,r)=>s+r.poids,0);
   const lieux     = [...new Set(recoltes.map(r=>r.lieu))];
   const multiLieu = lieux.length>1;
-  // Note moyenne
-  const notesRec  = recoltes.filter(r=>r.note);
-  const avgNote   = notesRec.length ? notesRec.reduce((s,r)=>s+r.note,0)/notesRec.length : 0;
-  // Rendement par lieu courant
-  const nbPlants  = getNbPlants(vegetal, _currentLieu);
-  const rPied     = nbPlants ? Math.round(total/nbPlants) : null;
-  const rendInfo  = rPied ? rendementColor(rPied, famille) : null;
+
 
   const main = document.getElementById('mainContent');
+
+  // Calcul rendement global (tous lieux, tous plants confondus)
+  const allNbPlants = lieux.reduce((s,l) => s + (getNbPlants(vegetal,l)||0), 0);
+  const rPiedGlobal = allNbPlants > 0 ? Math.round(total / allNbPlants) : null;
+  const rendGlobal  = rPiedGlobal ? rendementColor(rPiedGlobal, famille) : null;
+
+  // Détails par lieu
+  const LIEUX_CFG = [
+    { key:'serre',  icon:'🏠', label:'Serre'  },
+    { key:'bacs',   icon:'🪴', label:'Bacs'   },
+    { key:'jardin', icon:'🌳', label:'Jardin' },
+  ];
+  const lieuxPresents = LIEUX_CFG.filter(lc => recoltes.some(r => r.lieu === lc.key));
+
+  function bannerLieuRow(lc) {
+    const recLieu   = recoltes.filter(r => r.lieu === lc.key);
+    const poidsLieu = recLieu.reduce((s,r)=>s+r.poids,0);
+    const nbL       = getNbPlants(vegetal, lc.key);
+    const rPiedL    = nbL ? Math.round(poidsLieu / nbL) : null;
+    const rendL     = rPiedL ? rendementColor(rPiedL, famille) : null;
+    const notesL    = recLieu.filter(r=>r.note);
+    const avgNoteL  = notesL.length ? notesL.reduce((s,r)=>s+r.note,0)/notesL.length : 0;
+    const emojiRend = rendL ? (rendL.cls==='excellent'?'🏆':rendL.cls==='bon'?'✅':rendL.cls==='moyen'?'⚠️':'📉') : '';
+    return `<div class="banner-lieu-row">
+      <div class="banner-lieu-icon">${lc.icon}</div>
+      <div class="banner-lieu-poids ${lc.key}">${fmtKg(poidsLieu)}</div>
+      <div class="banner-lieu-metas">
+        ${nbL?`<div class="lmeta"><span class="lmeta-val">${nbL}</span><span class="lmeta-lbl">plants</span></div>`:''}
+        ${rPiedL&&rendL?`<div class="lmeta">
+          <span class="lmeta-val" style="color:var(--green)">${rPiedL}g/plt</span>
+          <span class="rendement-pill ${rendL.cls}" style="font-size:.55rem;padding:2px 7px;margin-top:3px">${emojiRend} ${rendL.label}</span>
+        </div>`:''}
+        ${avgNoteL?`<div class="lmeta"><span class="lmeta-val">${avgNoteL.toFixed(1)}<span style="font-size:.6rem;color:var(--text-muted)">/5</span></span><span class="lmeta-lbl">note (${notesL.length})</span></div>`:''}
+        <div class="lmeta"><span class="lmeta-val">${recLieu.length}</span><span class="lmeta-lbl">récoltes</span></div>
+      </div>
+    </div>`;
+  }
 
   main.innerHTML = `
     <!-- 1. BANNIÈRE -->
     <div class="total-banner">
-      <div>
-        <div class="total-val">${fmtKg(total)}</div>
-        <div class="total-lbl">Total récolté</div>
+      <!-- Ligne 1 : total général -->
+      <div class="banner-row1">
+        <div>
+          <div class="total-val">${fmtKg(total)}</div>
+          <div class="total-lbl">Total récolté — ${lieux.length} lieu${lieux.length>1?'x':''}</div>
+        </div>
+        <div class="banner-row1-right">
+          ${allNbPlants?`<div style="font-size:.72rem;color:var(--text-muted)">${allNbPlants} plants au total</div>`:''}
+          ${rPiedGlobal&&rendGlobal?`<div style="display:flex;align-items:center;gap:6px">
+            <span style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--green)">${rPiedGlobal}g/plant</span>
+            <span class="rendement-pill ${rendGlobal.cls}" style="font-size:.6rem">
+              ${rendGlobal.cls==='excellent'?'🏆':rendGlobal.cls==='bon'?'✅':rendGlobal.cls==='moyen'?'⚠️':'📉'} ${rendGlobal.label}
+            </span>
+          </div>`:''}
+        </div>
       </div>
-      <div class="total-meta">
-        ${nbPlants?`<div class="tmeta"><span class="tmeta-val">${nbPlants}</span><span class="tmeta-lbl">plants</span></div>`:''}
-        ${avgNote?`<div class="tmeta">
-          <span class="tmeta-val">${avgNote.toFixed(1)}<span style="font-size:.7rem;font-weight:400;color:var(--text-muted)">/5</span></span>
-          <span class="tmeta-lbl">note moy. (${notesRec.length})</span>
-        </div>`:''}
-        ${rPied&&rendInfo?`<div class="tmeta">
-          <span class="tmeta-val" style="color:var(--green)">${rPied}g</span>
-          <span class="tmeta-lbl">par plant</span>
-          <span class="rendement-pill ${rendInfo.cls}" style="margin-top:4px;display:inline-flex">
-            ${rendInfo.cls==='excellent'?'🏆':rendInfo.cls==='bon'?'✅':rendInfo.cls==='moyen'?'⚠️':'📉'} ${rendInfo.label}
-          </span>
-        </div>`:''}
-        <div class="tmeta"><span class="tmeta-val">${lieux.length}</span><span class="tmeta-lbl">${lieux.length>1?'lieux':'lieu'}</span></div>
+      <!-- Lignes 2+ : détail par lieu -->
+      <div class="banner-lieux">
+        ${lieuxPresents.map(lc => bannerLieuRow(lc)).join('')}
       </div>
     </div>
 
@@ -688,7 +731,7 @@ function render(recoltes, vegetal, calEntry, famille) {
     </div>
 
     <!-- 7. PARAMÈTRES -->
-    ${buildEditPanel(vegetal, calEntry, _currentLieu)}
+    ${buildEditPanel(vegetal)}
   `;
 
   // Insérer #predictSection après le slider (position 3)
@@ -725,113 +768,187 @@ function render(recoltes, vegetal, calEntry, famille) {
   }
 }
 
-// ── PANEL PARAMÈTRES ─────────────────────────────────────────
-// Construit un panneau lié au lieu courant uniquement
-function buildEditPanel(veg, calEntry, lieu) {
-  const lieuActuel = lieu || calEntry?.lieu || 'jardin';
-  // Nombre de lieux distincts pour cette culture dans le calendrier
-  const entries = getCultureEntries(veg);
-  const multiEntries = entries.length > 1;
-  const lieuInfo = multiEntries
-    ? `<div class="edit-lieu-info" style="display:block">⚠️ Cette culture existe en ${entries.length} lieux. Les modifications s'appliquent uniquement à : <strong>${lieuLabel(lieuActuel)}</strong></div>`
-    : '';
+// ── PANEL PARAMÈTRES : un formulaire par lieu ─────────────────
+function buildEditPanel(veg) {
+  const entries    = getCultureEntries(veg);
+  const allLieux   = ['serre','bacs','jardin'];
+  const lieuxDispo = [...new Set([
+    ...entries.map(e => e.lieu),
+    // Ajouter les lieux des récoltes s'ils ne sont pas dans le calendrier
+    ...loadRecoltes().filter(r=>r.vegetal===veg).map(r=>r.lieu)
+  ])].filter(Boolean);
+
+  const lieuIcons = { serre:'🏠', bacs:'🪴', jardin:'🌳' };
+  const lieuNames = { serre:'Serre', bacs:'Bacs surélevés', jardin:'Jardin' };
+  const lieuColors = { serre:'var(--blue)', bacs:'var(--amber)', jardin:'var(--green)' };
+
+  function formForLieu(lieu) {
+    const entry = entries.find(e => e.lieu === lieu) || null;
+    const lid   = 'ep-' + lieu; // préfixe unique par lieu
+    return `<div class="edit-lieu-block" id="${lid}-block" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px">
+      <div style="padding:10px 14px;background:var(--bg2);display:flex;align-items:center;gap:8px;cursor:pointer;border-bottom:1px solid var(--border)"
+           onclick="toggleEditLieu('${lid}')">
+        <span style="font-size:1.1rem">${lieuIcons[lieu]||'📍'}</span>
+        <span style="font-size:.82rem;font-weight:500;color:${lieuColors[lieu]||'var(--text)'}">${lieuNames[lieu]||lieu}</span>
+        ${entry?`<span style="font-size:.6rem;color:var(--green);margin-left:4px;padding:1px 6px;border-radius:8px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2)">✓ dans le calendrier</span>`:`<span style="font-size:.6rem;color:var(--text-muted);margin-left:4px">non planifié</span>`}
+        <span style="margin-left:auto;font-size:.7rem;color:var(--text-muted)" id="${lid}-chevron">▼</span>
+      </div>
+      <div id="${lid}-form" style="display:none;padding:14px">
+        <div class="edit-grid">
+          <div class="edit-field">
+            <label>Date Semis</label>
+            <input type="date" id="${lid}-semis" value="${entry?.semis||''}">
+          </div>
+          <div class="edit-field">
+            <label>Date Plantation</label>
+            <input type="date" id="${lid}-plant" value="${entry?.plantation||''}">
+          </div>
+          <div class="edit-field">
+            <label>Début récolte prévue</label>
+            <input type="date" id="${lid}-rdebut" value="${entry?.recolteDebut||''}">
+          </div>
+          <div class="edit-field">
+            <label>Fin récolte prévue</label>
+            <input type="date" id="${lid}-rfin" value="${entry?.recolteFin||''}">
+          </div>
+          <div class="edit-field">
+            <label>Nombre de plants</label>
+            <input type="number" id="${lid}-nbr" min="0" value="${entry?.nbPlants||''}">
+          </div>
+          <div class="edit-field">
+            <label>Notes / observations</label>
+            <input type="text" id="${lid}-notes" value="${(entry?.notes||'').replace(/"/g,'&quot;')}">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button onclick="saveLieuParams('${veg}','${lieu}')" class="edit-btn-save" style="flex:1">💾 Enregistrer ${lieuNames[lieu]||lieu}</button>
+          ${entry?`<button onclick="deleteLieuEntry('${veg}','${lieu}')" style="background:var(--red-light,rgba(248,113,113,.1));border:1px solid rgba(248,113,113,.3);color:var(--red);padding:8px 12px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.78rem;cursor:pointer">Supprimer</button>`:''}
+        </div>
+        <div id="${lid}-status" style="font-size:.72rem;margin-top:8px;text-align:center;display:none"></div>
+      </div>
+    </div>`;
+  }
+
+  // Afficher un formulaire par lieu existant + option pour ajouter un nouveau lieu
+  const lieuxExistants = lieuxDispo.filter(l => allLieux.includes(l));
+  const lieuxManquants  = allLieux.filter(l => !lieuxDispo.includes(l));
+
+  const addSelect = lieuxManquants.length ? `
+    <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:.72rem;color:var(--text-muted)">Ajouter ce végétal dans un autre lieu :</span>
+      ${lieuxManquants.map(l=>`<button onclick="addLieu('${veg}','${l}')" style="background:var(--bg2);border:1px solid var(--border2);color:var(--text-muted);padding:5px 12px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border2)'">${lieuIcons[l]} ${lieuNames[l]}</button>`).join('')}
+    </div>` : '';
 
   return `<div class="edit-panel" id="editPanelBlock">
-    <div class="stitle" style="margin-bottom:4px">🛠️ Modifier les paramètres de culture</div>
-    ${lieuInfo}
-    <div class="edit-grid">
-      <div class="edit-field">
-        <label>Nom de la variété</label>
-        <input type="text" id="edit-nom" value="${veg.replace(/"/g,'&quot;')}">
-      </div>
-      <div class="edit-field">
-        <label>Lieu de culture</label>
-        <select id="edit-lieu" onchange="onLieuChange(this.value)">
-          <option value="serre"  ${lieuActuel==='serre' ?'selected':''}>🏠 Serre</option>
-          <option value="bacs"   ${lieuActuel==='bacs'  ?'selected':''}>🪴 Bacs surélevés</option>
-          <option value="jardin" ${lieuActuel==='jardin'?'selected':''}>🌳 Jardin</option>
-        </select>
-      </div>
-      <div class="edit-field">
-        <label>Date Semis</label>
-        <input type="date" id="edit-semis" value="${calEntry?.semis||''}">
-      </div>
-      <div class="edit-field">
-        <label>Date Plantation</label>
-        <input type="date" id="edit-plant" value="${calEntry?.plantation||''}">
-      </div>
-      <div class="edit-field">
-        <label>Nb de plants (${lieuLabel(lieuActuel)})</label>
-        <input type="number" id="edit-nbr" min="0" value="${calEntry?.nbPlants||''}">
-      </div>
+    <div class="stitle" style="margin-bottom:10px">🛠️ Modifier les paramètres de culture</div>
+    <div class="edit-field" style="margin-bottom:12px">
+      <label>Nom de la variété</label>
+      <input type="text" id="edit-nom-global" value="${veg.replace(/"/g,'&quot;')}" placeholder="Nom commun à tous les lieux">
     </div>
-    <button onclick="saveCultureParams()" class="edit-btn-save">💾 Enregistrer les modifications</button>
-    <div id="save-status" style="font-size:.75rem;margin-top:8px;text-align:center;display:none"></div>
+    <button onclick="renommerVariete('${veg}')" style="background:var(--bg2);border:1px solid var(--border2);color:var(--text-dim);padding:6px 14px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.75rem;cursor:pointer;margin-bottom:14px">Renommer la variété (tous lieux)</button>
+    <div id="edit-nom-status" style="font-size:.72rem;margin-bottom:8px;display:none"></div>
+    ${lieuxExistants.map(l => formForLieu(l)).join('')}
+    ${addSelect}
   </div>`;
 }
 
-function onLieuChange(newLieu) {
-  // Met à jour dynamiquement le label "Nb de plants (Lieu)"
-  const el = document.querySelector('#editPanelBlock .edit-field:nth-child(5) label');
-  if (el) el.textContent = `Nb de plants (${lieuLabel(newLieu)})`;
+function toggleEditLieu(lid) {
+  const form    = document.getElementById(lid+'-form');
+  const chevron = document.getElementById(lid+'-chevron');
+  const open    = form.style.display !== 'none';
+  form.style.display    = open ? 'none' : 'block';
+  chevron.textContent   = open ? '▼' : '▲';
 }
 
-// ── SAVE PARAMÈTRES (par lieu) ────────────────────────────────
-function saveCultureParams() {
-  const statusDiv  = document.getElementById('save-status');
-  const nouveauNom = document.getElementById('edit-nom').value.trim();
-  if (!nouveauNom) {
-    statusDiv.style.color='var(--red)'; statusDiv.textContent='⚠️ Le nom ne peut pas être vide.'; statusDiv.style.display='block'; return;
-  }
+function saveLieuParams(veg, lieu) {
+  const lid     = 'ep-' + lieu;
+  const status  = document.getElementById(lid+'-status');
   try {
-    let cal         = loadCalendrier();
-    const norm      = s => s.toLowerCase().replace(/[^a-z]/g,'');
-    const ancienNom = vegetal;
-    const dateSemis = document.getElementById('edit-semis').value||null;
-    const datePlant = document.getElementById('edit-plant').value||null;
-    const lieuChoisi= document.getElementById('edit-lieu').value||'jardin';
-    const nbrPlants = parseInt(document.getElementById('edit-nbr').value,10)||null;
-
-    // Trouver l'entrée correspondant exactement au nom + lieu courant
-    const idxCible = cal.findIndex(c =>
-      (norm(c.culture)===norm(ancienNom)||norm(c.culture).includes(norm(ancienNom))||norm(ancienNom).includes(norm(c.culture)))
-      && c.lieu === _currentLieu
+    let cal     = loadCalendrier();
+    const norm  = s => s.toLowerCase().replace(/[^a-z]/g,'');
+    const idx   = cal.findIndex(c =>
+      (norm(c.culture)===norm(veg)||norm(c.culture).includes(norm(veg))||norm(veg).includes(norm(c.culture)))
+      && c.lieu === lieu
     );
-
-    if (idxCible !== -1) {
-      // Mettre à jour seulement cet entrée (lieu spécifique)
-      cal[idxCible] = {
-        ...cal[idxCible],
-        culture:    nouveauNom,
-        famille:    FAMILLES[nouveauNom]||cal[idxCible].famille||'',
-        semis:      dateSemis||cal[idxCible].semis,
-        plantation: datePlant||cal[idxCible].plantation,
-        lieu:       lieuChoisi,
-        nbPlants:   nbrPlants!==null?nbrPlants:cal[idxCible].nbPlants,
-      };
-      statusDiv.textContent = '✓ Modifications enregistrées pour '+lieuLabel(lieuChoisi)+' !';
-    } else {
-      // Créer une nouvelle entrée pour ce lieu
-      cal.push({
-        id:'c'+Date.now(),
-        culture:nouveauNom, famille:FAMILLES[nouveauNom]||'',
-        semis:dateSemis, plantation:datePlant, lieu:lieuChoisi, nbPlants:nbrPlants,
-        recolteDebut:null, recolteFin:null,
-      });
-      statusDiv.textContent = '✓ Nouvelle entrée créée pour '+lieuLabel(lieuChoisi)+' !';
-    }
+    const updated = {
+      culture:     veg,
+      famille:     FAMILLES[veg] || (idx!==-1 ? cal[idx].famille : ''),
+      lieu,
+      semis:       document.getElementById(lid+'-semis').value  || null,
+      plantation:  document.getElementById(lid+'-plant').value  || null,
+      recolteDebut:document.getElementById(lid+'-rdebut').value || null,
+      recolteFin:  document.getElementById(lid+'-rfin').value   || null,
+      nbPlants:    parseInt(document.getElementById(lid+'-nbr').value,10)||null,
+      notes:       document.getElementById(lid+'-notes').value  || '',
+    };
+    if (idx !== -1) cal[idx] = { ...cal[idx], ...updated };
+    else cal.push({ id:'c'+Date.now(), ...updated });
     localStorage.setItem(STORAGE_KEY_CAL, JSON.stringify(cal));
-
-    // Renommer les récoltes si nom changé (tous lieux confondus)
-    if (norm(ancienNom)!==norm(nouveauNom)) {
-      let recs = loadRecoltes();
-      recs.forEach(r=>{ if(r.vegetal===ancienNom){r.vegetal=nouveauNom;r.famille=FAMILLES[nouveauNom]||r.famille||'';} });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(recs));
+    status.style.color   = 'var(--green)';
+    status.textContent   = '✓ Enregistré';
+    status.style.display = 'block';
+    setTimeout(()=>{ status.style.display='none'; }, 2000);
+    // Rafraîchir uniquement si c'est le lieu courant (pour le slider)
+    if (lieu === _currentLieu) {
+      _currentLieu = lieu;
+      refreshPhenoBlock();
     }
-    statusDiv.style.color='var(--green)'; statusDiv.style.display='block';
-    setTimeout(()=>{ statusDiv.style.display='none'; window.location.search=`?v=${encodeURIComponent(nouveauNom)}`; },1400);
   } catch(e) {
-    statusDiv.style.color='var(--red)'; statusDiv.textContent='⚠️ Erreur lors de la sauvegarde.'; statusDiv.style.display='block';
+    status.style.color   = 'var(--red)';
+    status.textContent   = '⚠️ Erreur';
+    status.style.display = 'block';
+  }
+}
+
+function deleteLieuEntry(veg, lieu) {
+  if (!confirm(`Supprimer la culture de ${veg} en ${lieuLabel(lieu)} du calendrier ?`)) return;
+  try {
+    let cal  = loadCalendrier();
+    const norm = s => s.toLowerCase().replace(/[^a-z]/g,'');
+    cal = cal.filter(c => !(
+      (norm(c.culture)===norm(veg)||norm(c.culture).includes(norm(veg))||norm(veg).includes(norm(c.culture)))
+      && c.lieu === lieu
+    ));
+    localStorage.setItem(STORAGE_KEY_CAL, JSON.stringify(cal));
+    window.location.reload();
+  } catch(e) {}
+}
+
+function addLieu(veg, lieu) {
+  // Crée une entrée vide dans le calendrier et rafraîchit le panel
+  let cal = loadCalendrier();
+  cal.push({ id:'c'+Date.now(), culture:veg, famille:FAMILLES[veg]||'', lieu, semis:null, plantation:null, recolteDebut:null, recolteFin:null, nbPlants:null, notes:'' });
+  localStorage.setItem(STORAGE_KEY_CAL, JSON.stringify(cal));
+  const panel = document.getElementById('editPanelBlock');
+  if (panel) panel.outerHTML = buildEditPanel(veg);
+  // Le panel n'existe plus, reload propre
+  window.location.reload();
+}
+
+function renommerVariete(ancienNom) {
+  const nouveauNom = document.getElementById('edit-nom-global').value.trim();
+  const status     = document.getElementById('edit-nom-status');
+  if (!nouveauNom) { status.style.color='var(--red)'; status.textContent='⚠️ Nom vide'; status.style.display='block'; return; }
+  const norm = s => s.toLowerCase().replace(/[^a-z]/g,'');
+  if (norm(ancienNom) === norm(nouveauNom)) { status.style.color='var(--text-muted)'; status.textContent='Aucun changement.'; status.style.display='block'; return; }
+  try {
+    // Renommer dans le calendrier
+    let cal = loadCalendrier();
+    cal.forEach(c => {
+      if (norm(c.culture)===norm(ancienNom)||norm(c.culture).includes(norm(ancienNom))||norm(ancienNom).includes(norm(c.culture)))
+        c.culture = nouveauNom;
+    });
+    localStorage.setItem(STORAGE_KEY_CAL, JSON.stringify(cal));
+    // Renommer dans les récoltes
+    let recs = loadRecoltes();
+    recs.forEach(r => { if(r.vegetal===ancienNom){ r.vegetal=nouveauNom; r.famille=FAMILLES[nouveauNom]||r.famille||''; } });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(recs));
+    // Renommer dans le cache stades
+    try { const st=JSON.parse(localStorage.getItem(STORAGE_KEY_STADES)||'{}'); if(st[ancienNom]){st[nouveauNom]=st[ancienNom];delete st[ancienNom];localStorage.setItem(STORAGE_KEY_STADES,JSON.stringify(st));} } catch(e){}
+    status.style.color='var(--green)'; status.textContent='✓ Renommé'; status.style.display='block';
+    setTimeout(()=>{ window.location.search=`?v=${encodeURIComponent(nouveauNom)}`; }, 1000);
+  } catch(e) {
+    status.style.color='var(--red)'; status.textContent='⚠️ Erreur'; status.style.display='block';
   }
 }
 
