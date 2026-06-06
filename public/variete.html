@@ -1168,30 +1168,24 @@ Dis-moi :
 4. Ce qu'il faut surveiller dans les prochains jours`;
 
   try {
-    // Appel API avec image (Gemini supporte les images en base64 dans parts)
-    const requestBody = {
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: _photoMime, data: _photoBase64 }
-          },
-          { type: 'text', text: sysPrompt + '\n\nQuestion : ' + question }
-        ]
-      }]
-    };
-
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    // Passage par le proxy /api/conseils (mode vision) pour éviter les CORS
+    const res = await fetch('/api/conseils', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        mode: 'vision',
+        system: sysPrompt,
+        question,
+        imageBase64: _photoBase64,
+        imageMime:   _photoMime,
+      })
     });
-    const data = await res.json();
-    const text = data.content?.find(b=>b.type==='text')?.text || '';
-    if (!text) throw new Error(data.error?.message || 'Réponse vide');
+    const txt = await res.text();
+    if (!txt.trim()) throw new Error('Réponse vide');
+    const data = JSON.parse(txt);
+    if (!data.success) throw new Error(data.error || 'Erreur API');
+    const text = data.text || '';
+    if (!text) throw new Error('Réponse vide');
 
     const html = `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(163,230,53,.06);border:1px solid rgba(163,230,53,.2);border-radius:8px;font-size:.72rem;color:var(--accent)">
       📷 Analyse visuelle de la photo — ${vegetal} en ${lieuLabel(_currentLieu)}
