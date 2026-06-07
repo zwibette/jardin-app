@@ -26,12 +26,20 @@ body::before{content:'';position:fixed;inset:0;background:
   radial-gradient(ellipse at 85% 70%,rgba(45,212,191,.04) 0%,transparent 50%);
   pointer-events:none;z-index:0}
 
-/* ── HEADER ── */
+/* ── HEADER (même structure que index, palette bleue) ── */
 header{position:sticky;top:0;z-index:100;background:rgba(5,14,15,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 16px}
-.header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:52px}
-.logo{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:300;color:var(--accent);display:flex;align-items:center;gap:8px}
-.back-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);padding:6px 12px;border-radius:7px;font-family:'DM Mono',monospace;font-size:.68rem;cursor:pointer;letter-spacing:.05em;text-decoration:none;transition:all .2s}
-.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:var(--accent);display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.header-right{display:flex;align-items:center;gap:10px}
+.header-status{font-size:.62rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+
+/* ── NAV TABS (même structure que index, teintes bleues) ── */
+.nav-tabs{display:flex;gap:3px;margin-bottom:20px;background:var(--surface2);padding:3px;border-radius:10px;border:1px solid var(--border)}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
+.tab:hover:not(.active){color:var(--accent)}
+.tab.active{background:var(--blue-dark);color:var(--accent);border:1px solid rgba(56,189,248,.3)}
 
 /* ── LAYOUT ── */
 main{max-width:960px;margin:0 auto;padding:16px;position:relative;z-index:1}
@@ -182,22 +190,58 @@ select.event-input{-webkit-appearance:none}
 
 <header>
   <div class="header-inner">
-    <a href="/" class="back-btn">← Dashboard</a>
-    <div class="logo">🐠 Mon Bassin</div>
-    <div style="font-size:.6rem;color:var(--text-muted);letter-spacing:.08em" id="totalEauHeader">—</div>
+    <div class="logo"><div class="logo-dot"></div>🐠 Jardin Vivant</div>
+    <div class="header-right">
+      <div class="header-status" id="totalEauHeader">—</div>
+    </div>
   </div>
 </header>
-
 <main>
+  <div class="nav-tabs">
+    <button class="tab" onclick="window.location.href='/'">Dashboard</button>
+    <button class="tab" onclick="window.location.href='/'">Appareils</button>
+    <button class="tab active">Bassin</button>
+    <button class="tab" onclick="window.location.href='/recoltes.html'">Cultures</button>
+    <button class="tab" onclick="window.location.href='/'">Conseils</button>
+  </div>
 
-  <!-- ① CONFIGURATION BASSINS -->
+
+  <!-- ① QUALITÉ DE L'EAU -->
+  <div class="section-card">
+    <div class="stitle">💧 Qualité de mon eau <span>saisie manuelle + capteurs</span></div>
+    <div class="params-grid" id="paramsGrid"></div>
+    <div class="analyze-bar">
+      <button class="analyze-btn" id="analyzeBtn" onclick="lancerAnalyseEau()">
+        <span id="analyzeIcon">✦</span> Analyser avec l'IA
+      </button>
+      <a class="history-link" onclick="openHistorique()">📈 Historique</a>
+      <span class="last-save-info" id="lastSaveInfo"></span>
+    </div>
+    <div id="analyseResult"></div>
+  </div>
+
+  <!-- ② CONSEILS POISSONS IA -->
+  <div class="section-card">
+    <div class="stitle">🌊 Conseils pour tes poissons <span>IA · météo · saison</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:.72rem;color:var(--text-muted)">Conseils personnalisés basés sur ta situation actuelle</div>
+      <button class="fish-btn" id="fishConseilsBtn" onclick="genererConseilsPoissons()">
+        <span id="fishBtnIcon">✦</span> Générer les conseils
+      </button>
+    </div>
+    <div id="fishConseilsBody">
+      <div class="empty-msg">Clique sur "Générer les conseils" pour obtenir des recommandations personnalisées pour tes poissons.</div>
+    </div>
+  </div>
+
+  <!-- ③ CONFIGURATION BASSINS -->
   <div class="section-card" id="cardBassins">
     <div class="stitle">🪣 Mes bassins <span>cliquer pour modifier</span></div>
     <div class="bassins-row" id="bassinsRow"></div>
     <div id="totalEauRow" style="margin-top:4px"></div>
   </div>
 
-  <!-- ② GESTION POISSONS -->
+  <!-- ④ GESTION POISSONS -->
   <div class="section-card">
     <div class="stitle">🐟 Population de poissons</div>
     <div class="poissons-total">
@@ -253,34 +297,6 @@ select.event-input{-webkit-appearance:none}
     <div style="margin-top:16px">
       <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Derniers évènements</div>
       <div id="eventLog" class="event-log"><div class="empty-msg">Aucun évènement enregistré</div></div>
-    </div>
-  </div>
-
-  <!-- ③ QUALITÉ DE L'EAU -->
-  <div class="section-card">
-    <div class="stitle">💧 Qualité de mon eau <span>saisie manuelle + capteurs</span></div>
-    <div class="params-grid" id="paramsGrid"></div>
-    <div class="analyze-bar">
-      <button class="analyze-btn" id="analyzeBtn" onclick="lancerAnalyseEau()">
-        <span id="analyzeIcon">✦</span> Analyser avec l'IA
-      </button>
-      <a class="history-link" onclick="openHistorique()">📈 Historique</a>
-      <span class="last-save-info" id="lastSaveInfo"></span>
-    </div>
-    <div id="analyseResult"></div>
-  </div>
-
-  <!-- ④ CONSEILS POISSONS IA -->
-  <div class="section-card">
-    <div class="stitle">🌊 Conseils pour tes poissons <span>IA · météo · saison</span></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div style="font-size:.72rem;color:var(--text-muted)">Conseils personnalisés basés sur ta situation actuelle</div>
-      <button class="fish-btn" id="fishConseilsBtn" onclick="genererConseilsPoissons()">
-        <span id="fishBtnIcon">✦</span> Générer les conseils
-      </button>
-    </div>
-    <div id="fishConseilsBody">
-      <div class="empty-msg">Clique sur "Générer les conseils" pour obtenir des recommandations personnalisées pour tes poissons.</div>
     </div>
   </div>
 
