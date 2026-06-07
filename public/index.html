@@ -64,41 +64,15 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 
 /* ── LIEU MÉTÉO ÉDITABLE ── */
 .lieu-meteo-wrap{display:inline-flex;align-items:center;gap:5px}
-.lieu-meteo-label{
-  color:var(--accent);
-  text-decoration:underline dotted;
-  text-decoration-color:rgba(163,230,53,.5);
-  text-underline-offset:3px;
-  cursor:pointer;
-  transition:color .15s;
-  font-weight:500;
-}
+.lieu-meteo-label{color:var(--accent);text-decoration:underline dotted;text-decoration-color:rgba(163,230,53,.5);text-underline-offset:3px;cursor:pointer;transition:color .15s;font-weight:500}
 .lieu-meteo-label:hover{color:var(--green)}
-.lieu-meteo-input{
-  background:var(--bg3);
-  border:1px solid var(--accent);
-  border-radius:5px;
-  color:var(--text);
-  font-family:'DM Mono',monospace;
-  font-size:.62rem;
-  padding:2px 7px;
-  outline:none;
-  width:160px;
-  box-shadow:0 0 0 2px rgba(163,230,53,.15);
-}
-.lieu-meteo-save{
-  background:var(--green-dark);
-  border:1px solid var(--green);
-  color:var(--green);
-  font-family:'DM Mono',monospace;
-  font-size:.58rem;
-  padding:2px 7px;
-  border-radius:4px;
-  cursor:pointer;
-  white-space:nowrap;
-}
+.lieu-meteo-input{background:var(--bg3);border:1px solid var(--accent);border-radius:5px;color:var(--text);font-family:'DM Mono',monospace;font-size:.62rem;padding:2px 7px;outline:none;width:160px;box-shadow:0 0 0 2px rgba(163,230,53,.15)}
+.lieu-meteo-save{background:var(--green-dark);border:1px solid var(--green);color:var(--green);font-family:'DM Mono',monospace;font-size:.58rem;padding:2px 7px;border-radius:4px;cursor:pointer;white-space:nowrap}
 .lieu-meteo-save:hover{background:rgba(74,222,128,.2)}
-/* ── FIN SERRE BRIEF ── */
+
+/* ── CAPTEUR HORS LIGNE WARNINGS ── */
+.sensor-warning{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.35);border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:8px;font-size:.72rem;color:var(--red);line-height:1.5}
+.sensor-warning-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
 
 .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
 .chart-title{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
@@ -110,10 +84,12 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .chart-overlay{position:absolute;inset:0;background:rgba(10,18,11,.7);display:flex;align-items:center;justify-content:center;border-radius:8px;z-index:2}
 .history-info{font-size:.58rem;color:var(--text-muted);letter-spacing:.05em}
 .history-loading{color:var(--amber)}.history-err{color:var(--red)}
+
+/* ── COMMANDES : grille 2×2 ── */
 .cmd-section{margin-bottom:16px}
 .cmd-title{font-family:'Fraunces',serif;font-size:.95rem;font-weight:300;font-style:italic;color:var(--text-dim);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
-.cmd-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-@media(max-width:600px){.cmd-grid{grid-template-columns:1fr}}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:500px){.cmd-grid{grid-template-columns:1fr}}
 .cmd-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s}
 .cmd-card:hover{border-color:var(--green-dark)}
 .cmd-name{font-size:.75rem;color:var(--text);line-height:1.3}
@@ -194,6 +170,7 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
   <div class="nav-tabs">
     <button class="tab active" onclick="showTab('dashboard',this)">Dashboard</button>
     <button class="tab" onclick="showTab('appareils',this)">Appareils</button>
+    <button class="tab" onclick="goBassin()">Bassin</button>
     <button class="tab" onclick="goRecoltes()">Récoltes</button>
     <button class="tab" onclick="showTab('conseils',this)">Conseils</button>
   </div>
@@ -201,13 +178,13 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
   <!-- DASHBOARD -->
   <div class="section active" id="tab-dashboard">
     <div id="alertBanners"></div>
+    <!-- Warnings capteurs hors ligne -->
+    <div id="sensorWarnings"></div>
 
     <!-- ENCADRÉ ÉTAT SERRE -->
     <div id="serreBrief">
       <div class="serre-brief brief-loading">
-        <div class="sb-head">
-          <div class="sb-title" style="color:var(--text-muted)">Analyse de la serre en cours…</div>
-        </div>
+        <div class="sb-head"><div class="sb-title" style="color:var(--text-muted)">Analyse de la serre en cours…</div></div>
       </div>
     </div>
 
@@ -255,47 +232,36 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
       </div>
     </div>
 
-    <!-- Commandes -->
+    <!-- Commandes — grille 2×2 -->
     <div class="cmd-section">
       <div class="cmd-title">Commandes rapides</div>
       <div class="cmd-grid">
         <div class="cmd-card">
-          <div>
-            <div class="cmd-name">Arrosage bas-Rhône 💧</div>
-            <div class="cmd-desc">Smart Water Timer · Canal 2</div>
-          </div>
+          <div><div class="cmd-name">Arrosage bas-Rhône 💧</div><div class="cmd-desc">Smart Water Timer · Canal 2</div></div>
           <div class="cmd-row">
             <span class="status-badge" id="badge-rhone">—</span>
-            <label class="big-toggle">
-              <input type="checkbox" id="toggle-rhone" onchange="cmdRhone(this.checked)" disabled>
-              <span class="big-toggle-slider"></span>
-            </label>
+            <label class="big-toggle"><input type="checkbox" id="toggle-rhone" onchange="cmdRhone(this.checked)" disabled><span class="big-toggle-slider"></span></label>
           </div>
         </div>
         <div class="cmd-card">
-          <div>
-            <div class="cmd-name">Brumisation 🫧</div>
-            <div class="cmd-desc">Smart Water Timer · Canal 1</div>
-          </div>
+          <div><div class="cmd-name">Brumisation 🫧</div><div class="cmd-desc">Smart Water Timer · Canal 1</div></div>
           <div class="cmd-row">
             <span class="status-badge" id="badge-brumisation">—</span>
-            <label class="big-toggle">
-              <input type="checkbox" id="toggle-brumisation" onchange="cmdBrumisation(this.checked)" disabled>
-              <span class="big-toggle-slider"></span>
-            </label>
+            <label class="big-toggle"><input type="checkbox" id="toggle-brumisation" onchange="cmdBrumisation(this.checked)" disabled><span class="big-toggle-slider"></span></label>
           </div>
         </div>
         <div class="cmd-card">
-          <div>
-            <div class="cmd-name">Bain à remous 🌊</div>
-            <div class="cmd-desc">Prog LED Ventil · Canal 4</div>
+          <div><div class="cmd-name">Lumière serre 💡</div><div class="cmd-desc">Prog LED Ventil · Canal 2</div></div>
+          <div class="cmd-row">
+            <span class="status-badge" id="badge-lumiere">—</span>
+            <label class="big-toggle"><input type="checkbox" id="toggle-lumiere" onchange="cmdLumiere(this.checked)" disabled><span class="big-toggle-slider"></span></label>
           </div>
+        </div>
+        <div class="cmd-card">
+          <div><div class="cmd-name">Bain à remous 🌊</div><div class="cmd-desc">Prog LED Ventil · Canal 4</div></div>
           <div class="cmd-row">
             <span class="status-badge" id="badge-remous">—</span>
-            <label class="big-toggle">
-              <input type="checkbox" id="toggle-remous" onchange="cmdRemous(this.checked)" disabled>
-              <span class="big-toggle-slider"></span>
-            </label>
+            <label class="big-toggle"><input type="checkbox" id="toggle-remous" onchange="cmdRemous(this.checked)" disabled><span class="big-toggle-slider"></span></label>
           </div>
         </div>
       </div>
@@ -307,14 +273,6 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
     <div class="stitle">Appareils connectés <span>SmartLife / Tuya</span></div>
     <div class="pills" id="devPills"></div>
     <div class="grid-3" id="devGrid"><div class="loading"><div class="loading-ring"></div>Chargement…</div></div>
-  </div>
-
-  <!-- POTAGER -->
-  <div class="section" id="tab-potager">
-    <div style="text-align:center;padding:50px 16px">
-      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-style:italic;color:var(--text-dim);margin-bottom:16px">Journal des récoltes</div>
-      <a href="/recoltes.html" style="display:inline-block;background:var(--green-dark);color:var(--green);border:1px solid var(--green);padding:12px 24px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.8rem;text-decoration:none;letter-spacing:.05em">Ouvrir le journal →</a>
-    </div>
   </div>
 
   <!-- CONSEILS -->
@@ -359,9 +317,7 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
         onblur="this.style.borderColor='var(--border)'">
       <button onclick="askConseils()" style="background:var(--green-dark);border:1px solid var(--green);color:var(--green);padding:10px 16px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.75rem;cursor:pointer;white-space:nowrap;flex-shrink:0">Envoyer →</button>
     </div>
-    <div style="margin-top:8px;font-size:.6rem;color:var(--text-muted);letter-spacing:.05em">
-      Les conseils tiennent compte de ta météo actuelle, tes données capteurs et tes récoltes.
-    </div>
+    <div style="margin-top:8px;font-size:.6rem;color:var(--text-muted);letter-spacing:.05em">Les conseils tiennent compte de ta météo actuelle, tes données capteurs et tes récoltes.</div>
   </div>
 </main>
 
@@ -370,32 +326,24 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 const DEVICE_WATER_TIMER_ID = 'bf1ba1c9452ce49ca6umal';
 const DEVICE_PROG_LED_ID    = 'bf2de5244b7a2128ean6nq';
 
-// ── LIEU MÉTÉO (persistant, partagé à toute l'IA) ────────────
-const LIEU_KEY = 'jardin_lieu_meteo_v1';
-let lieuMeteo = localStorage.getItem(LIEU_KEY) || 'Saint-Brès 34670';
-
-// Coordonnées mises en cache après géocodage pour éviter des appels répétés
+// ── LIEU MÉTÉO ────────────────────────────────────────────────
+const LIEU_KEY   = 'jardin_lieu_meteo_v1';
 const COORDS_KEY = 'jardin_lieu_coords_v1';
+let lieuMeteo = localStorage.getItem(LIEU_KEY) || 'Saint-Brès 34670';
 let lieuCoords = null;
 try { lieuCoords = JSON.parse(localStorage.getItem(COORDS_KEY)); } catch(e) {}
 
 function saveLieu(val) {
   lieuMeteo = val.trim() || lieuMeteo;
   localStorage.setItem(LIEU_KEY, lieuMeteo);
-  // Invalider les coordonnées — seront recalculées au prochain fetchMeteo
   lieuCoords = null;
   localStorage.removeItem(COORDS_KEY);
 }
 
-// ── Géocodage Open-Meteo (gratuit, sans clé) ─────────────────
 async function geocodeLieu(lieu) {
-  // Si on a déjà des coordonnées valides pour ce lieu, les réutiliser
   if (lieuCoords && lieuCoords.lieu === lieu) return lieuCoords;
   try {
-    const r = await fetch(
-      'https://geocoding-api.open-meteo.com/v1/search?name=' +
-      encodeURIComponent(lieu) + '&count=1&language=fr&format=json'
-    );
+    const r = await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(lieu)+'&count=1&language=fr&format=json');
     const d = await r.json();
     const res = d.results?.[0];
     if (!res) return null;
@@ -413,19 +361,22 @@ const SEUILS = {
 };
 
 function statusTemp(v) {
-  if (v === null) return 'gray';
+  if (v === null || v === undefined) return 'gray';
   if (v < SEUILS.temp.critMin  || v > SEUILS.temp.critMax)  return 'red';
   if (v < SEUILS.temp.warnMin  || v > SEUILS.temp.warnMax)  return 'amber';
   return 'green';
 }
 function statusHumid(v) {
-  if (v === null) return 'gray';
+  if (v === null || v === undefined) return 'gray';
   if (v < SEUILS.humid.critMin || v > SEUILS.humid.critMax) return 'red';
   if (v < SEUILS.humid.warnMin || v > SEUILS.humid.warnMax) return 'amber';
   return 'green';
 }
-const STATUS_DOT   = { green: 'dot-green', amber: 'dot-amber', red: 'dot-red', gray: 'dot-gray' };
-const STATUS_COLOR = { green: '#4ade80', amber: '#fbbf24', red: '#f87171', gray: '#4a6b52' };
+const STATUS_DOT   = { green:'dot-green', amber:'dot-amber', red:'dot-red', gray:'dot-gray' };
+const STATUS_COLOR = { green:'#4ade80',   amber:'#fbbf24',   red:'#f87171', gray:'#4a6b52' };
+
+// ── Heure courante (pour les règles horaires) ────────────────
+function heureActuelle() { return new Date().getHours() + new Date().getMinutes() / 60; }
 
 // ── Serre Brief ──────────────────────────────────────────────
 function serreBriefMsg(val, key, st) {
@@ -438,8 +389,9 @@ function serreBriefMsg(val, key, st) {
   return label + ' ' + val + unit;
 }
 
-function actionRecommandee(alertes) {
+function actionRecommandee(alertes, temp, hum) {
   if (!alertes.length) return null;
+  const h = heureActuelle();
   const hasTempHigh = alertes.some(a => a.key === 'temp' && a.val > SEUILS.temp.warnMax);
   const hasHumHigh  = alertes.some(a => a.key === 'hum'  && a.val > SEUILS.humid.warnMax);
   const hasHumLow   = alertes.some(a => a.key === 'hum'  && a.val < SEUILS.humid.warnMin);
@@ -447,40 +399,43 @@ function actionRecommandee(alertes) {
   if (hasTempHigh && hasHumHigh) return 'Ouvrir les aérations et ventiler immédiatement';
   if (hasTempHigh) return 'Ouvrir la porte et activer le ventilateur';
   if (hasHumHigh)  return 'Aérer la serre pour réduire l\'humidité';
-  if (hasHumLow)   return 'Activer la brumisation ou augmenter l\'arrosage';
-  if (hasTempLow)  return 'Fermer la porte et vérifier le chauffage';
+  if (hasHumLow) {
+    // Règle : après 16h30 ET temp > 30°C → ne pas conseiller l'humidification
+    if (h >= 16.5 && temp !== null && temp > 30) {
+      return '⚠️ Humidité basse mais NE PAS humidifier ce soir : temp > 30°C et nuit approche — l\'humidité nocturne va naturellement remonter et humidifier maintenant favoriserait l\'oïdium. Aérer plutôt et surveiller demain matin.';
+    }
+    return 'Activer la brumisation ou augmenter l\'arrosage';
+  }
+  if (hasTempLow) return 'Fermer la porte et vérifier le chauffage';
   return null;
 }
 
-// ── Météo : géocodage + données ──────────────────────────────
-// Retourne { temp, max, code, lieu } ou null
+// ── Météo ────────────────────────────────────────────────────
 async function fetchMeteo() {
   try {
     const coords = await geocodeLieu(lieuMeteo);
-    const lat = coords ? coords.lat : 43.61; // fallback Montpellier
+    const lat = coords ? coords.lat : 43.61;
     const lon = coords ? coords.lon : 3.87;
-    const r = await fetch(
-      'https://api.open-meteo.com/v1/forecast?latitude=' + lat +
-      '&longitude=' + lon +
-      '&current=temperature_2m,weathercode&daily=temperature_2m_max&timezone=Europe/Paris&forecast_days=1'
-    );
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,weathercode&daily=temperature_2m_max&timezone=Europe/Paris&forecast_days=1');
     const d = await r.json();
-    return {
-      temp: d.current?.temperature_2m,
-      max:  d.daily?.temperature_2m_max?.[0],
-      code: d.current?.weathercode,
-      lieu: lieuMeteo,
-    };
+    return { temp: d.current?.temperature_2m, max: d.daily?.temperature_2m_max?.[0], code: d.current?.weathercode, lieu: lieuMeteo };
   } catch(e) { return null; }
 }
 
-// ── Rendu de la ligne météo avec lieu cliquable ───────────────
-function meteoLineHTML(meteo) {
-  const codes = {0:'Ensoleillé',1:'Dégagé',2:'Nuageux',3:'Couvert',45:'Brouillard',48:'Brouillard',
-    51:'Bruine',53:'Bruine',55:'Bruine',61:'Pluie',63:'Pluie',65:'Pluie',
-    80:'Averses',81:'Averses',82:'Averses',95:'Orageux'};
+// Exposition globale pour bassin.html
+window.getMeteoContexte = () => ({ lieu: lieuMeteo });
+window.getSerreData = () => {
+  const sensor = getSerreTHSensor();
+  return {
+    temp: sensor ? getStat(sensor, 'va_temperature') : null,
+    hum:  sensor ? getStat(sensor, 'va_humidity')    : null,
+    ph:   window._lastMyFoodData?.ph   || null,
+    waterTemp: window._lastMyFoodData?.waterTemp || null,
+  };
+};
 
-  // Partie météo (données ou fallback)
+function meteoLineHTML(meteo) {
+  const codes = {0:'Ensoleillé',1:'Dégagé',2:'Nuageux',3:'Couvert',45:'Brouillard',48:'Brouillard',51:'Bruine',53:'Bruine',55:'Bruine',61:'Pluie',63:'Pluie',65:'Pluie',80:'Averses',81:'Averses',82:'Averses',95:'Orageux'};
   let meteoTxt = '';
   if (meteo) {
     const desc = codes[meteo.code] || (meteo.code <= 3 ? 'Dégagé' : meteo.code <= 67 ? 'Pluie' : 'Variable');
@@ -488,11 +443,9 @@ function meteoLineHTML(meteo) {
     const mx = meteo.max  != null ? ', max ' + Math.round(meteo.max) + '°C' : '';
     meteoTxt = ' : ' + t + mx + ' — ' + desc;
   }
-
-  // Lieu cliquable (label) + formulaire inline caché
   return `<span class="lieu-meteo-wrap" id="lieuWrap">
     <span>Météo à </span>
-    <span class="lieu-meteo-label" id="lieuLabel" onclick="openLieuEdit()" title="Cliquer pour modifier le lieu">${escHtml(lieuMeteo)}</span>
+    <span class="lieu-meteo-label" id="lieuLabel" onclick="openLieuEdit()" title="Cliquer pour modifier">${escHtml(lieuMeteo)}</span>
     <span id="lieuMeteoTxt">${meteoTxt}</span>
     <span id="lieuForm" style="display:none;align-items:center;gap:5px">
       <input class="lieu-meteo-input" id="lieuInput" type="text" value="${escHtml(lieuMeteo)}"
@@ -504,9 +457,7 @@ function meteoLineHTML(meteo) {
   </span>`;
 }
 
-function escHtml(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function openLieuEdit() {
   document.getElementById('lieuLabel').style.display = 'none';
@@ -514,111 +465,91 @@ function openLieuEdit() {
   const form = document.getElementById('lieuForm');
   form.style.display = 'inline-flex';
   const inp = document.getElementById('lieuInput');
-  inp.value = lieuMeteo;
-  inp.focus();
-  inp.select();
+  inp.value = lieuMeteo; inp.focus(); inp.select();
 }
-
 function closeLieuEdit() {
   const label = document.getElementById('lieuLabel');
   const txt   = document.getElementById('lieuMeteoTxt');
   const form  = document.getElementById('lieuForm');
   if (!label || !form) return;
-  label.style.display = '';
-  txt.style.display   = '';
-  form.style.display  = 'none';
+  label.style.display = ''; txt.style.display = ''; form.style.display = 'none';
 }
-
 async function saveLieuEdit() {
   const inp = document.getElementById('lieuInput');
   if (!inp) return;
   const val = inp.value.trim();
   if (!val) { closeLieuEdit(); return; }
-  saveLieu(val);
-  closeLieuEdit();
-  // Mettre à jour le label immédiatement, puis rafraîchir la météo
+  saveLieu(val); closeLieuEdit();
   const labelEl = document.getElementById('lieuLabel');
   if (labelEl) labelEl.textContent = lieuMeteo;
   const txtEl = document.getElementById('lieuMeteoTxt');
   if (txtEl) txtEl.textContent = ' — mise à jour…';
-  // Recalculer la météo avec le nouveau lieu
   const meteo = await fetchMeteo();
   renderSerreBrief(meteo);
 }
 
-// ── Serre Brief (accepte optionnellement une météo pré-fetchée) ─
+// ── Détection capteurs humidité hors ligne ────────────────────
+function checkSensorWarnings() {
+  const container = document.getElementById('sensorWarnings');
+  if (!container) return;
+  const warnings = [];
+  devices.forEach(d => {
+    const name = (d.name || '').toLowerCase();
+    const isHumSensor = name.includes('eau tour') || name.includes('humidité bac') || name.includes('humidite bac');
+    if (isHumSensor && !d.online) {
+      warnings.push(`<div class="sensor-warning">
+        <span class="sensor-warning-icon">🔋</span>
+        <span><strong>${escHtml(d.name)}</strong> est hors ligne — vérifier les piles du capteur d'humidité.</span>
+      </div>`);
+    }
+  });
+  container.innerHTML = warnings.join('');
+}
+
+// ── Serre Brief ──────────────────────────────────────────────
 async function renderSerreBrief(meteoData) {
   const el = document.getElementById('serreBrief');
   if (!el) return;
-
   const sensor = getSerreTHSensor();
   const temp = sensor ? getStat(sensor, 'va_temperature') : null;
   const hum  = sensor ? getStat(sensor, 'va_humidity')    : null;
   const tSt  = statusTemp(temp);
   const hSt  = statusHumid(hum);
-
   const alertes = [];
-  if (tSt !== 'green' && tSt !== 'gray') alertes.push({ key: 'temp', val: temp, st: tSt });
-  if (hSt !== 'green' && hSt !== 'gray') alertes.push({ key: 'hum',  val: hum,  st: hSt });
-
-  const globalSt = alertes.some(a => a.st === 'red') ? 'crit'
-                 : alertes.length ? 'warn' : 'ok';
-
-  const titles = {
-    ok:   '✅ La serre va bien',
-    warn: '⚠️ ' + alertes.length + ' point' + (alertes.length > 1 ? 's' : '') + ' à surveiller',
-    crit: '🚨 Intervention urgente requise',
-  };
-
-  // Fetch météo si non fournie
-  const meteo = meteoData !== undefined ? meteoData : await fetchMeteo();
-
-  const items = [];
+  if (tSt !== 'green' && tSt !== 'gray') alertes.push({ key:'temp', val:temp, st:tSt });
+  if (hSt !== 'green' && hSt !== 'gray') alertes.push({ key:'hum',  val:hum,  st:hSt });
+  const globalSt = alertes.some(a => a.st === 'red') ? 'crit' : alertes.length ? 'warn' : 'ok';
+  const titles   = { ok:'✅ La serre va bien', warn:'⚠️ '+alertes.length+' point'+(alertes.length>1?'s':'')+' à surveiller', crit:'🚨 Intervention urgente requise' };
+  const meteo    = meteoData !== undefined ? meteoData : await fetchMeteo();
+  const items    = [];
   if (globalSt === 'ok') {
-    if (temp !== null) items.push({ st: 'ok',  txt: 'Température ' + temp + '°C — dans la plage cible' });
-    if (hum  !== null) items.push({ st: 'ok',  txt: 'Humidité ' + hum + '% — optimal' });
-    if (temp === null && hum === null) items.push({ st: 'ok', txt: 'Capteurs en ligne' });
+    if (temp !== null) items.push({ st:'ok', txt:'Température '+temp+'°C — dans la plage cible' });
+    if (hum  !== null) items.push({ st:'ok', txt:'Humidité '+hum+'% — optimal' });
+    if (temp === null && hum === null) items.push({ st:'ok', txt:'Capteurs en ligne' });
   } else {
-    alertes.forEach(a => {
-      const dotSt = a.st === 'red' ? 'crit' : 'warn';
-      items.push({ st: dotSt, txt: serreBriefMsg(a.val, a.key, a.st) });
-    });
-    const action = actionRecommandee(alertes);
+    alertes.forEach(a => items.push({ st: a.st === 'red' ? 'crit' : 'warn', txt: serreBriefMsg(a.val, a.key, a.st) }));
+    const action = actionRecommandee(alertes, temp, hum);
     if (action) items.push({ st: globalSt, txt: '→ ' + action });
   }
-
-  const ts = lastRefresh
-    ? 'Mis à jour ' + new Date(lastRefresh).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
-    : '';
-
-  el.innerHTML = `
-    <div class="serre-brief brief-${globalSt}">
-      <div class="sb-head"><div class="sb-title">${titles[globalSt]}</div></div>
-      <div class="sb-items">
-        ${items.map(i => `<div class="sb-row ${i.st}"><span class="sb-dot ${i.st}"></span><span>${i.txt}</span></div>`).join('')}
-      </div>
-      <div class="sb-meta">
-        ${meteoLineHTML(meteo)}
-        ${ts ? '<span>' + ts + '</span>' : ''}
-      </div>
-    </div>`;
+  const ts = lastRefresh ? 'Mis à jour '+new Date(lastRefresh).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+  el.innerHTML = `<div class="serre-brief brief-${globalSt}">
+    <div class="sb-head"><div class="sb-title">${titles[globalSt]}</div></div>
+    <div class="sb-items">${items.map(i=>`<div class="sb-row ${i.st}"><span class="sb-dot ${i.st}"></span><span>${i.txt}</span></div>`).join('')}</div>
+    <div class="sb-meta">${meteoLineHTML(meteo)}${ts?'<span>'+ts+'</span>':''}</div>
+  </div>`;
 }
 
 // ── État global ──────────────────────────────────────────────
 let devices = [];
 let lastRefresh = null;
 let charts = { temp: null, hum: null };
+window._lastMyFoodData = null;
 
 // ── localStorage ─────────────────────────────────────────────
 const HISTORY_KEY = 'jardin_history_v1';
 const MAX_LOCAL   = 1440;
-
-function loadLocal() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; }
-}
-function saveLocal(h) {
-  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); } catch(e) {}
-}
+function loadLocal() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; } }
+function saveLocal(h) { try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); } catch(e) {} }
 function addLocalPoint(temp, hum) {
   const h = loadLocal();
   h.push({ t: new Date().toISOString(), temp, hum });
@@ -626,29 +557,40 @@ function addLocalPoint(temp, hum) {
   saveLocal(h);
 }
 
-// ── Rééchantillonnage temporel ───────────────────────────────
+// ── Rééchantillonnage par plage ───────────────────────────────
+// Fenêtres cibles selon la spec :
+//  24h : 1 relevé/heure (minuit→minuit)
+//  3j  : 4 relevés/jour  à 3h30, 9h30, 13h30, 16h30
+//  7j  : 2 relevés/jour  à 6h, 14h
+//  30j : 1 relevé/jour   à 11h
 function getTargetSlots(range) {
   const now = Date.now();
   const slots = [];
   if (range === '24h') {
-    const start = now - 86400000;
-    for (let t = start; t <= now; t += 30 * 60 * 1000) slots.push(t);
+    // minuit d'hier → maintenant, 1 slot par heure
+    const startOfYesterday = new Date(); startOfYesterday.setHours(0,0,0,0); startOfYesterday.setDate(startOfYesterday.getDate()-1);
+    for (let t = startOfYesterday.getTime(); t <= now; t += 60 * 60 * 1000) slots.push(t);
   } else if (range === '3d') {
-    const start = now - 3 * 86400000;
-    for (let t = start; t <= now; t += 3 * 60 * 60 * 1000) slots.push(t);
+    const start = new Date(now - 3 * 86400000); start.setHours(0,0,0,0);
+    for (let d = new Date(start); d.getTime() <= now; d.setDate(d.getDate()+1)) {
+      [3.5, 9.5, 13.5, 16.5].forEach(h => {
+        const s = new Date(d); s.setHours(Math.floor(h), (h%1)*60, 0, 0);
+        if (s.getTime() <= now) slots.push(s.getTime());
+      });
+    }
   } else if (range === '7d') {
-    const start = new Date(now - 7 * 86400000); start.setHours(0, 0, 0, 0);
-    for (let d = new Date(start); d.getTime() <= now; d.setDate(d.getDate() + 1)) {
-      const at7  = new Date(d); at7.setHours(7, 0, 0, 0);
-      const at15 = new Date(d); at15.setHours(15, 0, 0, 0);
-      if (at7.getTime()  <= now) slots.push(at7.getTime());
-      if (at15.getTime() <= now) slots.push(at15.getTime());
+    const start = new Date(now - 7 * 86400000); start.setHours(0,0,0,0);
+    for (let d = new Date(start); d.getTime() <= now; d.setDate(d.getDate()+1)) {
+      [6, 14].forEach(h => {
+        const s = new Date(d); s.setHours(h, 0, 0, 0);
+        if (s.getTime() <= now) slots.push(s.getTime());
+      });
     }
   } else if (range === '30d') {
-    const start = new Date(now - 30 * 86400000); start.setHours(0, 0, 0, 0);
-    for (let d = new Date(start); d.getTime() <= now; d.setDate(d.getDate() + 1)) {
-      const at11 = new Date(d); at11.setHours(11, 0, 0, 0);
-      if (at11.getTime() <= now) slots.push(at11.getTime());
+    const start = new Date(now - 30 * 86400000); start.setHours(0,0,0,0);
+    for (let d = new Date(start); d.getTime() <= now; d.setDate(d.getDate()+1)) {
+      const s = new Date(d); s.setHours(11, 0, 0, 0);
+      if (s.getTime() <= now) slots.push(s.getTime());
     }
   }
   return slots;
@@ -657,8 +599,8 @@ function getTargetSlots(range) {
 function resampleToSlots(history, range) {
   const slots = getTargetSlots(range);
   if (!slots.length || !history.length) return [];
-  const tolerances = { '24h': 15 * 60 * 1000, '3d': 90 * 60 * 1000, '7d': 4 * 60 * 60 * 1000, '30d': 12 * 60 * 60 * 1000 };
-  const tol = tolerances[range] || 15 * 60 * 1000;
+  const tolerances = { '24h': 30*60*1000, '3d': 90*60*1000, '7d': 4*60*60*1000, '30d': 12*60*60*1000 };
+  const tol = tolerances[range] || 30*60*1000;
   const result = [];
   for (const slotMs of slots) {
     let best = null, bestDist = Infinity;
@@ -666,7 +608,7 @@ function resampleToSlots(history, range) {
       const d = Math.abs(new Date(p.t).getTime() - slotMs);
       if (d < bestDist && d <= tol) { best = p; bestDist = d; }
     }
-    if (best) result.push(best);
+    if (best) result.push({ ...best, _slotMs: slotMs });
   }
   return result;
 }
@@ -677,24 +619,43 @@ function filterLocal(history, range) {
   return resampleToSlots(history.filter(p => new Date(p.t).getTime() >= cutoff), range);
 }
 
-// ── Google Sheets ────────────────────────────────────────────
-async function pushToSheets(temp, hum) {
-  try { await fetch('/api/sheets?action=append_history&temp=' + temp + '&hum=' + hum); }
-  catch(e) { console.warn('Sheets push failed:', e.message); }
+// Formatage des ticks selon la spec
+function fmtTick(point, range) {
+  const d = new Date(point._slotMs || point.t);
+  if (!d) return '';
+  const jours = ['dim','lun','mar','mer','jeu','ven','sam'];
+  const jour = jours[d.getDay()];
+  const h = d.getHours();
+  if (range === '24h') {
+    return d.getHours().toString().padStart(2,'0') + 'h';
+  }
+  if (range === '3d') {
+    return jour + ' ' + h + 'h';
+  }
+  if (range === '7d') {
+    return jour + ' ' + h + 'h';
+  }
+  if (range === '30d') {
+    return d.getDate().toString();
+  }
+  return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 }
 
+// ── Google Sheets ────────────────────────────────────────────
+async function pushToSheets(temp, hum) {
+  try { await fetch('/api/sheets?action=append_history&temp='+temp+'&hum='+hum); }
+  catch(e) { console.warn('Sheets push failed:', e.message); }
+}
 async function fetchHistory(range) {
-  const res = await fetch('/api/sheets?action=get_history&range=' + range);
+  const res = await fetch('/api/sheets?action=get_history&range='+range);
   const data = await res.json();
   if (!data.success) throw new Error(data.error || 'Erreur Sheets');
   return data;
 }
 
 // ── Sélecteurs de plage ──────────────────────────────────────
-let currentRangeTemp = '24h';
-let currentRangeHum  = '24h';
-let isLoadingTemp = false;
-let isLoadingHum  = false;
+let currentRangeTemp = '24h', currentRangeHum = '24h';
+let isLoadingTemp = false, isLoadingHum = false;
 
 function setRangeTemp(range, btn) {
   if (isLoadingTemp) return;
@@ -703,7 +664,6 @@ function setRangeTemp(range, btn) {
   btn.classList.add('active');
   loadAndRenderTemp(range);
 }
-
 function setRangeHum(range, btn) {
   if (isLoadingHum) return;
   currentRangeHum = range;
@@ -713,9 +673,16 @@ function setRangeHum(range, btn) {
 }
 
 async function fetchHistoryData(range) {
+  // Pour 3j on cherche dans 7j et on filtre
   const apiRange = range === '3d' ? '7d' : range;
   const data = await fetchHistory(apiRange);
-  if (data.data && data.data.length > 0) data.data = resampleToSlots(data.data, range);
+  if (data.data && data.data.length > 0) {
+    if (range === '3d') {
+      const cutoff = Date.now() - 3 * 86400000;
+      data.data = data.data.filter(p => new Date(p.t).getTime() >= cutoff);
+    }
+    data.data = resampleToSlots(data.data, range);
+  }
   return data;
 }
 
@@ -728,12 +695,12 @@ async function loadAndRenderTemp(range) {
   let history = [];
   try {
     const data = await fetchHistoryData(range);
-    if (data.data && data.data.length > 0) { history = data.data; infoEl.className = 'history-info'; infoEl.textContent = history.length + ' pts'; }
-    else { history = filterLocal(loadLocal(), range); infoEl.className = 'history-info'; infoEl.textContent = history.length + ' pts (local)'; }
+    if (data.data && data.data.length > 0) { history = data.data; infoEl.className = 'history-info'; infoEl.textContent = history.length+' pts'; }
+    else { history = filterLocal(loadLocal(), range); infoEl.className = 'history-info'; infoEl.textContent = history.length+' pts (local)'; }
   } catch(e) {
     history = filterLocal(loadLocal(), range);
     infoEl.className = history.length ? 'history-info' : 'history-info history-err';
-    infoEl.textContent = history.length ? history.length + ' pts (local)' : 'Erreur';
+    infoEl.textContent = history.length ? history.length+' pts (local)' : 'Erreur';
   }
   renderChartTemp(history, range);
   document.getElementById('overlayTemp').style.display = 'none';
@@ -749,12 +716,12 @@ async function loadAndRenderHum(range) {
   let history = [];
   try {
     const data = await fetchHistoryData(range);
-    if (data.data && data.data.length > 0) { history = data.data; infoEl.className = 'history-info'; infoEl.textContent = history.length + ' pts'; }
-    else { history = filterLocal(loadLocal(), range); infoEl.className = 'history-info'; infoEl.textContent = history.length + ' pts (local)'; }
+    if (data.data && data.data.length > 0) { history = data.data; infoEl.className = 'history-info'; infoEl.textContent = history.length+' pts'; }
+    else { history = filterLocal(loadLocal(), range); infoEl.className = 'history-info'; infoEl.textContent = history.length+' pts (local)'; }
   } catch(e) {
     history = filterLocal(loadLocal(), range);
     infoEl.className = history.length ? 'history-info' : 'history-info history-err';
-    infoEl.textContent = history.length ? history.length + ' pts (local)' : 'Erreur';
+    infoEl.textContent = history.length ? history.length+' pts (local)' : 'Erreur';
   }
   renderChartHum(history, range);
   document.getElementById('overlayHum').style.display = 'none';
@@ -769,7 +736,7 @@ async function loadAndRenderCharts() {
 function showTab(name, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
   btn.classList.add('active');
   if (name === 'conseils' && (Date.now() - recosCacheTime > RECOS_CACHE_DURATION)) genererRecos();
 }
@@ -783,8 +750,8 @@ async function fetchDevices() {
 }
 async function controlDevice(deviceId, code, value) {
   const r = await fetch('/api/tuya', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ action: 'control', deviceId, code, value })
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'control', deviceId, code, value })
   });
   return r.json();
 }
@@ -798,22 +765,13 @@ function getSerreTHSensor() {
     d.status_list?.some(x => x.code === 'va_humidity'));
 }
 function getCat(d) {
-  const n = (d.name||'').toLowerCase(), c = (d.category||'').toLowerCase();
+  const n=(d.name||'').toLowerCase(), c=(d.category||'').toLowerCase();
   if (n.includes('commutateur')||n.includes('switch')||n.includes('canal')||c==='kg') return 'switch';
   if (n.includes('temp')||n.includes('humid')||c==='wk'||c==='wsdcg') return 'sensor';
   if (c==='zwjcy') return 'soil'; if (c==='ldcg') return 'light';
   if (c==='sj') return 'water'; if (c==='mcs') return 'door';
   if (c==='cz') return 'plug'; if (c==='ggq') return 'valve';
   return 'other';
-}
-function fmtTick(dateStr, range) {
-  if (!dateStr) return '';
-  try {
-    const d = new Date(dateStr);
-    if (range === '30d') return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
-    if (range === '7d' || range === '3d') return d.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit'}) + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-    return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-  } catch(e) { return ''; }
 }
 
 // ── Dashboard métriques ──────────────────────────────────────
@@ -825,39 +783,46 @@ async function fetchMyFood() {
     const r = await fetch('/api/myfood');
     const d = await r.json();
     if (!d.success) throw new Error(d.error || 'MyFood indisponible');
+    window._lastMyFoodData = d;
     updateMyFoodMetrics(d);
   } catch(e) { console.warn('MyFood:', e.message); }
 }
 
 function updateMyFoodMetrics(d) {
+  const phEl    = document.getElementById('val-ph');
+  const wtempEl = document.getElementById('val-wtemp');
+  if (!phEl) return;
   if (d.ph !== null && d.ph !== undefined) {
-    document.getElementById('val-ph').textContent = d.ph.toFixed(1);
-    document.getElementById('unit-ph').textContent = 'pH · ' + (d.phTime || '');
-    const phDot = document.getElementById('dot-ph');
-    if      (d.ph < 6.2 || d.ph > 7.6) { phDot.className = 'dot dot-red';   }
-    else if (d.ph < 6.5 || d.ph > 7.2) { phDot.className = 'dot dot-amber'; }
-    else                                { phDot.className = 'dot dot-green'; }
+    phEl.textContent = d.ph.toFixed(1);
+    document.getElementById('unit-ph').textContent = 'pH · '+(d.phTime||'');
+    const dot = document.getElementById('dot-ph');
+    const card = document.getElementById('card-ph');
+    if (d.ph < 6.2 || d.ph > 7.6)       { dot.className='dot dot-red';   }
+    else if (d.ph < 6.5 || d.ph > 7.2)  { dot.className='dot dot-amber'; }
+    else                                  { dot.className='dot dot-green'; }
+    if (card) card.style.opacity='1';
   }
   if (d.waterTemp !== null && d.waterTemp !== undefined) {
-    document.getElementById('val-wtemp').textContent = d.waterTemp.toFixed(1) + '°';
-    document.getElementById('unit-wtemp').textContent = '°C · ' + (d.waterTempTime || '');
-    const wtDot = document.getElementById('dot-wtemp');
-    if      (d.waterTemp < 18 || d.waterTemp > 28) { wtDot.className = 'dot dot-red';   }
-    else if (d.waterTemp < 20 || d.waterTemp > 26) { wtDot.className = 'dot dot-amber'; }
-    else                                            { wtDot.className = 'dot dot-green'; }
+    wtempEl.textContent = d.waterTemp.toFixed(1)+'°';
+    document.getElementById('unit-wtemp').textContent = '°C · '+(d.waterTempTime||'');
+    const dot = document.getElementById('dot-wtemp');
+    const card = document.getElementById('card-wtemp');
+    if (d.waterTemp < 18 || d.waterTemp > 28)       { dot.className='dot dot-red';   }
+    else if (d.waterTemp < 20 || d.waterTemp > 26)  { dot.className='dot dot-amber'; }
+    else                                              { dot.className='dot dot-green'; }
+    if (card) card.style.opacity='1';
   }
 }
 
 function renderSerreMetrics() {
   const el = document.getElementById('serreMetrics');
   const sensor = getSerreTHSensor();
-  if (!sensor) { el.innerHTML = '<div class="err" style="grid-column:1/-1"><strong>Capteur serre introuvable</strong></div>'; return; }
-  const temp = getStat(sensor, 'va_temperature');
-  const hum  = getStat(sensor, 'va_humidity');
-  const tempC = temp !== null ? Math.round(temp) + '°' : '—';
-  const humV  = hum  !== null ? hum + '%' : '—';
-  const tSt = statusTemp(temp);
-  const hSt = statusHumid(hum);
+  if (!sensor) { el.innerHTML='<div class="err" style="grid-column:1/-1"><strong>Capteur serre introuvable</strong></div>'; return; }
+  const temp = getStat(sensor,'va_temperature');
+  const hum  = getStat(sensor,'va_humidity');
+  const tempC = temp !== null ? Math.round(temp)+'°' : '—';
+  const humV  = hum  !== null ? hum+'%' : '—';
+  const tSt = statusTemp(temp), hSt = statusHumid(hum);
   el.innerHTML = `
     <div class="metric-card" style="padding:12px 14px">
       <div class="metric-label"><span class="dot ${STATUS_DOT[tSt]}"></span>🌡️ Temp. air</div>
@@ -879,129 +844,126 @@ function renderSerreMetrics() {
       <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;line-height:1;color:var(--text-muted);margin:6px 0 2px" id="val-wtemp">—</div>
       <div class="metric-unit" style="color:var(--text-muted)" id="unit-wtemp">MyFood bientôt</div>
     </div>`;
+  if (window._lastMyFoodData) updateMyFoodMetrics(window._lastMyFoodData);
 }
 
 // ── Graphiques ───────────────────────────────────────────────
 function chartOpts(color, unit, range) {
-  const maxTicks = range === '30d' ? 10 : (range === '7d' || range === '3d') ? 10 : 8;
+  const maxTicks = range === '30d' ? 12 : (range === '7d') ? 14 : (range === '3d') ? 12 : 24;
   return {
-    responsive: true, maintainAspectRatio: false, animation: false,
-    plugins: { legend: { display: false }, tooltip: {
-      backgroundColor: '#1a2e1c', borderColor: '#2a4030', borderWidth: 1,
-      titleColor: '#8fb898', bodyColor: '#e8f5ea',
-      callbacks: { label: ctx => ctx.parsed.y?.toFixed(1) + unit }
+    responsive:true, maintainAspectRatio:false, animation:false,
+    plugins:{ legend:{display:false}, tooltip:{
+      backgroundColor:'#1a2e1c', borderColor:'#2a4030', borderWidth:1,
+      titleColor:'#8fb898', bodyColor:'#e8f5ea',
+      callbacks:{ label: ctx => ctx.parsed.y?.toFixed(1)+unit }
     }},
-    scales: {
-      x: { ticks: { color:'#4a6b52', font:{size:9}, maxTicksLimit: maxTicks, maxRotation: 30 }, grid: { color:'rgba(42,64,48,.4)' } },
-      y: { ticks: { color:'#4a6b52', font:{size:9}, callback: v => v?.toFixed(1) + unit }, grid: { color:'rgba(42,64,48,.4)' } }
+    scales:{
+      x:{ ticks:{color:'#4a6b52',font:{size:9},maxTicksLimit:maxTicks,maxRotation:30}, grid:{color:'rgba(42,64,48,.4)'} },
+      y:{ ticks:{color:'#4a6b52',font:{size:9},callback:v=>v?.toFixed(1)+unit}, grid:{color:'rgba(42,64,48,.4)'} }
     }
   };
 }
 function chartDs(data, color, history, pointColors) {
-  const usePointColors = pointColors && pointColors.length === data.length;
-  return {
-    data, borderColor: color, backgroundColor: color + '18', borderWidth: 2,
+  const usePC = pointColors && pointColors.length === data.length;
+  return { data, borderColor:color, backgroundColor:color+'18', borderWidth:2,
     pointRadius: history.length > 100 ? 0 : 3,
-    pointBackgroundColor: usePointColors ? pointColors : color,
-    pointBorderColor: usePointColors ? pointColors : color,
-    fill: true, tension: 0.4
-  };
+    pointBackgroundColor: usePC ? pointColors : color,
+    pointBorderColor: usePC ? pointColors : color,
+    fill:true, tension:0.4 };
 }
-function tempPointColors(history) {
-  return history.map(p => { const st = statusTemp(p.temp); return st === 'green' ? '#4ade80' : STATUS_COLOR[st]; });
-}
-function humidPointColors(history) {
-  return history.map(p => { const st = statusHumid(p.hum); return st === 'green' ? '#60a5fa' : STATUS_COLOR[st]; });
-}
+function tempPointColors(h) { return h.map(p => { const s=statusTemp(p.temp); return s==='green'?'#4ade80':STATUS_COLOR[s]; }); }
+function humidPointColors(h) { return h.map(p => { const s=statusHumid(p.hum); return s==='green'?'#60a5fa':STATUS_COLOR[s]; }); }
 
 function renderChartTemp(history, range) {
-  const labels = history.map(p => fmtTick(p.t, range));
-  const temps  = history.map(p => p.temp);
+  const labels = history.map(p => fmtTick(p, range));
   const ctx = document.getElementById('chartTemp').getContext('2d');
   if (charts.temp) charts.temp.destroy();
-  if (!history.length) { renderChartEmpty(ctx, 'temp'); return; }
-  charts.temp = new Chart(ctx, { type:'line',
-    data:{ labels, datasets:[chartDs(temps,'#4ade80',history,tempPointColors(history))] },
-    options: chartOpts('#4ade80','°C', range) });
+  if (!history.length) { renderChartEmpty(ctx,'temp'); return; }
+  charts.temp = new Chart(ctx,{type:'line',data:{labels,datasets:[chartDs(history.map(p=>p.temp),'#4ade80',history,tempPointColors(history))]},options:chartOpts('#4ade80','°C',range)});
 }
-
 function renderChartHum(history, range) {
-  const labels = history.map(p => fmtTick(p.t, range));
-  const hums   = history.map(p => p.hum);
+  const labels = history.map(p => fmtTick(p, range));
   const ctx = document.getElementById('chartHum').getContext('2d');
   if (charts.hum) charts.hum.destroy();
-  if (!history.length) { renderChartEmpty(ctx, 'hum'); return; }
-  charts.hum = new Chart(ctx, { type:'line',
-    data:{ labels, datasets:[chartDs(hums,'#60a5fa',history,humidPointColors(history))] },
-    options: chartOpts('#60a5fa','%', range) });
+  if (!history.length) { renderChartEmpty(ctx,'hum'); return; }
+  charts.hum = new Chart(ctx,{type:'line',data:{labels,datasets:[chartDs(history.map(p=>p.hum),'#60a5fa',history,humidPointColors(history))]},options:chartOpts('#60a5fa','%',range)});
 }
-
 function renderChartEmpty(ctx, key) {
-  if (charts[key]) { charts[key].destroy(); charts[key] = null; }
+  if (charts[key]) { charts[key].destroy(); charts[key]=null; }
   ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
-  ctx.fillStyle = '#4a6b52'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
-  ctx.fillText('Aucune donnée pour cette période', ctx.canvas.width/2, ctx.canvas.height/2);
+  ctx.fillStyle='#4a6b52'; ctx.font='11px monospace'; ctx.textAlign='center';
+  ctx.fillText('Aucune donnée pour cette période',ctx.canvas.width/2,ctx.canvas.height/2);
 }
 
-// ── Commandes dashboard ──────────────────────────────────────
+// ── Commandes ────────────────────────────────────────────────
 function updateCommandStates() {
   const wt = getDeviceById(DEVICE_WATER_TIMER_ID);
   const pl = getDeviceById(DEVICE_PROG_LED_ID);
   if (wt) {
-    const onRhone = getStat(wt,'switch_2') === true;
-    const tRhone = document.getElementById('toggle-rhone'), bRhone = document.getElementById('badge-rhone');
-    tRhone.checked = onRhone; tRhone.disabled = !wt.online;
-    bRhone.textContent = onRhone ? 'Actif' : 'Inactif';
-    bRhone.className = 'status-badge ' + (onRhone ? 'badge-on' : 'badge-off');
-    const onBrumi = getStat(wt,'switch_1') === true;
-    const tBrumi = document.getElementById('toggle-brumisation'), bBrumi = document.getElementById('badge-brumisation');
-    tBrumi.checked = onBrumi; tBrumi.disabled = !wt.online;
-    bBrumi.textContent = onBrumi ? 'Actif' : 'Inactif';
-    bBrumi.className = 'status-badge ' + (onBrumi ? 'badge-on' : 'badge-off');
+    const onR = getStat(wt,'switch_2')===true;
+    const tR=document.getElementById('toggle-rhone'), bR=document.getElementById('badge-rhone');
+    tR.checked=onR; tR.disabled=!wt.online;
+    bR.textContent=onR?'Actif':'Inactif'; bR.className='status-badge '+(onR?'badge-on':'badge-off');
+
+    const onB = getStat(wt,'switch_1')===true;
+    const tB=document.getElementById('toggle-brumisation'), bB=document.getElementById('badge-brumisation');
+    tB.checked=onB; tB.disabled=!wt.online;
+    bB.textContent=onB?'Actif':'Inactif'; bB.className='status-badge '+(onB?'badge-on':'badge-off');
   }
   if (pl) {
-    const on = getStat(pl,'switch_4') === true;
-    const t = document.getElementById('toggle-remous'), b = document.getElementById('badge-remous');
-    t.checked = on; t.disabled = !pl.online;
-    b.textContent = on ? 'Actif' : 'Inactif';
-    b.className = 'status-badge ' + (on ? 'badge-on' : 'badge-off');
+    const onL = getStat(pl,'switch_2')===true;
+    const tL=document.getElementById('toggle-lumiere'), bL=document.getElementById('badge-lumiere');
+    tL.checked=onL; tL.disabled=!pl.online;
+    bL.textContent=onL?'Allumée':'Éteinte'; bL.className='status-badge '+(onL?'badge-on':'badge-off');
+
+    const onRe = getStat(pl,'switch_4')===true;
+    const tRe=document.getElementById('toggle-remous'), bRe=document.getElementById('badge-remous');
+    tRe.checked=onRe; tRe.disabled=!pl.online;
+    bRe.textContent=onRe?'Actif':'Inactif'; bRe.className='status-badge '+(onRe?'badge-on':'badge-off');
   }
 }
 
 async function cmdRhone(val) {
-  document.getElementById('toggle-rhone').disabled = true;
+  document.getElementById('toggle-rhone').disabled=true;
   await controlDevice(DEVICE_WATER_TIMER_ID,'switch_2',val);
-  const d = getDeviceById(DEVICE_WATER_TIMER_ID);
-  if (d?.status_list) { const s=d.status_list.find(x=>x.code==='switch_2'); if(s) s.value=val; }
-  updateCommandStates(); document.getElementById('toggle-rhone').disabled = false;
+  const d=getDeviceById(DEVICE_WATER_TIMER_ID);
+  if(d?.status_list){const s=d.status_list.find(x=>x.code==='switch_2');if(s)s.value=val;}
+  updateCommandStates(); document.getElementById('toggle-rhone').disabled=false;
 }
 async function cmdBrumisation(val) {
-  document.getElementById('toggle-brumisation').disabled = true;
+  document.getElementById('toggle-brumisation').disabled=true;
   await controlDevice(DEVICE_WATER_TIMER_ID,'switch_1',val);
-  const d = getDeviceById(DEVICE_WATER_TIMER_ID);
-  if (d?.status_list) { const s=d.status_list.find(x=>x.code==='switch_1'); if(s) s.value=val; }
-  updateCommandStates(); document.getElementById('toggle-brumisation').disabled = false;
+  const d=getDeviceById(DEVICE_WATER_TIMER_ID);
+  if(d?.status_list){const s=d.status_list.find(x=>x.code==='switch_1');if(s)s.value=val;}
+  updateCommandStates(); document.getElementById('toggle-brumisation').disabled=false;
+}
+async function cmdLumiere(val) {
+  document.getElementById('toggle-lumiere').disabled=true;
+  await controlDevice(DEVICE_PROG_LED_ID,'switch_2',val);
+  const d=getDeviceById(DEVICE_PROG_LED_ID);
+  if(d?.status_list){const s=d.status_list.find(x=>x.code==='switch_2');if(s)s.value=val;}
+  updateCommandStates(); document.getElementById('toggle-lumiere').disabled=false;
 }
 async function cmdRemous(val) {
-  document.getElementById('toggle-remous').disabled = true;
+  document.getElementById('toggle-remous').disabled=true;
   await controlDevice(DEVICE_PROG_LED_ID,'switch_4',val);
-  const d = getDeviceById(DEVICE_PROG_LED_ID);
-  if (d?.status_list) { const s=d.status_list.find(x=>x.code==='switch_4'); if(s) s.value=val; }
-  updateCommandStates(); document.getElementById('toggle-remous').disabled = false;
+  const d=getDeviceById(DEVICE_PROG_LED_ID);
+  if(d?.status_list){const s=d.status_list.find(x=>x.code==='switch_4');if(s)s.value=val;}
+  updateCommandStates(); document.getElementById('toggle-remous').disabled=false;
 }
 
 // ── Appareils ────────────────────────────────────────────────
 function renderDevCard(d) {
-  const cat = getCat(d);
+  const cat=getCat(d);
   if (cat==='switch'||cat==='valve') {
     const chs=['switch_1','switch_2','switch_3','switch_4'].filter(c=>d.status_list?.some(x=>x.code===c));
     return `<div class="device-card">
       <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">${cat==='valve'?'Vanne':'Commutateur'} ${chs.length} canaux</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
-      <div class="ch-row">${chs.map((c,i)=>{const on=getStat(d,c);return '<div class="ch-btn '+(on?'on':'')+'" onclick="toggleCh(\''+d.id+'\',\''+c+'\','+ !on +')">C'+(i+1)+'<br>'+(on?'●':'○')+'</div>';}).join('')}</div>
+      <div class="ch-row">${chs.map((c,i)=>{const on=getStat(d,c);return '<div class="ch-btn '+(on?'on':'')+'" onclick="toggleCh(\''+d.id+'\',\''+c+'\','+!on+')">C'+(i+1)+'<br>'+(on?'●':'○')+'</div>';}).join('')}</div>
       <div class="ts">${chs.filter(c=>getStat(d,c)).length}/${chs.length} actifs</div></div>`;
   }
   if (cat==='sensor') {
-    const temp=getStat(d,'va_temperature'), hum=getStat(d,'va_humidity');
+    const temp=getStat(d,'va_temperature'),hum=getStat(d,'va_humidity');
     return `<div class="device-card">
       <div class="device-header"><div><div class="device-name">${d.name}</div><div class="device-type">Temp / Humidité</div></div><span class="dot ${d.online?'dot-green':'dot-gray'}"></span></div>
       <div style="display:flex;gap:14px">
@@ -1051,226 +1013,210 @@ function renderDevCard(d) {
 }
 
 function renderDevices() {
-  const el = document.getElementById('devGrid');
+  const el=document.getElementById('devGrid');
   if (!devices.length) { el.innerHTML='<div class="err"><strong>Aucun appareil</strong></div>'; return; }
-  el.innerHTML = devices.map(renderDevCard).join('');
-  const online = devices.filter(d => d.online).length;
-  document.getElementById('devPills').innerHTML =
-    '<div class="pill"><span class="dot dot-green"></span>'+online+' en ligne</div>' +
-    '<div class="pill"><span class="dot dot-gray"></span>'+(devices.length-online)+' hors ligne</div>' +
+  el.innerHTML=devices.map(renderDevCard).join('');
+  const online=devices.filter(d=>d.online).length;
+  document.getElementById('devPills').innerHTML=
+    '<div class="pill"><span class="dot dot-green"></span>'+online+' en ligne</div>'+
+    '<div class="pill"><span class="dot dot-gray"></span>'+(devices.length-online)+' hors ligne</div>'+
     '<div class="pill">'+devices.length+' appareils</div>';
 }
 
-async function toggleCh(id, code, val) {
-  await controlDevice(id, code, val);
-  const d = devices.find(x => x.id === id);
-  if (d?.status_list) { const s=d.status_list.find(x=>x.code===code); if(s) s.value=val; }
+async function toggleCh(id,code,val) {
+  await controlDevice(id,code,val);
+  const d=devices.find(x=>x.id===id);
+  if(d?.status_list){const s=d.status_list.find(x=>x.code===code);if(s)s.value=val;}
   renderDevices();
 }
-async function toggleDev(id, code, val) { await controlDevice(id, code, val); }
+async function toggleDev(id,code,val) { await controlDevice(id,code,val); }
 
 // ── Refresh principal ────────────────────────────────────────
 let lastHistoryRecord = 0;
 
 async function refreshAll() {
-  const btn = document.getElementById('refreshBtn');
+  const btn=document.getElementById('refreshBtn');
   btn.classList.add('spinning');
-  document.getElementById('hs').innerHTML = '<span class="status-ok">Actualisation…</span>';
-
-  let tuyaOk = false;
+  document.getElementById('hs').innerHTML='<span class="status-ok">Actualisation…</span>';
+  let tuyaOk=false;
   try {
     await fetchDevices();
-    tuyaOk = true;
-    lastRefresh = new Date().toISOString();
-    const sensor = getSerreTHSensor();
+    tuyaOk=true; lastRefresh=new Date().toISOString();
+    const sensor=getSerreTHSensor();
     if (sensor) {
-      const temp = getStat(sensor, 'va_temperature');
-      const hum  = getStat(sensor, 'va_humidity');
-      const now  = Date.now();
-      if (temp !== null && hum !== null && (now - lastHistoryRecord) >= 30 * 60 * 1000) {
-        addLocalPoint(temp, hum);
-        pushToSheets(temp, hum);
-        lastHistoryRecord = now;
+      const temp=getStat(sensor,'va_temperature'), hum=getStat(sensor,'va_humidity');
+      const now=Date.now();
+      if (temp!==null&&hum!==null&&(now-lastHistoryRecord)>=30*60*1000) {
+        addLocalPoint(temp,hum); pushToSheets(temp,hum); lastHistoryRecord=now;
       }
     }
-  } catch(e) { console.error('Tuya:', e); }
-
-  renderAlerts();
-  renderSerreMetrics();
-  fetchMyFood();
-  updateCommandStates();
-  renderDevices();
-
-  // Encadré état serre (non bloquant — fetchMeteo interne)
+  } catch(e) { console.error('Tuya:',e); }
+  renderAlerts(); renderSerreMetrics(); fetchMyFood();
+  updateCommandStates(); renderDevices();
+  checkSensorWarnings();
   renderSerreBrief();
-
   await loadAndRenderCharts();
-
   if (tuyaOk) {
-    const online = devices.filter(d => d.online).length;
-    document.getElementById('hs').innerHTML = '<span class="status-ok">↑ '+online+'/'+devices.length+'</span>';
+    const online=devices.filter(d=>d.online).length;
+    document.getElementById('hs').innerHTML='<span class="status-ok">↑ '+online+'/'+devices.length+'</span>';
   } else {
-    document.getElementById('hs').innerHTML = '<span class="status-err">Erreur connexion</span>';
+    document.getElementById('hs').innerHTML='<span class="status-err">Erreur connexion</span>';
   }
   btn.classList.remove('spinning');
 }
 
-function goRecoltes() { window.location.href = '/recoltes.html'; }
-
-// ── Contexte lieu pour les prompts IA ─────────────────────────
-// Retourne une phrase de contexte géographique à injecter dans chaque prompt
-function lieuContextPrompt() {
-  return 'Lieu du jardinier : ' + lieuMeteo + ' (France). ';
-}
+function goRecoltes() { window.location.href='/recoltes.html'; }
+function goBassin() { window.location.href='/bassin.html'; }
+function lieuContextPrompt() { return 'Lieu du jardinier : '+lieuMeteo+' (France). '; }
 
 // ── Conseils IA ───────────────────────────────────────────────
-let recosCacheTime = 0;
-const RECOS_CACHE_DURATION = 2 * 60 * 60 * 1000;
+let recosCacheTime=0;
+const RECOS_CACHE_DURATION=2*60*60*1000;
 
 async function genererRecos() {
-  const btn = document.getElementById('recoRefreshBtn');
-  const container = document.getElementById('recoContainer');
+  const btn=document.getElementById('recoRefreshBtn');
+  const container=document.getElementById('recoContainer');
   btn.classList.add('spinning');
-  container.className = 'reco-loading';
-  container.innerHTML = '<div class="reco-skeleton"></div>'.repeat(4);
-
-  const sensor = getSerreTHSensor();
-  const temp = sensor ? getStat(sensor,'va_temperature') : null;
-  const hum  = sensor ? getStat(sensor,'va_humidity')    : null;
-  const wt   = getDeviceById(DEVICE_WATER_TIMER_ID);
-  const rhoneOn = wt ? getStat(wt,'switch_2') : null;
-  const door = devices.find(d => getCat(d) === 'door');
-  const doorOpen = door ? getStat(door,'doorcontact_state') : null;
-
-  let recoltesSummary = '';
+  container.className='reco-loading';
+  container.innerHTML='<div class="reco-skeleton"></div>'.repeat(4);
+  const sensor=getSerreTHSensor();
+  const temp=sensor?getStat(sensor,'va_temperature'):null;
+  const hum=sensor?getStat(sensor,'va_humidity'):null;
+  const wt=getDeviceById(DEVICE_WATER_TIMER_ID);
+  const rhoneOn=wt?getStat(wt,'switch_2'):null;
+  const door=devices.find(d=>getCat(d)==='door');
+  const doorOpen=door?getStat(door,'doorcontact_state'):null;
+  let recoltesSummary='';
   try {
-    const rec = JSON.parse(localStorage.getItem('jardin_recoltes_v2') || '[]');
-    recoltesSummary = rec.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5).map(r=>r.vegetal+' ('+r.poids+'g, '+r.lieu+')').join(', ');
+    const rec=JSON.parse(localStorage.getItem('jardin_recoltes_v2')||'[]');
+    recoltesSummary=rec.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5).map(r=>r.vegetal+' ('+r.poids+'g, '+r.lieu+')').join(', ');
   } catch(e) {}
-
-  const today = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
-  const month = new Date().getMonth()+1;
-  const season = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
-  const hour = new Date().getHours();
-  const moment = hour<12?'matin':hour<18?'après-midi':'soir';
-
-  const sysPrompt = `Tu es un expert en maraîchage, permaculture et aquaponie. ${lieuContextPrompt()}Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône automatisé. Arbres fruitiers : abricotier, 2 figuiers, 2 pommiers colonnaires, noisetier, amandier, pêchers, nectarinier, mandarinier, citronnier, kiwai, 3 bananiers. Cultures : tomates, aubergines, courgettes, poivrons, piments, concombres, melons, pastèques, salades, blettes, aromatiques.
+  const today=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const month=new Date().getMonth()+1;
+  const season=month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+  const hour=new Date().getHours();
+  const moment=hour<12?'matin':hour<18?'après-midi':'soir';
+  const sysPrompt=`Tu es un expert en maraîchage, permaculture et aquaponie. ${lieuContextPrompt()}Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône automatisé. Arbres fruitiers : abricotier, 2 figuiers, 2 pommiers colonnaires, noisetier, amandier, pêchers, nectarinier, mandarinier, citronnier, kiwai, 3 bananiers. Cultures : tomates, aubergines, courgettes, poivrons, piments, concombres, melons, pastèques, salades, blettes, aromatiques.
 Données : ${today} (${season}, ${moment}), temp serre=${temp!==null?temp+'°C':'inconnue'}, humidité=${hum!==null?hum+'%':'inconnue'}, porte=${doorOpen!==null?(doorOpen?'ouverte':'fermée'):'inconnue'}, arrosage=${rhoneOn!==null?(rhoneOn?'actif':'inactif'):'inconnu'}, récoltes récentes : ${recoltesSummary||'aucune'}.`;
-
-  const question = `Génère 4 recommandations JSON pour ce jardinier (${today}, ${moment}, ${season}, ${lieuMeteo}). Réponds UNIQUEMENT avec un tableau JSON valide. Format : [{"emoji":"🌡️","urgence":"urgent","titre":"Titre max 6 mots","description":"1 phrase concrète."},...] urgence = urgent|semaine|info.`;
-
+  const question=`Génère 4 recommandations JSON pour ce jardinier (${today}, ${moment}, ${season}, ${lieuMeteo}). Réponds UNIQUEMENT avec un tableau JSON valide. Format : [{"emoji":"🌡️","urgence":"urgent","titre":"Titre max 6 mots","description":"1 phrase concrète."},...] urgence = urgent|semaine|info.`;
   try {
-    const r = await fetch('/api/conseils', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({system:sysPrompt,question,mode:'json'}) });
-    const text = await r.text();
+    const r=await fetch('/api/conseils',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sysPrompt,question,mode:'json'})});
+    const text=await r.text();
     if (!text.trim()) throw new Error('Réponse vide');
-    const data = JSON.parse(text);
+    const data=JSON.parse(text);
     if (!data.success) throw new Error(data.error||'Erreur inconnue');
     let recos;
-    try { recos = JSON.parse(data.text.trim()); }
+    try { recos=JSON.parse(data.text.trim()); }
     catch(e) { const m=data.text.match(/\[[\s\S]*\]/); if(!m) throw new Error('JSON introuvable'); recos=JSON.parse(m[0]); }
-
-    container.className = 'reco-grid';
-    container.innerHTML = recos.map(r => {
-      const bg = r.urgence==='urgent'?'rgba(248,113,113,.15)':r.urgence==='semaine'?'rgba(251,191,36,.12)':'rgba(74,222,128,.1)';
-      const co = r.urgence==='urgent'?'var(--red)':r.urgence==='semaine'?'var(--amber)':'var(--green)';
-      const bd = r.urgence==='urgent'?'rgba(248,113,113,.3)':r.urgence==='semaine'?'rgba(251,191,36,.25)':'rgba(74,222,128,.2)';
-      const lbl = r.urgence==='urgent'?'URGENT':r.urgence==='semaine'?'CETTE SEMAINE':'INFO';
+    container.className='reco-grid';
+    container.innerHTML=recos.map(r=>{
+      const bg=r.urgence==='urgent'?'rgba(248,113,113,.15)':r.urgence==='semaine'?'rgba(251,191,36,.12)':'rgba(74,222,128,.1)';
+      const co=r.urgence==='urgent'?'var(--red)':r.urgence==='semaine'?'var(--amber)':'var(--green)';
+      const bd=r.urgence==='urgent'?'rgba(248,113,113,.3)':r.urgence==='semaine'?'rgba(251,191,36,.25)':'rgba(74,222,128,.2)';
+      const lbl=r.urgence==='urgent'?'URGENT':r.urgence==='semaine'?'CETTE SEMAINE':'INFO';
       return '<div class="reco-card '+(r.urgence||'info')+'"><div class="reco-header"><span class="reco-emoji">'+(r.emoji||'🌿')+'</span><span style="display:inline-block;padding:2px 7px;border-radius:10px;font-size:.58rem;letter-spacing:.06em;font-weight:500;background:'+bg+';color:'+co+';border:1px solid '+bd+'">'+lbl+'</span></div><div class="reco-titre">'+(r.titre||'')+'</div><div class="reco-desc">'+(r.description||'')+'</div></div>';
     }).join('');
-    recosCacheTime = Date.now();
+    recosCacheTime=Date.now();
   } catch(e) {
-    const surcharge = e.message?.includes('503')||e.message?.includes('UNAVAILABLE');
-    container.className = 'reco-grid';
-    container.innerHTML = '<div class="reco-card info" style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.75rem;padding:20px">'+(surcharge?'⏳ Gemini surchargé, nouvel essai dans 15s…':'❌ '+e.message)+'</div>';
+    const surcharge=e.message?.includes('503')||e.message?.includes('UNAVAILABLE');
+    container.className='reco-grid';
+    container.innerHTML='<div class="reco-card info" style="grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:.75rem;padding:20px">'+(surcharge?'⏳ Gemini surchargé, nouvel essai dans 15s…':'❌ '+e.message)+'</div>';
     if (surcharge) setTimeout(()=>genererRecos(),15000);
   }
   btn.classList.remove('spinning');
 }
 
-const THEMES = {
-  general: `Donne-moi une vue d'ensemble des conseils les plus importants pour mon jardin en ce moment.`,
-  semis:   `Quels semis et plantations dois-je faire maintenant ou dans les 2-3 prochaines semaines ?`,
+const THEMES={
+  general:`Donne-moi une vue d'ensemble des conseils les plus importants pour mon jardin en ce moment.`,
+  semis:`Quels semis et plantations dois-je faire maintenant ou dans les 2-3 prochaines semaines ?`,
   maladies:`Quelles maladies et ravageurs dois-je surveiller ? Quels traitements préventifs ?`,
   arrosage:`Quels sont mes besoins en arrosage et fertilisation actuellement ?`,
-  verger:  `Quelles interventions sur mes arbres fruitiers en ce moment ?`,
-  serre:   `Conseils spécifiques pour ma serre aquaponique.`,
+  verger:`Quelles interventions sur mes arbres fruitiers en ce moment ?`,
+  serre:`Conseils spécifiques pour ma serre aquaponique.`,
 };
 
 function selectTheme(btn, theme) {
-  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   askConseils(THEMES[theme]);
 }
 
 async function askConseils(questionOverride) {
-  const question = questionOverride || document.getElementById('conseilsInput').value.trim();
+  const question=questionOverride||document.getElementById('conseilsInput').value.trim();
   if (!question) return;
-  const loading = document.getElementById('conseilsLoading');
-  const content = document.getElementById('conseilsContent');
-  loading.style.display = 'flex'; content.style.display = 'none';
-
-  const sensor = getSerreTHSensor();
-  const temp = sensor ? getStat(sensor,'va_temperature') : null;
-  const hum  = sensor ? getStat(sensor,'va_humidity')    : null;
-  const wt   = getDeviceById(DEVICE_WATER_TIMER_ID);
-  const rhoneOn = wt ? getStat(wt,'switch_2') : null;
-
-  let recoltesSummary = '';
+  const loading=document.getElementById('conseilsLoading');
+  const content=document.getElementById('conseilsContent');
+  loading.style.display='flex'; content.style.display='none';
+  const sensor=getSerreTHSensor();
+  const temp=sensor?getStat(sensor,'va_temperature'):null;
+  const hum=sensor?getStat(sensor,'va_humidity'):null;
+  const wt=getDeviceById(DEVICE_WATER_TIMER_ID);
+  const rhoneOn=wt?getStat(wt,'switch_2'):null;
+  let recoltesSummary='';
   try {
-    const rec = JSON.parse(localStorage.getItem('jardin_recoltes_v2') || '[]');
-    const byFam = {};
-    rec.forEach(r => { byFam[r.famille||'Autre'] = (byFam[r.famille||'Autre']||0)+r.poids; });
-    recoltesSummary = Object.entries(byFam).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([f,p])=>f+': '+(p/1000).toFixed(1)+'kg').join(', ');
+    const rec=JSON.parse(localStorage.getItem('jardin_recoltes_v2')||'[]');
+    const byFam={};
+    rec.forEach(r=>{byFam[r.famille||'Autre']=(byFam[r.famille||'Autre']||0)+r.poids;});
+    recoltesSummary=Object.entries(byFam).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([f,p])=>f+': '+(p/1000).toFixed(1)+'kg').join(', ');
   } catch(e) {}
-
-  const today = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
-  const month = new Date().getMonth()+1;
-  const season = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
-
-  const sysPrompt = `Tu es un expert en maraîchage, permaculture et aquaponie. ${lieuContextPrompt()}Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône, arbres fruitiers variés. Date : ${today} (${season}). Temp serre : ${temp!==null?temp+'°C':'non dispo'}. Humidité : ${hum!==null?hum+'%':'non dispo'}. Arrosage : ${rhoneOn!==null?(rhoneOn?'actif':'inactif'):'inconnu'}. Récoltes : ${recoltesSummary||'non dispo'}. Réponds en français, sections avec titres HTML h3, balises span class conseils-tag tag-urgent/tag-semaine/tag-info. Max 400 mots.`;
-
+  const today=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  const month=new Date().getMonth()+1;
+  const season=month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+  const sysPrompt=`Tu es un expert en maraîchage, permaculture et aquaponie. ${lieuContextPrompt()}Serre aquaponique MyFood City, bacs surélevés, potager pleine terre, arrosage Bas Rhône, arbres fruitiers variés. Date : ${today} (${season}). Temp serre : ${temp!==null?temp+'°C':'non dispo'}. Humidité : ${hum!==null?hum+'%':'non dispo'}. Arrosage : ${rhoneOn!==null?(rhoneOn?'actif':'inactif'):'inconnu'}. Récoltes : ${recoltesSummary||'non dispo'}. Réponds en français, sections avec titres HTML h3, balises span class conseils-tag tag-urgent/tag-semaine/tag-info. Max 400 mots.`;
   try {
-    const r = await fetch('/api/conseils', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({system:sysPrompt,question}) });
-    const txt = await r.text();
+    const r=await fetch('/api/conseils',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sysPrompt,question})});
+    const txt=await r.text();
     if (!txt.trim()) throw new Error('Réponse vide');
-    const data = JSON.parse(txt);
+    const data=JSON.parse(txt);
     if (!data.success) throw new Error(data.error||'Erreur inconnue');
-    const html = (data.text||'Aucune réponse.')
+    const html=(data.text||'Aucune réponse.')
       .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>')
       .replace(/^### (.*)/gm,'<h3 style="font-family:Fraunces,serif;font-size:.95rem;font-weight:300;font-style:italic;color:var(--accent);margin:12px 0 6px">$1</h3>')
       .replace(/^## (.*)/gm,'<h3 style="font-family:Fraunces,serif;font-size:1rem;font-weight:300;font-style:italic;color:var(--accent);margin:14px 0 6px">$1</h3>')
       .replace(/^- (.*)/gm,'<div style="padding:3px 0 3px 12px;border-left:2px solid var(--green-dark)">$1</div>')
       .replace(/\n/g,'<br>');
-    content.innerHTML = '<div style="padding:20px;font-size:.83rem;line-height:1.8;color:var(--text-dim)">'+html+'</div>';
-    if (!questionOverride) document.getElementById('conseilsInput').value = '';
+    content.innerHTML='<div style="padding:20px;font-size:.83rem;line-height:1.8;color:var(--text-dim)">'+html+'</div>';
+    if (!questionOverride) document.getElementById('conseilsInput').value='';
   } catch(e) {
-    const surcharge = e.message?.includes('503')||e.message?.includes('UNAVAILABLE');
+    const surcharge=e.message?.includes('503')||e.message?.includes('UNAVAILABLE');
     if (surcharge) {
-      content.innerHTML = '<div style="padding:20px;color:var(--amber);font-size:.8rem">⏳ Gemini surchargé, nouvel essai dans 15s…</div>';
+      content.innerHTML='<div style="padding:20px;color:var(--amber);font-size:.8rem">⏳ Gemini surchargé, nouvel essai dans 15s…</div>';
       loading.style.display='none'; content.style.display='block';
       setTimeout(()=>askConseils(questionOverride),15000); return;
     }
-    content.innerHTML = '<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur : '+e.message+'</div>';
+    content.innerHTML='<div style="padding:20px;color:var(--red);font-size:.8rem">Erreur : '+e.message+'</div>';
   }
-  loading.style.display = 'none'; content.style.display = 'block';
+  loading.style.display='none'; content.style.display='block';
+}
+
+// ── Collecte périodique en arrière-plan (Service Worker fallback) ─
+// Les données sont enregistrées même si la page est fermée via SW.
+// Ici on s'assure que chaque ouverture déclenche un enregistrement.
+async function backgroundRecord() {
+  try {
+    await fetchDevices();
+    const sensor=getSerreTHSensor();
+    if (sensor) {
+      const temp=getStat(sensor,'va_temperature'), hum=getStat(sensor,'va_humidity');
+      if (temp!==null&&hum!==null) { addLocalPoint(temp,hum); pushToSheets(temp,hum); lastHistoryRecord=Date.now(); }
+    }
+  } catch(e) {}
 }
 
 // ── Init ──────────────────────────────────────────────────────
 refreshAll();
-setInterval(refreshAll, 5 * 60 * 1000);
-setInterval(() => {
-  const sensor = getSerreTHSensor();
+setInterval(refreshAll, 5*60*1000);
+// Collecte toutes les 30 min même en arrière-plan
+setInterval(async()=>{
+  const sensor=getSerreTHSensor();
   if (sensor) {
-    const temp = getStat(sensor,'va_temperature');
-    const hum  = getStat(sensor,'va_humidity');
-    if (temp !== null && hum !== null) {
-      addLocalPoint(temp, hum);
-      pushToSheets(temp, hum);
-      loadAndRenderTemp(currentRangeTemp);
-      loadAndRenderHum(currentRangeHum);
+    const temp=getStat(sensor,'va_temperature'), hum=getStat(sensor,'va_humidity');
+    if (temp!==null&&hum!==null) {
+      addLocalPoint(temp,hum); pushToSheets(temp,hum);
+      loadAndRenderTemp(currentRangeTemp); loadAndRenderHum(currentRangeHum);
     }
   }
-}, 30 * 60 * 1000);
+}, 30*60*1000);
 </script>
 </body>
 </html>
