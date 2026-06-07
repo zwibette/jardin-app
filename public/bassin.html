@@ -197,27 +197,13 @@ select.event-input{-webkit-appearance:none}
     <div id="totalEauRow" style="margin-top:4px"></div>
   </div>
 
-  <!-- ② QUALITÉ DE L'EAU -->
-  <div class="section-card">
-    <div class="stitle">💧 Qualité de mon eau <span>saisie manuelle + capteurs</span></div>
-    <div class="params-grid" id="paramsGrid"></div>
-    <div class="analyze-bar">
-      <button class="analyze-btn" id="analyzeBtn" onclick="lancerAnalyseEau()">
-        <span id="analyzeIcon">✦</span> Analyser avec l'IA
-      </button>
-      <a class="history-link" onclick="openHistorique()">📈 Historique</a>
-      <span class="last-save-info" id="lastSaveInfo"></span>
-    </div>
-    <div id="analyseResult"></div>
-  </div>
-
-  <!-- ③ GESTION POISSONS -->
+  <!-- ② GESTION POISSONS -->
   <div class="section-card">
     <div class="stitle">🐟 Population de poissons</div>
     <div class="poissons-total">
       <div class="poissons-big" id="poissonsTotalDisplay">0 poissons</div>
     </div>
-    <div id="fourchetteBadge" class="fourchette-badge" style="max-width:480px;margin:8px auto">— renseigner les bassins pour voir la fourchette idéale</div>
+    <div id="fourchetteBadge" class="fourchette-badge" style="max-width:560px;margin:8px auto">— renseigner les bassins pour voir la fourchette idéale</div>
     <div class="events-grid">
       <!-- Arrivée -->
       <div class="event-card">
@@ -255,7 +241,7 @@ select.event-input{-webkit-appearance:none}
           <input class="event-input" type="number" id="dec-nb" min="1" placeholder="ex: 2">
         </div>
         <div class="event-field">
-          <label class="event-label">Variété</label>
+          <label class="event-label">Variété présente dans le bassin</label>
           <select class="event-input" id="dec-variete">
             <option value="">— Sélectionner</option>
           </select>
@@ -268,6 +254,20 @@ select.event-input{-webkit-appearance:none}
       <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Derniers évènements</div>
       <div id="eventLog" class="event-log"><div class="empty-msg">Aucun évènement enregistré</div></div>
     </div>
+  </div>
+
+  <!-- ③ QUALITÉ DE L'EAU -->
+  <div class="section-card">
+    <div class="stitle">💧 Qualité de mon eau <span>saisie manuelle + capteurs</span></div>
+    <div class="params-grid" id="paramsGrid"></div>
+    <div class="analyze-bar">
+      <button class="analyze-btn" id="analyzeBtn" onclick="lancerAnalyseEau()">
+        <span id="analyzeIcon">✦</span> Analyser avec l'IA
+      </button>
+      <a class="history-link" onclick="openHistorique()">📈 Historique</a>
+      <span class="last-save-info" id="lastSaveInfo"></span>
+    </div>
+    <div id="analyseResult"></div>
   </div>
 
   <!-- ④ CONSEILS POISSONS IA -->
@@ -306,18 +306,23 @@ let lastEau   = load(KEY_EAU_LAST,  {});
 let histChart = null, histParam = 'ph', histAnalyseLoading = false;
 
 // ── PARAMÈTRES EAU (définition) ───────────────────────────────
+// autoFill = pré-rempli depuis capteurs mais toujours éditable
+// unitAlt  = unité alternative sélectionnable
+// ecMode   = 'uscm' | 'tds' (persisté dans lastEau._ecMode)
+// khMode   = 'dh' | 'mgl'  (persisté dans lastEau._khMode)
+// ghMode   = 'dh' | 'mgl'  (persisté dans lastEau._ghMode)
 const PARAMS_EAU = [
-  { id:'ph',         label:'pH',              unit:'',        auto:true,  seuils:[6.0,6.5,7.5,8.0], desc:'pH de l\'eau' },
-  { id:'temperature',label:'Temp. eau',       unit:'°C',      auto:true,  seuils:[15,18,26,28],     desc:'Température eau' },
-  { id:'kh',         label:'KH',              unit:'°dH',     auto:false, seuils:[3,5,12,16],       desc:'Dureté carbonatée' },
-  { id:'gh',         label:'GH',              unit:'°dH',     auto:false, seuils:[4,6,18,25],       desc:'Dureté totale' },
-  { id:'ec',         label:'EC / TDS',        unit:'µS/cm',   auto:false, seuils:[200,400,1200,1500],desc:'Conductivité' },
-  { id:'nitrites',   label:'Nitrites NO₂',    unit:'mg/L',    auto:false, seuils:[0,0,0.1,0.5],    desc:'Nitrites' },
-  { id:'nitrates',   label:'Nitrates NO₃',    unit:'mg/L',    auto:false, seuils:[0,0,80,150],      desc:'Nitrates' },
-  { id:'ammoniaque', label:'Ammoniaque NH₃',  unit:'mg/L',    auto:false, seuils:[0,0,0.05,0.5],   desc:'Ammoniaque libre' },
-  { id:'potassium',  label:'Potassium K',     unit:'mg/L',    auto:false, seuils:[20,30,200,300],   desc:'Potassium' },
-  { id:'fer',        label:'Fer Fe',          unit:'mg/L',    auto:false, seuils:[0.05,0.1,1,2],    desc:'Fer total' },
-  { id:'oxygene',    label:'Oxygène dissous', unit:'mg/L',    auto:false, seuils:[5,6,12,15],       desc:'O₂ dissous' },
+  { id:'ph',         label:'pH',              unit:'',        autoFill:true,  seuils:[6.0,6.5,7.5,8.0], desc:'pH de l\'eau' },
+  { id:'temperature',label:'Temp. eau',       unit:'°C',      autoFill:true,  seuils:[15,18,26,28],     desc:'Température eau' },
+  { id:'kh',         label:'KH',              unit:'°dH',     autoFill:false, seuils:[3,5,12,16],       desc:'Dureté carbonatée', unitAlt:'mg/L', unitKey:'_khMode' },
+  { id:'gh',         label:'GH',              unit:'°dH',     autoFill:false, seuils:[4,6,18,25],       desc:'Dureté totale',     unitAlt:'mg/L', unitKey:'_ghMode' },
+  { id:'ec',         label:'EC',              unit:'µS/cm',   autoFill:false, seuils:[200,400,1200,1500],desc:'Conductivité',      unitAlt:'ppm (TDS)', unitKey:'_ecMode' },
+  { id:'nitrites',   label:'Nitrites NO₂',    unit:'mg/L',    autoFill:false, seuils:[0,0,0.1,0.5],    desc:'Nitrites' },
+  { id:'nitrates',   label:'Nitrates NO₃',    unit:'mg/L',    autoFill:false, seuils:[0,0,80,150],      desc:'Nitrates' },
+  { id:'ammoniaque', label:'Ammoniaque NH₃',  unit:'mg/L',    autoFill:false, seuils:[0,0,0.05,0.5],   desc:'Ammoniaque libre' },
+  { id:'potassium',  label:'Potassium K',     unit:'mg/L',    autoFill:false, seuils:[20,30,200,300],   desc:'Potassium' },
+  { id:'fer',        label:'Fer Fe',          unit:'mg/L',    autoFill:false, seuils:[0.05,0.1,1,2],    desc:'Fer total' },
+  { id:'oxygene',    label:'Oxygène dissous', unit:'mg/L',    autoFill:false, seuils:[5,6,12,15],       desc:'O₂ dissous' },
 ];
 
 function getParamStatut(id, val) {
@@ -386,53 +391,91 @@ function deleteBassin(id, e) {
 }
 
 // ── CHAMPS QUALITÉ EAU ────────────────────────────────────────
+// Retourne l'unité actuellement sélectionnée pour un paramètre
+function getUnitActuelle(p) {
+  if (!p.unitKey) return p.unit;
+  return lastEau[p.unitKey] || p.unit;
+}
+
+// Toggle unité pour KH, GH, EC
+function toggleUnit(paramId) {
+  const p = PARAMS_EAU.find(x => x.id === paramId);
+  if (!p || !p.unitKey) return;
+  const current = getUnitActuelle(p);
+  lastEau[p.unitKey] = (current === p.unit) ? p.unitAlt : p.unit;
+  save(KEY_EAU_LAST, lastEau);
+  // Mettre à jour l'affichage du bouton unité
+  const btn = document.getElementById('unit-btn-'+paramId);
+  if (btn) btn.textContent = getUnitActuelle(p);
+}
+
 function renderParamsGrid() {
   const grid = document.getElementById('paramsGrid');
   grid.innerHTML = PARAMS_EAU.map(p => {
     const val = lastEau[p.id] ?? '';
     const st  = val !== '' ? getParamStatut(p.id, val) : '';
-    const autoClass = p.auto ? ' auto' : '';
+    // autoFill = pré-rempli depuis capteurs, mais l'utilisateur peut modifier
+    const autoClass = p.autoFill && val !== '' ? ' auto' : '';
     const stClass   = st ? ' '+st : '';
+    const unitActuelle = getUnitActuelle(p);
+
+    // Label avec unité : simple ou bouton toggle
+    let unitHtml;
+    if (p.unitAlt) {
+      unitHtml = `<button id="unit-btn-${p.id}" onclick="toggleUnit('${p.id}')"
+        style="background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);color:var(--accent);font-family:'DM Mono',monospace;font-size:.5rem;padding:1px 6px;border-radius:4px;cursor:pointer;letter-spacing:.04em;transition:all .2s"
+        title="Cliquer pour changer d'unité">${unitActuelle} ⇄</button>`;
+    } else {
+      unitHtml = unitActuelle ? `<span class="unit">${unitActuelle}</span>` : '';
+    }
+
+    const autoHint = p.autoFill
+      ? '<span style="font-size:.5rem;color:var(--accent);margin-left:4px" title="Pré-rempli depuis capteurs, modifiable">capteur ✎</span>'
+      : '';
+
     return `<div class="param-field">
-      <label class="param-label">${p.label} <span class="unit">${p.unit}</span>
-        ${p.auto ? '<span style="font-size:.52rem;color:var(--accent);margin-left:4px">auto</span>' : ''}
-      </label>
+      <label class="param-label" style="flex-wrap:wrap;gap:4px">${p.label} ${unitHtml}${autoHint}</label>
       <div class="param-input-row">
         <span class="param-status ${st||'na'}" id="ps-${p.id}"></span>
         <input class="param-input${autoClass}${stClass}" id="pi-${p.id}" type="number" step="0.01"
-          value="${val}" placeholder="${p.auto ? 'capteur' : '—'}" ${p.auto ? 'readonly' : ''}
-          oninput="onParamChange('${p.id}',this.value)" ${p.auto ? 'title="Valeur automatique depuis capteurs"' : ''}>
+          value="${val}" placeholder="—"
+          oninput="onParamChange('${p.id}',this.value)">
       </div>
     </div>`;
   }).join('');
 }
 
 function onParamChange(id, val) {
+  // Si c'était auto, on retire le style auto dès que l'utilisateur modifie
+  const inp = document.getElementById('pi-'+id);
+  if (inp) inp.classList.remove('auto');
   lastEau[id] = val === '' ? '' : parseFloat(val);
   save(KEY_EAU_LAST, lastEau);
-  const inp = document.getElementById('pi-'+id);
-  const st  = document.getElementById('ps-'+id);
+  const st = document.getElementById('ps-'+id);
   if (!inp || !st) return;
   const s = getParamStatut(id, val);
-  inp.className = 'param-input' + (val !== '' ? ' '+s : '');
+  inp.className = inp.className.replace(/ ok| warn| crit/g,'') + (val !== '' ? ' '+s : '');
   st.className  = 'param-status ' + (val !== '' ? s : 'na');
 }
 
-// ── VALEURS AUTO (récupérées de index.html via localStorage ou API) ─
+// ── VALEURS AUTO (pré-remplissage depuis capteurs MyFood) ────
 function loadAutoValues() {
-  // ph et temperature eau : stockés dans KEY_EAU_LAST par index.html ou bassin.html
-  // Essayer de lire depuis un broadcast / shared localStorage
   const myfood = (() => { try { return JSON.parse(localStorage.getItem('bassin_myfood_latest')||'null'); } catch(e){return null;} })();
   if (myfood) {
-    if (myfood.ph        !== null && myfood.ph        !== undefined) { lastEau.ph          = myfood.ph;        }
-    if (myfood.waterTemp !== null && myfood.waterTemp !== undefined) { lastEau.temperature = myfood.waterTemp; }
+    // Pré-remplir seulement si l'utilisateur n'a pas déjà saisi une valeur manuellement
+    if (myfood.ph !== null && myfood.ph !== undefined && lastEau.ph === undefined) {
+      lastEau.ph = myfood.ph;
+    }
+    if (myfood.waterTemp !== null && myfood.waterTemp !== undefined && lastEau.temperature === undefined) {
+      lastEau.temperature = myfood.waterTemp;
+    }
   }
-  // Mettre à jour les inputs
   ['ph','temperature'].forEach(id => {
     const inp = document.getElementById('pi-'+id);
     if (inp && lastEau[id] !== undefined && lastEau[id] !== '') {
       inp.value = lastEau[id];
       onParamChange(id, lastEau[id]);
+      inp.classList.add('auto'); // style bleuté pour signaler l'origine capteur
     }
   });
 }
@@ -468,7 +511,10 @@ async function lancerAnalyseEau() {
 
   const paramsText = PARAMS_EAU
     .filter(p => params[p.id] !== undefined)
-    .map(p => `${p.label} : ${params[p.id]} ${p.unit}`)
+    .map(p => {
+      const unit = getUnitActuelle(p);
+      return `${p.label} : ${params[p.id]} ${unit}`;
+    })
     .join('\n');
 
   const missing = PARAMS_EAU.filter(p => params[p.id] === undefined).map(p=>p.label).join(', ');
@@ -620,48 +666,73 @@ async function analyseHistorique() {
   histAnalyseLoading = false;
 }
 
-// ── FOURCHETTE IDÉALE ────────────────────────────────────────
+// ── FOURCHETTE IDÉALE (densités MyFood City / Plus) ──────────
+// Sources : recommandations MyFood pour serres aquaponiques
+// MyFood City : bacs de 500L → 30-40 poissons rouges, 10 truites
+// MyFood Plus  : bacs de 500L → 35-50 poissons rouges
 function updateFourchette() {
   const el = document.getElementById('fourchetteBadge');
   if (!el) return;
   const total = totalEau();
-  if (!total) return;
+  if (!total) { el.innerHTML='— renseigner les bassins pour voir la fourchette idéale'; return; }
 
-  // Densité selon espèce dominante
-  const principaux = poissons.sort((a,b)=>b.nb-a.nb);
-  const espece = principaux[0]?.variete || 'Poisson rouge';
+  const principaux = [...poissons].sort((a,b)=>b.nb-a.nb);
+  const espece = (principaux[0]?.variete || 'Poisson rouge').toLowerCase();
   const taille = principaux[0]?.tailleMoy || null;
 
-  let densiteRef; // kg/1000L
-  let nMin, nMax; // nb de poissons
-  let commentaire = '';
+  let lignes = [];
 
-  if (espece.toLowerCase().includes('koï') || espece.toLowerCase().includes('koi')) {
-    densiteRef = 20;
-    const tailleEff = taille || 30;
-    const poidsUnitaire = Math.pow(tailleEff/30, 3) * 0.8;
-    nMin = Math.floor((total * densiteRef * 0.3) / (1000 * poidsUnitaire));
-    nMax = Math.floor((total * densiteRef) / (1000 * poidsUnitaire));
-    commentaire = 'Carpe koï — taille limite selon volume (croissance ralentie > 40% capacité)';
-  } else if (espece.toLowerCase().includes('truite')) {
-    densiteRef = 15;
-    const poidsUnitaire = taille ? Math.pow(taille/30, 3) * 0.3 : 0.1;
-    nMin = Math.floor((total * densiteRef * 0.4) / (1000 * poidsUnitaire));
-    nMax = Math.floor((total * densiteRef) / (1000 * poidsUnitaire));
-    commentaire = 'Truite — eau bien oxygénée requise, densité critique';
+  if (espece.includes('koï') || espece.includes('koi')) {
+    // Carpe koï : 500L → max ~5 adultes (50cm), densité ~1kg/100L
+    const tailleEff = taille || 25;
+    const poidsUnit = Math.pow(tailleEff / 30, 3) * 0.8; // kg estimé
+    const nMax = Math.max(1, Math.floor(total * 0.008 / Math.max(poidsUnit, 0.05)));
+    const nMin = Math.max(1, Math.floor(nMax * 0.4));
+    lignes.push(`Fourchette recommandée : <strong>${nMin} – ${nMax} carpes koï</strong> pour ${total}L`);
+    lignes.push(`Taille estimée ~${tailleEff}cm · croissance limitée si bac < 1000L par poisson adulte`);
+
+  } else if (espece.includes('truite')) {
+    // Truite MyFood City : 10 truites / bac 500L
+    const ratio = total / 500;
+    const nRef  = Math.round(10 * ratio);
+    const nMin  = Math.max(1, Math.round(nRef * 0.7));
+    const nMax  = Math.round(nRef * 1.2);
+    lignes.push(`Recommandation MyFood City : <strong>${nMin} – ${nMax} truites</strong> pour ${total}L`);
+    lignes.push(`Base : ~10 truites par bac 500L · eau bien oxygénée impérative (>7 mg/L O₂)`);
+
+  } else if (espece.includes('tilapia')) {
+    // Tilapia : densité plus haute ~20-30 poissons/500L eau chaude
+    const ratio = total / 500;
+    const nMin  = Math.round(20 * ratio);
+    const nMax  = Math.round(35 * ratio);
+    lignes.push(`Fourchette recommandée : <strong>${nMin} – ${nMax} tilapias</strong> pour ${total}L`);
+    lignes.push(`Eau chaude requise (22-28°C) · espèce très productive en aquaponie`);
+
   } else {
-    // Poisson rouge et autres : 10L min par poisson adulte
-    const litresParPoisson = taille ? Math.max(5, taille * 1.5) : 10;
-    nMax = Math.floor(total / litresParPoisson * 0.7);
-    nMin = Math.floor(nMax * 0.3);
-    commentaire = 'Poisson rouge — basé sur surface et oxygénation';
+    // Poisson rouge — MyFood City 500L : 30-40 / MyFood Plus 500L : 35-50
+    // On prend la valeur médiane et on scale au volume réel
+    const ratio   = total / 500;
+    // Fourchette City
+    const cityMin = Math.round(30 * ratio);
+    const cityMax = Math.round(40 * ratio);
+    // Fourchette Plus (bacs > 500L par bassin = serre Plus)
+    const plusMin = Math.round(35 * ratio);
+    const plusMax = Math.round(50 * ratio);
+    lignes.push(`MyFood <strong>City</strong> (bac 500L) : <strong>${cityMin} – ${cityMax} poissons rouges</strong> pour ${total}L`);
+    lignes.push(`MyFood <strong>Plus</strong> (bac 500L) : <strong>${plusMin} – ${plusMax} poissons rouges</strong> pour ${total}L`);
+    if (taille) lignes.push(`Taille déclarée ~${taille}cm · densité à réduire si > 10cm`);
   }
 
-  const totalPoissons = poissons.reduce((s,p)=>s+p.nb,0);
-  const pct = nMax > 0 ? Math.round(totalPoissons / nMax * 100) : 0;
-  const couleur = pct > 90 ? 'var(--red)' : pct > 70 ? 'var(--amber)' : 'var(--teal)';
+  const totalPoissons = poissons.reduce((s,p)=>s+p.nb, 0);
+  // Référence = max de la fourchette la plus haute citée
+  const refMax = parseInt((lignes[0].match(/\d+(?= poissons| carpes| truites| tilapias)/) || ['0']).pop());
+  const pct    = refMax > 0 ? Math.round(totalPoissons / refMax * 100) : 0;
+  const couleur = pct > 95 ? 'var(--red)' : pct > 75 ? 'var(--amber)' : 'var(--teal)';
 
-  el.innerHTML = `<span style="color:${couleur}">Fourchette idéale : <strong>${nMin} – ${nMax} ${espece}s</strong> pour ${total}L</span><span style="margin-left:8px;color:var(--text-muted)">| Occupation : ${pct}% · ${commentaire}</span>`;
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px;text-align:left;width:100%">
+    ${lignes.map((l,i) => `<div style="font-size:${i===0?'.78':'.68'}rem;color:${i===0?couleur:'var(--text-muted)'}">📊 ${l}</div>`).join('')}
+    ${totalPoissons ? `<div style="font-size:.65rem;color:${couleur};margin-top:4px">Population actuelle : ${totalPoissons} poisson${totalPoissons>1?'s':''} — occupation ${pct}%</div>` : ''}
+  </div>`;
 }
 
 // ── POISSONS ──────────────────────────────────────────────────
@@ -670,20 +741,19 @@ function renderPoissons() {
   const totalNb = poissons.reduce((s,p)=>s+p.nb, 0);
   let dispStr = '';
   if (!totalNb) { dispStr = '<span style="color:var(--text-muted)">0 poisson</span>'; }
-  else {
-    dispStr = poissons.map(p => `${p.nb} <span>${p.variete}</span>`).join(' · ');
-  }
+  else { dispStr = poissons.map(p => `${p.nb} <span>${p.variete}</span>`).join(' · '); }
   document.getElementById('poissonsTotalDisplay').innerHTML = dispStr || '0 poisson';
   updateFourchette();
 
-  // Décès : mettre à jour la liste des variétés
-  const decSel = document.getElementById('dec-variete');
+  // Décès : UNIQUEMENT les variétés présentes dans le bassin avec nb > 0
+  const decSel  = document.getElementById('dec-variete');
   const prevVal = decSel.value;
+  const presentes = poissons.filter(p => p.nb > 0);
   decSel.innerHTML = '<option value="">— Sélectionner</option>' +
-    poissons.filter(p=>p.nb>0).map(p=>`<option value="${escHtml(p.variete)}">${p.variete} (${p.nb})</option>`).join('');
-  if (prevVal) decSel.value = prevVal;
+    presentes.map(p => `<option value="${escHtml(p.variete)}">${p.variete} (${p.nb} présent${p.nb>1?'s':''})</option>`).join('');
+  // Restaurer la sélection si encore valide
+  if (prevVal && presentes.some(p => p.variete === prevVal)) decSel.value = prevVal;
 
-  // Log
   renderEventLog();
 }
 
