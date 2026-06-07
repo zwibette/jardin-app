@@ -495,9 +495,15 @@ async function lancerAnalyseEau() {
     if (v !== '' && v !== null && v !== undefined) params[p.id] = parseFloat(v);
   });
 
-  // Sauvegarder dans l'historique
-  const entry = { ts: new Date().toISOString(), params: { ...params } };
-  eauHist.push(entry);
+  // Sauvegarder dans l'historique — 1 seul relevé par jour (le dernier remplace)
+  const todayKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const entry = { ts: new Date().toISOString(), date: todayKey, params: { ...params } };
+  const existingIdx = eauHist.findIndex(e => e.date === todayKey);
+  if (existingIdx !== -1) {
+    eauHist[existingIdx] = entry; // remplace le relevé du jour
+  } else {
+    eauHist.push(entry);
+  }
   save(KEY_EAU_HIST, eauHist);
   document.getElementById('lastSaveInfo').textContent = 'Sauvegardé le '+fmtDate(entry.ts);
 
@@ -666,73 +672,72 @@ async function analyseHistorique() {
   histAnalyseLoading = false;
 }
 
-// ── FOURCHETTE IDÉALE (densités MyFood City / Plus) ──────────
-// Sources : recommandations MyFood pour serres aquaponiques
-// MyFood City : bacs de 500L → 30-40 poissons rouges, 10 truites
-// MyFood Plus  : bacs de 500L → 35-50 poissons rouges
+// ── FOURCHETTE IDÉALE (densités MyFood) ──────────────────────
 function updateFourchette() {
   const el = document.getElementById('fourchetteBadge');
   if (!el) return;
   const total = totalEau();
-  if (!total) { el.innerHTML='— renseigner les bassins pour voir la fourchette idéale'; return; }
+  if (!total) { el.innerHTML='— renseigner le volume des bassins'; return; }
 
   const principaux = [...poissons].sort((a,b)=>b.nb-a.nb);
   const espece = (principaux[0]?.variete || 'Poisson rouge').toLowerCase();
-  const taille = principaux[0]?.tailleMoy || null;
+  const totalPoissons = poissons.reduce((s,p)=>s+p.nb, 0);
 
-  let lignes = [];
-
+  // Calcul nMin / nMax selon espèce et volume
+  let nMin, nMax;
   if (espece.includes('koï') || espece.includes('koi')) {
-    // Carpe koï : 500L → max ~5 adultes (50cm), densité ~1kg/100L
-    const tailleEff = taille || 25;
-    const poidsUnit = Math.pow(tailleEff / 30, 3) * 0.8; // kg estimé
-    const nMax = Math.max(1, Math.floor(total * 0.008 / Math.max(poidsUnit, 0.05)));
-    const nMin = Math.max(1, Math.floor(nMax * 0.4));
-    lignes.push(`Fourchette recommandée : <strong>${nMin} – ${nMax} carpes koï</strong> pour ${total}L`);
-    lignes.push(`Taille estimée ~${tailleEff}cm · croissance limitée si bac < 1000L par poisson adulte`);
-
+    // Koï : densité ~1 poisson adulte / 250L
+    nMin = Math.max(1, Math.round(total / 400));
+    nMax = Math.max(1, Math.round(total / 250));
   } else if (espece.includes('truite')) {
-    // Truite MyFood City : 10 truites / bac 500L
-    const ratio = total / 500;
-    const nRef  = Math.round(10 * ratio);
-    const nMin  = Math.max(1, Math.round(nRef * 0.7));
-    const nMax  = Math.round(nRef * 1.2);
-    lignes.push(`Recommandation MyFood City : <strong>${nMin} – ${nMax} truites</strong> pour ${total}L`);
-    lignes.push(`Base : ~10 truites par bac 500L · eau bien oxygénée impérative (>7 mg/L O₂)`);
-
+    // MyFood : 10 truites / 500L
+    nMin = Math.max(1, Math.round(total / 500 * 7));
+    nMax = Math.round(total / 500 * 10);
   } else if (espece.includes('tilapia')) {
-    // Tilapia : densité plus haute ~20-30 poissons/500L eau chaude
-    const ratio = total / 500;
-    const nMin  = Math.round(20 * ratio);
-    const nMax  = Math.round(35 * ratio);
-    lignes.push(`Fourchette recommandée : <strong>${nMin} – ${nMax} tilapias</strong> pour ${total}L`);
-    lignes.push(`Eau chaude requise (22-28°C) · espèce très productive en aquaponie`);
-
+    nMin = Math.round(total / 500 * 20);
+    nMax = Math.round(total / 500 * 35);
   } else {
-    // Poisson rouge — MyFood City 500L : 30-40 / MyFood Plus 500L : 35-50
-    // On prend la valeur médiane et on scale au volume réel
-    const ratio   = total / 500;
-    // Fourchette City
-    const cityMin = Math.round(30 * ratio);
-    const cityMax = Math.round(40 * ratio);
-    // Fourchette Plus (bacs > 500L par bassin = serre Plus)
-    const plusMin = Math.round(35 * ratio);
-    const plusMax = Math.round(50 * ratio);
-    lignes.push(`MyFood <strong>City</strong> (bac 500L) : <strong>${cityMin} – ${cityMax} poissons rouges</strong> pour ${total}L`);
-    lignes.push(`MyFood <strong>Plus</strong> (bac 500L) : <strong>${plusMin} – ${plusMax} poissons rouges</strong> pour ${total}L`);
-    if (taille) lignes.push(`Taille déclarée ~${taille}cm · densité à réduire si > 10cm`);
+    // Poisson rouge MyFood : 300L→30-40, 500L→35-50 → on interpole linéairement
+    // pMin ≈ 0.10/L, pMax ≈ 0.13/L (300L) → 0.07/L, 0.10/L (500L) : on prend 0.08–0.10/L
+    nMin = Math.round(total * 0.08);
+    nMax = Math.round(total * 0.10);
   }
 
-  const totalPoissons = poissons.reduce((s,p)=>s+p.nb, 0);
-  // Référence = max de la fourchette la plus haute citée
-  const refMax = parseInt((lignes[0].match(/\d+(?= poissons| carpes| truites| tilapias)/) || ['0']).pop());
-  const pct    = refMax > 0 ? Math.round(totalPoissons / refMax * 100) : 0;
-  const couleur = pct > 95 ? 'var(--red)' : pct > 75 ? 'var(--amber)' : 'var(--teal)';
+  const pct     = nMax > 0 ? Math.round(totalPoissons / nMax * 100) : 0;
+  const marge   = Math.max(0, nMax - totalPoissons);
+  const couleur = pct > 100 ? 'var(--red)' : pct > 85 ? 'var(--amber)' : pct < 30 ? 'var(--amber)' : 'var(--teal)';
 
-  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px;text-align:left;width:100%">
-    ${lignes.map((l,i) => `<div style="font-size:${i===0?'.78':'.68'}rem;color:${i===0?couleur:'var(--text-muted)'}">📊 ${l}</div>`).join('')}
-    ${totalPoissons ? `<div style="font-size:.65rem;color:${couleur};margin-top:4px">Population actuelle : ${totalPoissons} poisson${totalPoissons>1?'s':''} — occupation ${pct}%</div>` : ''}
-  </div>`;
+  // Phrase résumé
+  let phrase;
+  if (!totalPoissons) {
+    phrase = `Aucun poisson — le bassin peut accueillir ${nMin}–${nMax} poissons pour une aquaponie fonctionnelle.`;
+  } else if (pct > 110) {
+    phrase = `⚠️ Surpopulation : risque d'hypoxie, pics d'ammoniaque et stress sanitaire. Réduire de ${totalPoissons - nMax} poisson${totalPoissons - nMax > 1 ? 's' : ''}.`;
+  } else if (pct > 85) {
+    phrase = `Bac bien chargé — surveiller O₂ et ammoniaque. Plus de place pour de nouveaux poissons.`;
+  } else if (pct < 30) {
+    phrase = `Population trop faible : production de nutriments insuffisante pour les plantes. Ajouter ${nMin - totalPoissons} poisson${nMin - totalPoissons > 1 ? 's' : ''} minimum.`;
+  } else {
+    phrase = `Équilibre correct. Capacité restante : ${marge} poisson${marge > 1 ? 's' : ''} supplémentaire${marge > 1 ? 's' : ''}.`;
+  }
+
+  // Barre de progression
+  const barPct  = Math.min(pct, 120);
+  const barColor = pct > 100 ? '#f87171' : pct > 85 ? '#fbbf24' : '#2dd4bf';
+
+  el.innerHTML = `
+    <div style="width:100%">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+        <span style="font-family:'Fraunces',serif;font-size:1.6rem;font-weight:300;color:${couleur};line-height:1">
+          ${totalPoissons} <span style="font-size:.85rem;color:var(--text-muted)">poisson${totalPoissons>1?'s':''}</span>
+        </span>
+        <span style="font-size:.85rem;font-weight:500;color:${couleur}">${pct}%</span>
+      </div>
+      <div style="height:6px;background:var(--border2);border-radius:3px;overflow:hidden;margin-bottom:10px">
+        <div style="height:100%;width:${barPct}%;background:${barColor};border-radius:3px;transition:width .4s ease"></div>
+      </div>
+      <div style="font-size:.75rem;color:var(--text-dim);line-height:1.5">${phrase}</div>
+    </div>`;
 }
 
 // ── POISSONS ──────────────────────────────────────────────────
