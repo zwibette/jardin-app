@@ -12,7 +12,7 @@
   --text:#e8f5ea;--text-dim:#8fb898;--text-muted:#4a6b52;
   --green:#4ade80;--green-light:rgba(74,222,128,0.1);--green-mid:#22c55e;
   --amber:#fbbf24;--amber-light:rgba(251,191,36,0.1);
-  --red:#f87171;--red-light:rgba(248,113,113,0.1);--blue:#60a5fa;--blue-light:rgba(96,165,250,0.1);
+  --red:#f87171;--blue:#60a5fa;--blue-light:rgba(96,165,250,0.1);
   --accent:#a3e635;
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -33,10 +33,12 @@ main{max-width:900px;margin:0 auto;padding:20px 16px 40px;position:relative;z-in
 
 /* ── BANNIÈRE TOTAUX ── */
 .total-banner{background:var(--surface);border:2px solid var(--green);color:var(--text);border-radius:14px;padding:18px 20px;margin-bottom:20px}
+/* Ligne 1 : total général */
 .banner-row1{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-bottom:14px;border-bottom:1px solid var(--border)}
 .total-val{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:700;line-height:1}
 .total-lbl{font-size:.7rem;opacity:.7;letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
 .banner-row1-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+/* Ligne(s) 2+ : détail par lieu */
 .banner-lieux{display:flex;flex-direction:column;gap:8px;padding-top:12px}
 .banner-lieu-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .banner-lieu-icon{font-size:1.2rem;flex-shrink:0;width:24px;text-align:center}
@@ -72,19 +74,24 @@ main{max-width:900px;margin:0 auto;padding:20px 16px 40px;position:relative;z-in
 .pheno-status.retard{border-left-color:var(--amber)}
 .pheno-status.ok{border-left-color:var(--green)}
 .pheno-status.nodata{border-left-color:var(--border)}
+
+/* Slider : layout en 2 colonnes sur mobile pour les labels */
 .pheno-track-wrap{position:relative;margin:0 0 10px}
 .pheno-labels-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:.6rem;letter-spacing:.06em;color:var(--text-muted)}
 .pheno-track{height:14px;border-radius:7px;position:relative;overflow:visible;background:linear-gradient(90deg,#1a3d1a 0%,#22c55e 40%,#4ade80 65%,#a3e635 80%,#fbbf24 100%)}
+/* Marqueurs : cercles positionnés sur la barre */
 .pheno-marker{position:absolute;top:50%;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;border:2px solid var(--bg);box-shadow:0 0 0 2px currentColor,0 2px 6px rgba(0,0,0,.5);z-index:2}
 .pheno-marker.m-semis{color:#60a5fa;background:#60a5fa}
 .pheno-marker.m-plantation{color:#a3e635;background:#a3e635}
 .pheno-marker.m-recolte{color:#fbbf24;background:#fbbf24}
 .pheno-marker.m-today{color:#4ade80;background:#4ade80;width:12px;height:12px;box-shadow:0 0 0 2px #4ade80,0 0 8px rgba(74,222,128,.6)}
+/* Légende sous la barre : liste simple */
 .pheno-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;font-size:.65rem;color:var(--text-muted)}
 .pheno-legend-item{display:flex;align-items:center;gap:5px}
 .pheno-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .pheno-info-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .pheno-info-chip{background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:4px 9px;font-size:.62rem;color:var(--text-muted)}
+
 .pheno-plages{margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:480px){.pheno-plages{grid-template-columns:1fr}}
 .pheno-plage{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px}
@@ -113,35 +120,6 @@ main{max-width:900px;margin:0 auto;padding:20px 16px 40px;position:relative;z-in
 .date-modal-actions{display:flex;gap:8px}
 .date-modal-ok{flex:1;background:var(--green-mid);color:#0a120b;border:none;border-radius:8px;padding:10px;font-family:'Karla',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer}
 .date-modal-cancel{background:var(--bg2);border:1px solid var(--border2);color:var(--text-muted);border-radius:8px;padding:10px 14px;font-family:'Karla',sans-serif;font-size:.85rem;cursor:pointer}
-
-/* ── MODAL SUPPRESSION ── */
-.del-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
-.del-modal{background:var(--surface);border:1px solid rgba(248,113,113,.4);border-radius:16px;padding:28px 24px;width:360px;max-width:92vw;box-shadow:0 12px 60px rgba(0,0,0,.6)}
-.del-modal-icon{font-size:2rem;text-align:center;margin-bottom:12px}
-.del-modal h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;color:var(--text);margin-bottom:6px;text-align:center}
-.del-modal-sub{font-size:.75rem;color:var(--text-muted);text-align:center;margin-bottom:18px;line-height:1.5}
-.del-modal-scope{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:.72rem;color:var(--text-dim);line-height:1.8}
-.del-modal-scope li{margin-left:14px}
-.del-modal-label{font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;font-weight:500}
-.del-modal-input{width:100%;background:var(--bg2);border:2px solid var(--border2);border-radius:8px;padding:10px 12px;font-family:'Karla',sans-serif;font-size:.9rem;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:6px}
-.del-modal-input:focus{border-color:var(--red)}
-.del-modal-input.valid{border-color:var(--red)}
-.del-modal-hint{font-size:.62rem;color:var(--text-muted);margin-bottom:16px;min-height:16px;transition:color .2s}
-.del-modal-hint.match{color:var(--red)}
-.del-modal-actions{display:flex;gap:8px}
-.del-modal-confirm{flex:1;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.5);color:var(--red);border-radius:8px;padding:11px;font-family:'Karla',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;opacity:.4;pointer-events:none}
-.del-modal-confirm.enabled{opacity:1;pointer-events:auto}
-.del-modal-confirm.enabled:hover{background:rgba(248,113,113,.25)}
-.del-modal-cancel{background:var(--bg2);border:1px solid var(--border2);color:var(--text-muted);border-radius:8px;padding:11px 16px;font-family:'Karla',sans-serif;font-size:.85rem;cursor:pointer}
-.del-modal-cancel:hover{border-color:var(--border);color:var(--text-dim)}
-
-/* ── ZONE DANGER ── */
-.danger-zone{max-width:900px;margin:0 auto;padding:0 16px 60px;position:relative;z-index:1}
-.danger-zone-inner{border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.danger-zone-text{font-size:.75rem;color:var(--text-muted);line-height:1.5}
-.danger-zone-text strong{color:var(--red);font-weight:500;font-size:.78rem}
-.btn-supprimer-variete{background:transparent;border:1px solid rgba(248,113,113,.4);color:var(--red);padding:8px 16px;border-radius:8px;font-family:'Karla',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.btn-supprimer-variete:hover{background:rgba(248,113,113,.08);border-color:var(--red)}
 
 /* ── CONSEILS IA ── */
 .predict-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}
@@ -217,33 +195,6 @@ td{padding:10px 12px;color:var(--text-dim)}
   </div>
 </div>
 
-<!-- MODAL SUPPRESSION VARIÉTÉ -->
-<div id="delModal" class="del-modal-overlay" style="display:none" onclick="if(event.target===this)closeDelModal()">
-  <div class="del-modal">
-    <div class="del-modal-icon">🗑️</div>
-    <h3>Supprimer cette variété</h3>
-    <div class="del-modal-sub">Cette action est <strong style="color:var(--red)">irréversible</strong>. Toutes les données associées seront supprimées.</div>
-    <div class="del-modal-scope">
-      <div style="font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;font-weight:500">Données supprimées :</div>
-      <ul>
-        <li>Toutes les récoltes enregistrées</li>
-        <li>Entrée(s) dans le calendrier</li>
-        <li>Suivi des stades (semis, plantation…)</li>
-        <li>Cache des conseils IA</li>
-      </ul>
-    </div>
-    <div class="del-modal-label">Confirmez en saisissant le nom de la variété</div>
-    <input type="text" class="del-modal-input" id="delModalInput"
-           placeholder="" autocomplete="off"
-           oninput="checkDelConfirm(this.value)">
-    <div class="del-modal-hint" id="delModalHint">Tapez le nom exact pour débloquer la suppression</div>
-    <div class="del-modal-actions">
-      <button class="del-modal-cancel" onclick="closeDelModal()">Annuler</button>
-      <button class="del-modal-confirm" id="delModalConfirm" onclick="confirmerSuppression()">🗑 Supprimer définitivement</button>
-    </div>
-  </div>
-</div>
-
 <header>
   <div class="header-top">
     <a href="/recoltes.html" class="back-btn">← Récoltes</a>
@@ -266,10 +217,12 @@ td{padding:10px 12px;color:var(--text-dim)}
         <button class="predict-btn" id="predictBtn" onclick="lancerAnalyse()">
           <span id="predictBtnIcon">✦</span> Analyser
         </button>
+        <!-- Bouton photo -->
         <label class="predict-btn" id="photoLabel" style="cursor:pointer;position:relative" title="Photographier la plante pour diagnostic visuel">
           📷 Photo
           <input type="file" id="photoInput" accept="image/*" capture="environment" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="onPhotoSelected(this)">
         </label>
+        <!-- Miniature + supprimer -->
         <div id="photoPreviewWrap" style="display:none;position:relative">
           <img id="photoPreview" style="width:36px;height:36px;object-fit:cover;border-radius:6px;border:1px solid var(--border2);display:block">
           <button onclick="clearPhoto()" style="position:absolute;top:-5px;right:-5px;background:var(--red);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:.6rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center">✕</button>
@@ -295,26 +248,15 @@ td{padding:10px 12px;color:var(--text-dim)}
   </div>
 </div>
 
-<!-- ZONE DANGER — bouton suppression -->
-<div class="danger-zone" id="dangerZone" style="display:none">
-  <div class="danger-zone-inner">
-    <div class="danger-zone-text">
-      <strong>Zone danger</strong><br>
-      Supprime définitivement cette variété et toutes ses données (récoltes, calendrier, stades, cache IA).
-    </div>
-    <button class="btn-supprimer-variete" onclick="ouvrirDelModal()">
-      🗑 Supprimer la variété
-    </button>
-  </div>
-</div>
-
 <script>
 // ── CONSTANTES ────────────────────────────────────────────────
 const STORAGE_KEY        = 'jardin_recoltes_v2';
 const STORAGE_KEY_CAL    = 'jardin_calendrier_v1';
 const STORAGE_KEY_STADES = 'jardin_stades_v1';
-const STORAGE_KEY_IA     = 'jardin_ia_cache_v1';
+const STORAGE_KEY_IA     = 'jardin_ia_cache_v1'; // cache texte IA par végétal
 
+// ── RENDEMENT PAR FAMILLE : seuils g/plant pour coloration ──
+// (faible / moyen / bon / excellent)
 const RENDEMENT_SEUILS = {
   'SALADES':            [100, 250, 500],
   'BLETTES & ÉPINARDS': [200, 500, 1000],
@@ -330,6 +272,7 @@ const RENDEMENT_SEUILS = {
   'LÉGUMES ETE':        [100, 300, 700],
 };
 
+// ── DURÉES PAR FAMILLE (jours) ────────────────────────────────
 const DUREES_FAMILLE = {
   'SALADES':            { semisPlt:30,  pltRec:45,  durRec:60,  semisPlageAnneeMois:[[8,10],[0,1]], pltPlageAnneeMois:[[9,11],[1,2]] },
   'BLETTES & ÉPINARDS': { semisPlt:35,  pltRec:50,  durRec:120, semisPlageAnneeMois:[[8,10],[0,1]], pltPlageAnneeMois:[[9,11],[1,2]] },
@@ -378,6 +321,7 @@ function loadRecoltes() { try { return JSON.parse(localStorage.getItem(STORAGE_K
 function loadCalendrier() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY_CAL)||'[]'); } catch(e) { return []; } }
 function normKey(s) { return s.toLowerCase().replace(/[^a-z]/g,''); }
 
+// Retourne TOUTES les entrées calendrier correspondant à ce végétal (peut y en avoir plusieurs pour lieux différents)
 function getCultureEntries(veg) {
   const cal = loadCalendrier();
   return cal.filter(c =>
@@ -387,6 +331,7 @@ function getCultureEntries(veg) {
   );
 }
 
+// Retourne la première entrée correspondant au lieu courant, sinon la première trouvée
 function getCultureEntry(veg, lieu) {
   const entries = getCultureEntries(veg);
   if (!entries.length) return null;
@@ -438,8 +383,10 @@ let _pendingStade   = null;
 function initStades(veg, calEntry) {
   _currentVegetal = veg;
   _currentStades  = loadStades(veg);
+  // Pré-remplir depuis calendrier si non encore coché
   if (calEntry?.semis     && !_currentStades.seme)   _currentStades.seme   = calEntry.semis;
   if (calEntry?.plantation && !_currentStades.plante) _currentStades.plante = calEntry.plantation;
+  // Pré-remplir récolte depuis journal des récoltes (plus ancienne date de récolte)
   if (!_currentStades.recolte) {
     const recs = loadRecoltes().filter(r => r.vegetal === veg).sort((a,b)=>a.date.localeCompare(b.date));
     if (recs.length) _currentStades.recolte = recs[0].date;
@@ -450,7 +397,7 @@ function renderStades() {
   const items = [
     { key:'seme',    icon:'🌱', label:'Semé' },
     { key:'plante',  icon:'🪴', label:'Planté' },
-    { key:'recolte', icon:'🌿', label:'Récoltes' },
+    { key:'recolte', icon:'🌿', label:'Récoltes' }, // renommé
     { key:'termine', icon:'✅', label:'Terminé' },
   ];
   return `<div class="stades-grid">${items.map(item=>{
@@ -484,6 +431,7 @@ function confirmStadeDate() {
 function syncStadesToCalendrier() {
   try {
     let cal = loadCalendrier();
+    // Sync uniquement sur l'entrée du bon lieu
     const idx = cal.findIndex(c=>
       (normKey(c.culture)===normKey(_currentVegetal)||normKey(c.culture).includes(normKey(_currentVegetal))||normKey(_currentVegetal).includes(normKey(c.culture)))
       && (!_currentLieu || c.lieu === _currentLieu)
@@ -535,6 +483,7 @@ function buildPhenoSlider(calEntry, stades, famille) {
   const pRecFin   = pct(dateRecFin);
   const pToday    = pct(today);
 
+  // Statut
   let statusTxt='', statusClass='nodata';
   if (dateSemis) {
     const jSemis = daysBetween(dateSemis, today);
@@ -555,6 +504,7 @@ function buildPhenoSlider(calEntry, stades, famille) {
     }
   }
 
+  // Plages
   function plageLabel(pairs) {
     if (!pairs||!pairs.length) return '—';
     return pairs.map(([d,f])=>{const dm=MOIS_FR[d]||'?',fm=MOIS_FR[f]||'?';return dm===fm?dm:`${dm} – ${fm}`;}).join(', ');
@@ -563,15 +513,18 @@ function buildPhenoSlider(calEntry, stades, famille) {
   const plagesSemis = plageLabel(dur2.semisPlageAnneeMois);
   const plagesPlant = plageLabel(dur2.pltPlageAnneeMois);
 
+  // Zone récolte highlight
   const recBar = (pRecDebut!==null&&pRecFin!==null)
     ? `<div style="position:absolute;top:0;bottom:0;left:${pRecDebut}%;width:${Math.max(0,pRecFin-pRecDebut)}%;background:rgba(251,191,36,.25);border-radius:7px;pointer-events:none"></div>`
     : '';
 
+  // Marqueurs (cercles positionnés sur la barre, labels EN DESSOUS via légende séparée)
   function mkr(p, cls) {
     if (p===null) return '';
     return `<div class="pheno-marker ${cls}" style="left:${p}%"></div>`;
   }
 
+  // Légende séparée (pas de labels superposés sur mobile)
   const legendItems = [
     dateSemis     ? `<div class="pheno-legend-item"><div class="pheno-legend-dot" style="background:#60a5fa"></div><span style="color:var(--blue)">Semis</span><span style="margin-left:4px;color:var(--text-muted)">${fmtDateShort(dateSemis)}</span></div>` : '',
     datePlantation? `<div class="pheno-legend-item"><div class="pheno-legend-dot" style="background:#a3e635"></div><span style="color:var(--accent)">Plantation</span><span style="margin-left:4px;color:var(--text-muted)">${fmtDateShort(datePlantation)}</span></div>` : '',
@@ -579,6 +532,7 @@ function buildPhenoSlider(calEntry, stades, famille) {
     `<div class="pheno-legend-item"><div class="pheno-legend-dot" style="background:#4ade80;box-shadow:0 0 4px rgba(74,222,128,.6)"></div><span style="color:var(--green)">Aujourd'hui</span></div>`,
   ].filter(Boolean).join('');
 
+  // Chips info
   const chips = [
     dateSemis&&datePlantation ? `Semis→plant : ${daysBetween(dateSemis,datePlantation)}j` : null,
     datePlantation&&dateRecDebut ? `Plant→récolte : ${daysBetween(datePlantation,dateRecDebut)}j` : null,
@@ -615,7 +569,7 @@ function buildPhenoSlider(calEntry, stades, famille) {
     </div>`;
 }
 
-// ── RENDEMENT ────────────────────────────────────────────────
+// ── RENDEMENT : couleur selon famille ────────────────────────
 function rendementColor(rPied, famille) {
   const s = RENDEMENT_SEUILS[famille];
   if (!s) return { cls:'moyen', label:'—' };
@@ -623,86 +577,6 @@ function rendementColor(rPied, famille) {
   if (rPied >= s[1]) return { cls:'bon',       label:'Bon rendement' };
   if (rPied >= s[0]) return { cls:'moyen',     label:'Rendement moyen' };
   return { cls:'faible', label:'Rendement faible' };
-}
-
-// ── SUPPRESSION VARIÉTÉ ───────────────────────────────────────
-function ouvrirDelModal() {
-  const input = document.getElementById('delModalInput');
-  input.value = '';
-  input.placeholder = vegetal;
-  document.getElementById('delModalHint').textContent = 'Tapez le nom exact pour débloquer la suppression';
-  document.getElementById('delModalHint').classList.remove('match');
-  document.getElementById('delModalConfirm').classList.remove('enabled');
-  document.getElementById('delModal').style.display = 'flex';
-  setTimeout(() => input.focus(), 100);
-}
-
-function closeDelModal() {
-  document.getElementById('delModal').style.display = 'none';
-}
-
-function checkDelConfirm(val) {
-  const btn  = document.getElementById('delModalConfirm');
-  const hint = document.getElementById('delModalHint');
-  const match = val.trim().toLowerCase() === vegetal.toLowerCase();
-  if (match) {
-    btn.classList.add('enabled');
-    hint.textContent = '✓ Nom confirmé — vous pouvez supprimer';
-    hint.classList.add('match');
-  } else {
-    btn.classList.remove('enabled');
-    hint.textContent = val.length ? 'Le nom ne correspond pas' : 'Tapez le nom exact pour débloquer la suppression';
-    hint.classList.remove('match');
-  }
-}
-
-function confirmerSuppression() {
-  const val = document.getElementById('delModalInput').value.trim();
-  if (val.toLowerCase() !== vegetal.toLowerCase()) return;
-
-  try {
-    // 1. Supprimer les récoltes
-    const recs = loadRecoltes().filter(r => r.vegetal !== vegetal);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(recs));
-
-    // 2. Supprimer du calendrier (toutes les entrées correspondantes)
-    const cal = loadCalendrier().filter(c =>
-      normKey(c.culture) !== normKey(vegetal) &&
-      !normKey(c.culture).includes(normKey(vegetal)) &&
-      !normKey(vegetal).includes(normKey(c.culture))
-    );
-    localStorage.setItem(STORAGE_KEY_CAL, JSON.stringify(cal));
-
-    // 3. Supprimer les stades
-    try {
-      const st = JSON.parse(localStorage.getItem(STORAGE_KEY_STADES)||'{}');
-      delete st[vegetal];
-      localStorage.setItem(STORAGE_KEY_STADES, JSON.stringify(st));
-    } catch(e) {}
-
-    // 4. Supprimer le cache IA
-    try {
-      const ia = JSON.parse(localStorage.getItem(STORAGE_KEY_IA)||'{}');
-      delete ia[vegetal];
-      localStorage.setItem(STORAGE_KEY_IA, JSON.stringify(ia));
-    } catch(e) {}
-
-    // 5. Sync Sheets si disponible (best-effort)
-    try {
-      fetch('/api/sheets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recoltes: recs })
-      });
-    } catch(e) {}
-
-    // 6. Redirection vers récoltes
-    closeDelModal();
-    window.location.href = '/recoltes.html';
-
-  } catch(e) {
-    alert('Erreur lors de la suppression : ' + e.message);
-  }
 }
 
 // ── INIT ─────────────────────────────────────────────────────
@@ -715,6 +589,7 @@ if (!vegetal) {
   const allRecoltes = loadRecoltes();
   const recoltes    = allRecoltes.filter(r=>r.vegetal===vegetal).sort((a,b)=>b.date.localeCompare(a.date));
   const famille     = FAMILLES[vegetal]||recoltes[0]?.famille||'';
+  // Lieu courant : lieu majoritaire des récoltes ou 1ère entrée calendrier
   const lieuxRec    = recoltes.map(r=>r.lieu);
   const lieuMaj     = lieuxRec.length ? lieuxRec.sort((a,b)=>lieuxRec.filter(v=>v===b).length-lieuxRec.filter(v=>v===a).length)[0] : null;
   _currentLieu      = lieuMaj || getCultureEntry(vegetal)?.lieu || '';
@@ -725,11 +600,9 @@ if (!vegetal) {
   document.getElementById('predictTitle').textContent   = `🌱 Les besoins de ton plant de ${vegetal} en ce moment`;
   document.title = vegetal+' — Jardin Vivant';
 
-  // Afficher la zone danger
-  document.getElementById('dangerZone').style.display = 'block';
-
   initStades(vegetal, calEntry);
 
+  // Restaurer cache IA si existant
   const cachedIA = loadIACache(vegetal);
   if (cachedIA) {
     document.getElementById('predictBody').innerHTML   = cachedIA;
@@ -766,12 +639,15 @@ function render(recoltes, vegetal, calEntry, famille) {
   const lieux     = [...new Set(recoltes.map(r=>r.lieu))];
   const multiLieu = lieux.length>1;
 
+
   const main = document.getElementById('mainContent');
 
+  // Calcul rendement global (tous lieux, tous plants confondus)
   const allNbPlants = lieux.reduce((s,l) => s + (getNbPlants(vegetal,l)||0), 0);
   const rPiedGlobal = allNbPlants > 0 ? Math.round(total / allNbPlants) : null;
   const rendGlobal  = rPiedGlobal ? rendementColor(rPiedGlobal, famille) : null;
 
+  // Détails par lieu
   const LIEUX_CFG = [
     { key:'serre',  icon:'🏠', label:'Serre'  },
     { key:'bacs',   icon:'🪴', label:'Bacs'   },
@@ -804,7 +680,9 @@ function render(recoltes, vegetal, calEntry, famille) {
   }
 
   main.innerHTML = `
+    <!-- 1. BANNIÈRE -->
     <div class="total-banner">
+      <!-- Ligne 1 : total général -->
       <div class="banner-row1">
         <div>
           <div class="total-val">${fmtKg(total)}</div>
@@ -820,16 +698,19 @@ function render(recoltes, vegetal, calEntry, famille) {
           </div>`:''}
         </div>
       </div>
+      <!-- Lignes 2+ : détail par lieu -->
       <div class="banner-lieux">
         ${lieuxPresents.map(lc => bannerLieuRow(lc)).join('')}
       </div>
     </div>
 
+    <!-- 2. SLIDER PHÉNOLOGIQUE -->
     <div class="section">
       <div class="stitle">📅 Suivi de culture</div>
       <div class="pheno-card"><div id="phenoContent">${renderStades()}${buildPhenoSlider(calEntry,_currentStades,famille)}</div></div>
     </div>
 
+    <!-- 4. RÉPARTITION PAR LIEU -->
     ${multiLieu?`<div class="section">
       <div class="stitle">Répartition par lieu</div>
       <div class="lieux-grid">
@@ -839,6 +720,7 @@ function render(recoltes, vegetal, calEntry, famille) {
       </div>
     </div>`:''}
 
+    <!-- 5. GRAPHIQUES -->
     <div class="section">
       <div class="stitle">Graphiques</div>
       <div class="charts-grid">
@@ -847,6 +729,7 @@ function render(recoltes, vegetal, calEntry, famille) {
       </div>
     </div>
 
+    <!-- 6. TABLEAU -->
     <div class="section">
       <div class="stitle">Détail des récoltes</div>
       <div class="table-wrap">
@@ -862,9 +745,11 @@ function render(recoltes, vegetal, calEntry, famille) {
       </div>
     </div>
 
+    <!-- 7. PARAMÈTRES -->
     ${buildEditPanel(vegetal)}
   `;
 
+  // Insérer #predictSection après le slider (position 3)
   const ps = document.getElementById('predictSection');
   const sliderSection = main.querySelector('.section');
   if (sliderSection && sliderSection.nextSibling) {
@@ -874,6 +759,7 @@ function render(recoltes, vegetal, calEntry, famille) {
   }
   ps.style.cssText = 'display:block;margin-bottom:24px';
 
+  // Charts
   if (multiLieu) {
     const ld=[],ll=[],lc=[];
     if(bySerre>0){ld.push(bySerre);ll.push('Serre');lc.push('#3a6ea5');}
@@ -897,22 +783,23 @@ function render(recoltes, vegetal, calEntry, famille) {
   }
 }
 
-// ── PANEL PARAMÈTRES ──────────────────────────────────────────
+// ── PANEL PARAMÈTRES : un formulaire par lieu ─────────────────
 function buildEditPanel(veg) {
   const entries    = getCultureEntries(veg);
   const allLieux   = ['serre','bacs','jardin'];
   const lieuxDispo = [...new Set([
     ...entries.map(e => e.lieu),
+    // Ajouter les lieux des récoltes s'ils ne sont pas dans le calendrier
     ...loadRecoltes().filter(r=>r.vegetal===veg).map(r=>r.lieu)
   ])].filter(Boolean);
 
-  const lieuIcons  = { serre:'🏠', bacs:'🪴', jardin:'🌳' };
-  const lieuNames  = { serre:'Serre', bacs:'Bacs surélevés', jardin:'Jardin' };
+  const lieuIcons = { serre:'🏠', bacs:'🪴', jardin:'🌳' };
+  const lieuNames = { serre:'Serre', bacs:'Bacs surélevés', jardin:'Jardin' };
   const lieuColors = { serre:'var(--blue)', bacs:'var(--amber)', jardin:'var(--green)' };
 
   function formForLieu(lieu) {
     const entry = entries.find(e => e.lieu === lieu) || null;
-    const lid   = 'ep-' + lieu;
+    const lid   = 'ep-' + lieu; // préfixe unique par lieu
     return `<div class="edit-lieu-block" id="${lid}-block" style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px">
       <div style="padding:10px 14px;background:var(--bg2);display:flex;align-items:center;gap:8px;cursor:pointer;border-bottom:1px solid var(--border)"
            onclick="toggleEditLieu('${lid}')">
@@ -923,12 +810,30 @@ function buildEditPanel(veg) {
       </div>
       <div id="${lid}-form" style="display:none;padding:14px">
         <div class="edit-grid">
-          <div class="edit-field"><label>Date Semis</label><input type="date" id="${lid}-semis" value="${entry?.semis||''}"></div>
-          <div class="edit-field"><label>Date Plantation</label><input type="date" id="${lid}-plant" value="${entry?.plantation||''}"></div>
-          <div class="edit-field"><label>Début récolte prévue</label><input type="date" id="${lid}-rdebut" value="${entry?.recolteDebut||''}"></div>
-          <div class="edit-field"><label>Fin récolte prévue</label><input type="date" id="${lid}-rfin" value="${entry?.recolteFin||''}"></div>
-          <div class="edit-field"><label>Nombre de plants</label><input type="number" id="${lid}-nbr" min="0" value="${entry?.nbPlants||''}"></div>
-          <div class="edit-field"><label>Notes / observations</label><input type="text" id="${lid}-notes" value="${(entry?.notes||'').replace(/"/g,'&quot;')}"></div>
+          <div class="edit-field">
+            <label>Date Semis</label>
+            <input type="date" id="${lid}-semis" value="${entry?.semis||''}">
+          </div>
+          <div class="edit-field">
+            <label>Date Plantation</label>
+            <input type="date" id="${lid}-plant" value="${entry?.plantation||''}">
+          </div>
+          <div class="edit-field">
+            <label>Début récolte prévue</label>
+            <input type="date" id="${lid}-rdebut" value="${entry?.recolteDebut||''}">
+          </div>
+          <div class="edit-field">
+            <label>Fin récolte prévue</label>
+            <input type="date" id="${lid}-rfin" value="${entry?.recolteFin||''}">
+          </div>
+          <div class="edit-field">
+            <label>Nombre de plants</label>
+            <input type="number" id="${lid}-nbr" min="0" value="${entry?.nbPlants||''}">
+          </div>
+          <div class="edit-field">
+            <label>Notes / observations</label>
+            <input type="text" id="${lid}-notes" value="${(entry?.notes||'').replace(/"/g,'&quot;')}">
+          </div>
         </div>
         <div style="display:flex;gap:8px;margin-top:10px">
           <button onclick="saveLieuParams('${veg}','${lieu}')" class="edit-btn-save" style="flex:1">💾 Enregistrer ${lieuNames[lieu]||lieu}</button>
@@ -939,6 +844,7 @@ function buildEditPanel(veg) {
     </div>`;
   }
 
+  // Afficher un formulaire par lieu existant + option pour ajouter un nouveau lieu
   const lieuxExistants = lieuxDispo.filter(l => allLieux.includes(l));
   const lieuxManquants  = allLieux.filter(l => !lieuxDispo.includes(l));
 
@@ -965,17 +871,17 @@ function toggleEditLieu(lid) {
   const form    = document.getElementById(lid+'-form');
   const chevron = document.getElementById(lid+'-chevron');
   const open    = form.style.display !== 'none';
-  form.style.display  = open ? 'none' : 'block';
-  chevron.textContent = open ? '▼' : '▲';
+  form.style.display    = open ? 'none' : 'block';
+  chevron.textContent   = open ? '▼' : '▲';
 }
 
 function saveLieuParams(veg, lieu) {
-  const lid    = 'ep-' + lieu;
-  const status = document.getElementById(lid+'-status');
+  const lid     = 'ep-' + lieu;
+  const status  = document.getElementById(lid+'-status');
   try {
-    let cal    = loadCalendrier();
-    const norm = s => s.toLowerCase().replace(/[^a-z]/g,'');
-    const idx  = cal.findIndex(c =>
+    let cal     = loadCalendrier();
+    const norm  = s => s.toLowerCase().replace(/[^a-z]/g,'');
+    const idx   = cal.findIndex(c =>
       (norm(c.culture)===norm(veg)||norm(c.culture).includes(norm(veg))||norm(veg).includes(norm(c.culture)))
       && c.lieu === lieu
     );
@@ -997,7 +903,11 @@ function saveLieuParams(veg, lieu) {
     status.textContent   = '✓ Enregistré';
     status.style.display = 'block';
     setTimeout(()=>{ status.style.display='none'; }, 2000);
-    if (lieu === _currentLieu) { _currentLieu = lieu; refreshPhenoBlock(); }
+    // Rafraîchir uniquement si c'est le lieu courant (pour le slider)
+    if (lieu === _currentLieu) {
+      _currentLieu = lieu;
+      refreshPhenoBlock();
+    }
   } catch(e) {
     status.style.color   = 'var(--red)';
     status.textContent   = '⚠️ Erreur';
@@ -1020,9 +930,13 @@ function deleteLieuEntry(veg, lieu) {
 }
 
 function addLieu(veg, lieu) {
+  // Crée une entrée vide dans le calendrier et rafraîchit le panel
   let cal = loadCalendrier();
   cal.push({ id:'c'+Date.now(), culture:veg, famille:FAMILLES[veg]||'', lieu, semis:null, plantation:null, recolteDebut:null, recolteFin:null, nbPlants:null, notes:'' });
   localStorage.setItem(STORAGE_KEY_CAL, JSON.stringify(cal));
+  const panel = document.getElementById('editPanelBlock');
+  if (panel) panel.outerHTML = buildEditPanel(veg);
+  // Le panel n'existe plus, reload propre
   window.location.reload();
 }
 
@@ -1033,15 +947,18 @@ function renommerVariete(ancienNom) {
   const norm = s => s.toLowerCase().replace(/[^a-z]/g,'');
   if (norm(ancienNom) === norm(nouveauNom)) { status.style.color='var(--text-muted)'; status.textContent='Aucun changement.'; status.style.display='block'; return; }
   try {
+    // Renommer dans le calendrier
     let cal = loadCalendrier();
     cal.forEach(c => {
       if (norm(c.culture)===norm(ancienNom)||norm(c.culture).includes(norm(ancienNom))||norm(ancienNom).includes(norm(c.culture)))
         c.culture = nouveauNom;
     });
     localStorage.setItem(STORAGE_KEY_CAL, JSON.stringify(cal));
+    // Renommer dans les récoltes
     let recs = loadRecoltes();
     recs.forEach(r => { if(r.vegetal===ancienNom){ r.vegetal=nouveauNom; r.famille=FAMILLES[nouveauNom]||r.famille||''; } });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recs));
+    // Renommer dans le cache stades
     try { const st=JSON.parse(localStorage.getItem(STORAGE_KEY_STADES)||'{}'); if(st[ancienNom]){st[nouveauNom]=st[ancienNom];delete st[ancienNom];localStorage.setItem(STORAGE_KEY_STADES,JSON.stringify(st));} } catch(e){}
     status.style.color='var(--green)'; status.textContent='✓ Renommé'; status.style.display='block';
     setTimeout(()=>{ window.location.search=`?v=${encodeURIComponent(nouveauNom)}`; }, 1000);
@@ -1050,17 +967,20 @@ function renommerVariete(ancienNom) {
   }
 }
 
-// ── CONTEXTE LIEU IA ──────────────────────────────────────────
+// ── CONTEXTE LIEU pour l'IA ──────────────────────────────────
+// Chaque lieu a ses contraintes spécifiques qui doivent orienter les conseils.
 function lieuContextIA(lieu) {
   const ctx = {
     serre: `La plante est cultivée en SERRE AQUAPONIQUE MyFood City (système fermé, hydroponique, tour de culture verticale).
 Caractéristiques : lumière filtrée par polycarbonate, hygrométrie élevée et stable, pas de pluie, eau de bassin enrichie en nitrates par les poissons (pH 6.8–7.2), température plus stable qu'en extérieur.
 Contraintes spécifiques serre : surveillance accrue des maladies fongiques (botrytis, mildiou) favorisées par l'humidité, risque de pucerons et aleurodes sans prédateurs naturels, arrosage intégré par circuit aquaponique, pas de gel possible mais surchauffe estivale fréquente >35°C.
 Conseils à adapter : aération, contrôle pH eau, densité de plantation, taille pour aération, traitements biologiques uniquement (pas de pesticides chimiques pour ne pas nuire aux poissons).`,
+
     bacs: `La plante est cultivée en BACS SURÉLEVÉS (plein air, substrat terreau/compost, arrosage Bas Rhône automatisé).
 Caractéristiques : exposition plein soleil, substrat drainant mais à faible réserve en eau, forte amplitude thermique jour/nuit, exposée aux intempéries et au vent.
 Contraintes spécifiques bacs : asséchement rapide du substrat en été, lessivage des nutriments, gel possible en hiver sur les racines, exposition aux ravageurs extérieurs (limaces, chenilles, pucerons).
 Conseils à adapter : fréquence d'arrosage (quotidien en été), amendements réguliers (compost, engrais), paillage pour conserver l'humidité, protection hivernale si gel annoncé.`,
+
     jardin: `La plante est cultivée au POTAGER EXTÉRIEUR pleine terre (sol méditerranéen, arrosage Bas Rhône, zone 9b).
 Caractéristiques : sol limoneux-argileux, pH légèrement basique, fort ensoleillement, vent tramontane/mistral possible, été sec et chaud (jusqu'à 38°C), hivers doux.
 Contraintes spécifiques potager : sécheresse estivale, sol pouvant se compacter, présence de ravageurs variés (doryphores, limaces, noctuelles), maladies fongiques après pluies printanières.
@@ -1069,7 +989,7 @@ Conseils à adapter : paillage épais, irrigation au pied, rotation des cultures
   return ctx[lieu] || `La plante est cultivée en extérieur à Montpellier (zone 9b, climat méditerranéen).`;
 }
 
-// ── ANALYSE IA ────────────────────────────────────────────────
+// ── ANALYSE IA (texte) ────────────────────────────────────────
 async function lancerAnalyse() {
   const btn     = document.getElementById('predictBtn');
   const body    = document.getElementById('predictBody');
@@ -1089,6 +1009,7 @@ async function lancerAnalyse() {
   const pheno     = calcPheno(calEntry, _currentStades, famille);
   const allRec    = loadRecoltes();
   const recVar    = allRec.filter(r=>r.vegetal===vegetal).sort((a,b)=>a.date.localeCompare(b.date));
+  // Récoltes par lieu
   const recLieu   = recVar.filter(r=>r.lieu===_currentLieu);
   const totalPoids= recVar.reduce((s,r)=>s+r.poids,0);
   const poidsLieu = recLieu.reduce((s,r)=>s+r.poids,0);
@@ -1164,6 +1085,7 @@ Adapte tes conseils SPÉCIFIQUEMENT au lieu de culture indiqué. Réponds en fra
   }
 }
 
+// ── UTILITAIRE MARKDOWN → HTML ────────────────────────────────
 function mdToHtml(text) {
   return (text||'')
     .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
@@ -1184,10 +1106,15 @@ function onPhotoSelected(input) {
   _photoMime = file.type || 'image/jpeg';
   const reader = new FileReader();
   reader.onload = e => {
+    // Base64 sans le préfixe data:...;base64,
     _photoBase64 = e.target.result.split(',')[1];
-    document.getElementById('photoPreview').src = e.target.result;
-    document.getElementById('photoPreviewWrap').style.display = 'block';
-    document.getElementById('photoAnalyseBtn').style.display  = 'flex';
+    // Miniature
+    const preview = document.getElementById('photoPreview');
+    const wrap    = document.getElementById('photoPreviewWrap');
+    const analyseBtn = document.getElementById('photoAnalyseBtn');
+    preview.src = e.target.result;
+    wrap.style.display    = 'block';
+    analyseBtn.style.display = 'flex';
   };
   reader.readAsDataURL(file);
 }
@@ -1213,10 +1140,10 @@ async function analyserPhoto() {
     <span>Analyse visuelle en cours…</span>
   </div>`;
 
-  const calEntry = getCultureEntry(vegetal, _currentLieu);
-  const famille  = FAMILLES[vegetal]||calEntry?.famille||'';
-  const month    = new Date().getMonth()+1;
-  const season   = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+  const calEntry  = getCultureEntry(vegetal, _currentLieu);
+  const famille   = FAMILLES[vegetal]||calEntry?.famille||'';
+  const month     = new Date().getMonth()+1;
+  const season    = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
 
   let stadeActuel = 'non renseigné';
   if (_currentStades.termine) stadeActuel='terminé';
@@ -1243,10 +1170,17 @@ ${lieuContextIA(_currentLieu)}`;
 3. Un point de vigilance pour les prochains jours`;
 
   try {
+    // Passage par le proxy /api/conseils (mode vision) pour éviter les CORS
     const res = await fetch('/api/conseils', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode:'vision', system:sysPrompt, question, imageBase64:_photoBase64, imageMime:_photoMime })
+      body: JSON.stringify({
+        mode: 'vision',
+        system: sysPrompt,
+        question,
+        imageBase64: _photoBase64,
+        imageMime:   _photoMime,
+      })
     });
     const txt = await res.text();
     if (!txt.trim()) throw new Error('Réponse vide');
@@ -1254,10 +1188,13 @@ ${lieuContextIA(_currentLieu)}`;
     if (!data.success) throw new Error(data.error || 'Erreur API');
     const text = data.text || '';
     if (!text) throw new Error('Réponse vide');
+
     const html = `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(163,230,53,.06);border:1px solid rgba(163,230,53,.2);border-radius:8px;font-size:.72rem;color:var(--accent)">
       📷 Analyse visuelle de la photo — ${vegetal} en ${lieuLabel(_currentLieu)}
     </div>` + mdToHtml(text);
+
     body.innerHTML = html;
+    // Pas de mise en cache photo (diagnostic ponctuel)
     sources.style.display = 'flex';
     btn.textContent = '🔍 Diagnostiquer';
     btn.classList.remove('loading');
