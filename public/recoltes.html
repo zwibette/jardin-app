@@ -30,6 +30,120 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* ── NAV PRINCIPALE (style index.html) ── */
+.main-nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(10,18,11,.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+.main-nav-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+.main-nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #a3e635;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.logo-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+.nav-tabs-main {
+  display: flex;
+  gap: 3px;
+  background: var(--surface);
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.nav-tab-main {
+  padding: 7px 10px;
+  border: none;
+  background: transparent;
+  color: #4a6b52;
+  font-family: 'Karla', sans-serif;
+  font-size: .68rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 7px;
+  transition: all .2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.nav-tab-main:hover { color: #8fb898; }
+.nav-tab-main.active {
+  background: #142016;
+  color: #a3e635;
+  border: 1px solid var(--border);
+}
+
+/* ── SOUS-NAV CULTURES ── */
+.sub-nav {
+  background: #0f1c10;
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+.sub-nav-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 44px;
+}
+.sub-nav-label {
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #4a6b52;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+.sub-tab {
+  padding: 5px 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4a6b52;
+  font-family: 'Karla', sans-serif;
+  font-size: .7rem;
+  letter-spacing: .05em;
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all .2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.sub-tab:hover { color: #8fb898; border-color: var(--border); }
+.sub-tab.active {
+  background: rgba(163,230,53,.1);
+  border-color: rgba(163,230,53,.35);
+  color: #a3e635;
+}
+
 body {
   font-family: 'Karla', sans-serif;
   background: var(--bg);
@@ -58,6 +172,7 @@ header {
   padding: 20px 20px 16px;
   position: relative;
   z-index: 10;
+  max-width: 100%;
 }
 
 .header-top {
@@ -556,12 +671,36 @@ td:first-child { color: var(--text); font-weight: 500; }
 
 <div class="toast" id="toast"></div>
 
+<!-- ── NAV PRINCIPALE ── -->
+<nav class="main-nav">
+  <div class="main-nav-inner">
+    <a href="/" class="main-nav-logo"><div class="logo-dot"></div>Jardin Vivant</a>
+    <div class="nav-tabs-main">
+      <a href="/" class="nav-tab-main">Dashboard</a>
+      <a href="/appareils.html" class="nav-tab-main">Appareils</a>
+      <a href="/bassin.html" class="nav-tab-main">Bassin</a>
+      <a href="/recoltes.html" class="nav-tab-main active">Cultures</a>
+      <a href="/conseils.html" class="nav-tab-main">Conseils</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── SOUS-NAV CULTURES ── -->
+<div class="sub-nav">
+  <div class="sub-nav-inner">
+    <span class="sub-nav-label">Cultures —</span>
+    <a href="/recoltes.html" class="sub-tab active">🌿 Récoltes</a>
+    <a href="/calendrier.html" class="sub-tab">📅 Calendrier</a>
+    <a href="/planifier.html" class="sub-tab">📋 Planifier</a>
+  </div>
+</div>
+
+<!-- ── HEADER PAGE ── -->
 <header>
   <div class="header-top">
-    <a href="/" class="back-btn">← Dashboard</a>
+    <div></div>
     <button onclick="showDiag()" style="background:transparent;border:none;color:var(--text-muted);font-size:.6rem;cursor:pointer;opacity:.4;letter-spacing:.05em" title="Diagnostic">⚙</button>
     <div style="display:flex;align-items:center;gap:10px">
-      <a href="/calendrier.html" class="back-btn" style="background:rgba(163,230,53,.12);border-color:rgba(163,230,53,.3);color:var(--accent)">📅 Calendrier</a>
       <select class="saison-select" id="saisonSelect" onchange="changerSaison(this.value)" title="Filtrer par saison">
         <option value="toutes">Toutes les saisons</option>
       </select>
