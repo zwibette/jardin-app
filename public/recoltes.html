@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0a120b">
 <title>Récoltes — Jardin Vivant</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,200&family=DM+Mono:wght@300;400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
@@ -20,7 +19,6 @@
   --green: #4ade80;
   --green-light: rgba(74,222,128,0.1);
   --green-mid: #22c55e;
-  --green-dark: #166534;
   --amber: #fbbf24;
   --amber-light: rgba(251,191,36,0.1);
   --red: #f87171;
@@ -28,6 +26,7 @@
   --blue: #60a5fa;
   --blue-light: rgba(96,165,250,0.1);
   --accent: #a3e635;
+  --semis:#60a5fa;--plantation:#a3e635;--recolte:#4ade80;--recolte-reel:#fbbf24;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -39,7 +38,6 @@ body {
   min-height: 100vh;
   font-size: 14px;
   line-height: 1.5;
-  overflow-x: hidden;
 }
 
 body::before {
@@ -52,66 +50,145 @@ body::before {
   opacity: 0.6;
 }
 
-/* ── HEADER — identique à index.html ── */
-header{position:sticky;top:0;z-index:100;background:rgba(10,18,11,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 16px}
-.header-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px}
-.logo{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:var(--accent);display:flex;align-items:center;gap:8px;text-decoration:none}
-.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-.header-right{display:flex;align-items:center;gap:10px}
-.header-status{font-size:.62rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+/* HEADER */
+header {
+  background: #0f1c10;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  padding: 20px 20px 16px;
+  position: relative;
+  z-index: 10;
+}
 
-/* ── SAISON SELECT (dans le header-right) ── */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.back-btn {
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Karla', sans-serif;
+  font-size: .72rem;
+  cursor: pointer;
+  letter-spacing: .05em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: .01em;
+}
+
+.header-sub {
+  font-size: .72rem;
+  opacity: .7;
+  letter-spacing: .05em;
+}
 .saison-select {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  font-family: 'DM Mono', monospace;
-  font-size: .62rem;
-  letter-spacing: .06em;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.2);
+  color: var(--text);
+  font-family: 'Karla', sans-serif;
+  font-size: .65rem;
+  letter-spacing: .08em;
   padding: 4px 8px;
-  border-radius: 7px;
+  border-radius: 6px;
   cursor: pointer;
   outline: none;
   -webkit-appearance: none;
-  transition: border-color .2s;
+  text-transform: uppercase;
 }
 .saison-select:focus { border-color: var(--accent); }
-.saison-select option { background: #0a120b; color: var(--text); }
+.saison-select option { background: #0f1c10; color: var(--text); font-size: .8rem; }
+.saison-select optgroup { background: #0f1c10; color: var(--text-muted); font-size: .7rem; }
 
-/* ── NAV PRINCIPALE — identique à index.html nav-tabs, mais dans main ── */
-.nav-tabs{display:flex;gap:3px;margin-bottom:0;background:var(--surface);padding:3px;border-radius:10px;border:1px solid var(--border)}
-.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
-.tab.active{background:#142016;color:var(--accent);border:1px solid var(--border)}
-.tab:hover:not(.active){color:var(--text-dim)}
+.header-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
 
-/* ── NAV SECONDAIRE — même charte que nav-tabs mais pills ── */
-.nav-secondary{margin-top:6px;margin-bottom:16px;display:flex;gap:3px;background:var(--surface);padding:3px;border-radius:10px;border:1px solid var(--border)}
-.nav-sec-tab{flex:1;padding:7px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s;white-space:nowrap}
-.nav-sec-tab.active{background:#142016;color:var(--accent);border:1px solid var(--border)}
-.nav-sec-tab:hover:not(.active){color:var(--text-dim)}
+.hstat { text-align: center; }
+.hstat-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  display: block;
+  line-height: 1;
+}
+.hstat-lbl {
+  font-size: .62rem;
+  opacity: .7;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
 
-/* ── CONTENU PRINCIPAL — identique à index.html ── */
-main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
+/* SECONDARY NAV */
+.sec-nav {
+  display: flex;
+  gap: 4px;
+  background: var(--bg2);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.sec-tnav {
+  flex: 1;
+  padding: 8px 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Karla', sans-serif;
+  font-size: .68rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all .2s;
+  font-weight: 500;
+}
+.sec-tnav.active {
+  background: var(--bg);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+}
+.sec-tab { display: none; }
+.sec-tab.active { display: block; }
 
-/* ── METRIC CARDS — identique à index.html ── */
-.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden}
-.metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green-dark),transparent);opacity:.6}
-.metric-label{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;font-family:'DM Mono',monospace}
-.metric-unit{font-size:.8rem;color:var(--text-muted);margin-top:4px}
+/* MAIN */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* SECTION TITLES */
 .stitle {
-  font-family: 'Fraunces', serif;
-  font-size: 1rem;
-  font-weight: 300;
-  font-style: italic;
-  color: var(--text-dim);
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--text);
   margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .stitle::after {
   content: '';
   flex: 1;
@@ -121,24 +198,13 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 
 .section { margin-bottom: 28px; }
 
-/* ── SAISIE ── */
+/* SAISIE RAPIDE */
 .saisie-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 20px;
   box-shadow: 0 2px 12px rgba(0,0,0,.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.saisie-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  opacity: .4;
 }
 
 .saisie-grid {
@@ -148,17 +214,18 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
   margin-bottom: 12px;
 }
 
-@media(max-width: 500px) { .saisie-grid { grid-template-columns: 1fr; } }
+@media(max-width: 500px) {
+  .saisie-grid { grid-template-columns: 1fr; }
+}
 
 .field { display: flex; flex-direction: column; gap: 4px; }
 
 .field-label {
-  font-size: .6rem;
+  font-size: .62rem;
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--text-muted);
   font-weight: 500;
-  font-family: 'DM Mono', monospace;
 }
 
 .field input, .field select {
@@ -175,8 +242,8 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 }
 
 .field input:focus, .field select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(163,230,53,.1);
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(61,122,79,.12);
 }
 
 .field-full { grid-column: 1 / -1; }
@@ -187,14 +254,14 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
   border: none;
   border-radius: 8px;
   padding: 11px 20px;
-  font-family: 'DM Mono', monospace;
-  font-size: .8rem;
+  font-family: 'Karla', sans-serif;
+  font-size: .85rem;
+  font-weight: 500;
   cursor: pointer;
   width: 100%;
-  letter-spacing: .04em;
+  letter-spacing: .03em;
   transition: all .2s;
 }
-
 .add-btn:hover { background: var(--green); }
 .add-btn:active { transform: scale(.98); }
 
@@ -204,7 +271,7 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
   background: var(--bg2);
   border: 1px solid var(--border2);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
   z-index: 100;
   max-height: 180px;
   overflow-y: auto;
@@ -223,12 +290,12 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
   justify-content: space-between;
   align-items: center;
 }
-
 .suggestion-item:hover { background: var(--green-light); }
 .suggestion-item .fam { font-size: .65rem; color: var(--text-muted); }
+
 .field-wrap { position: relative; }
 
-/* ── STATS RÉSUMÉ ── */
+/* RÉSUMÉ STATS */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -240,14 +307,15 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 16px;
+  padding: 14px 16px;
   text-align: center;
+  box-shadow: 0 1px 6px rgba(0,0,0,.04);
 }
 
 .stat-val {
-  font-family: 'Fraunces', serif;
-  font-size: 1.8rem;
-  font-weight: 300;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
   color: var(--green);
   display: block;
   line-height: 1;
@@ -255,21 +323,19 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 }
 
 .stat-lbl {
-  font-size: .6rem;
+  font-size: .62rem;
   letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--text-muted);
-  font-family: 'DM Mono', monospace;
 }
 
-/* ── CHARTS ── */
+/* CHARTS */
 .charts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 20px;
 }
-
 @media(max-width:560px) { .charts-grid { grid-template-columns: 1fr; } }
 
 .chart-card {
@@ -277,163 +343,37 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
 }
-
 .chart-card.wide { grid-column: 1 / -1; }
 
 .chart-title {
-  font-size: .6rem;
+  font-size: .65rem;
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 10px;
-  font-family: 'DM Mono', monospace;
+  font-weight: 500;
 }
 
 .chart-wrap { position: relative; height: 160px; }
 .chart-wrap.tall { height: 200px; }
 
-/* ── ONGLETS GRAPHIQUES ── */
-.tab-nav {
-  display: flex;
-  gap: 3px;
-  margin-bottom: 14px;
-  background: var(--bg2);
-  padding: 3px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-.tnav {
-  flex: 1;
-  padding: 7px 6px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: 'DM Mono', monospace;
-  font-size: .65rem;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all .2s;
-}
-
-.tnav.active {
-  background: var(--green-dark);
-  color: var(--accent);
-  border: 1px solid rgba(163,230,53,.3);
-}
-
-.tab-section { display: none; }
-.tab-section.active { display: block; }
-
-/* ── TOP PLANTES ── */
-.top-tab-nav {
-  display: flex;
-  gap: 3px;
-  margin-bottom: 12px;
-  background: var(--bg2);
-  padding: 3px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-.top-tnav {
-  flex: 1;
-  padding: 7px 6px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: 'DM Mono', monospace;
-  font-size: .65rem;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all .2s;
-}
-
-.top-tnav.active {
-  background: var(--green-dark);
-  color: var(--accent);
-  border: 1px solid rgba(163,230,53,.3);
-}
-
-.top-tab-section { display: none; }
-.top-tab-section.active { display: block; }
-.top-list { display: flex; flex-direction: column; gap: 6px; }
-
-.top-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.top-rank {
-  font-family: 'Fraunces', serif;
-  font-size: 1.1rem;
-  font-weight: 300;
-  color: var(--text-muted);
-  width: 24px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.top-rank.gold { color: #c9a227; }
-.top-rank.silver { color: #8a8a9a; }
-.top-rank.bronze { color: #a0673a; }
-
-.top-name { flex: 1; font-weight: 500; font-size: .85rem; }
-.top-sub { font-size: .65rem; color: var(--text-muted); }
-
-.top-val {
-  font-family: 'Fraunces', serif;
-  font-size: 1rem;
-  font-weight: 300;
-  color: var(--green);
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.bar-wrap {
-  height: 3px;
-  background: var(--border);
-  border-radius: 2px;
-  margin-top: 4px;
-  overflow: hidden;
-}
-
-.bar-fill {
-  height: 100%;
-  background: var(--green-mid);
-  border-radius: 2px;
-  transition: width .6s ease;
-}
-
-/* ── TABLEAU ── */
+/* TABLEAU */
 .table-wrap {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,.04);
 }
 
 table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-
-thead tr {
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-}
-
+thead tr { background: var(--bg2); border-bottom: 1px solid var(--border); }
 th {
   padding: 10px 12px;
   text-align: left;
-  font-size: .58rem;
+  font-size: .6rem;
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -441,17 +381,9 @@ th {
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
-  font-family: 'DM Mono', monospace;
 }
-
-th:hover { color: var(--accent); }
-
-tbody tr {
-  border-bottom: 1px solid var(--border);
-  transition: background .15s;
-  cursor: pointer;
-}
-
+th:hover { color: var(--green); }
+tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; cursor: pointer; }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background: var(--green-light); }
 td { padding: 10px 12px; color: var(--text-dim); }
@@ -468,14 +400,13 @@ td:first-child { color: var(--text); font-weight: 500; }
   font-weight: 500;
   white-space: nowrap;
 }
-
 .badge-serre { background: var(--blue-light); color: var(--blue); }
-.badge-bacs  { background: var(--amber-light); color: var(--amber); }
+.badge-bacs { background: var(--amber-light); color: var(--amber); }
 .badge-jardin { background: var(--green-light); color: var(--green); }
 
 .stars { color: var(--amber); font-size: .75rem; }
 
-/* Row detail */
+/* ROW DETAIL */
 .row-detail { display: none; background: var(--bg2); border-top: 1px dashed var(--border2); }
 .row-detail.open { display: table-row; }
 .detail-inner {
@@ -487,7 +418,61 @@ td:first-child { color: var(--text); font-weight: 500; }
 .detail-key { font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px; }
 .detail-val { font-size: .82rem; color: var(--text); }
 
-/* ── TOAST ── */
+/* TOP PLANTS */
+.top-list { display: flex; flex-direction: column; gap: 6px; }
+.top-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.top-rank { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--text-muted); width: 24px; text-align: center; flex-shrink: 0; }
+.top-rank.gold { color: #c9a227; }
+.top-rank.silver { color: #8a8a9a; }
+.top-rank.bronze { color: #a0673a; }
+.top-name { flex: 1; font-weight: 500; font-size: .85rem; }
+.top-sub { font-size: .65rem; color: var(--text-muted); }
+.top-val { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--green); font-weight: 700; text-align: right; flex-shrink: 0; }
+.bar-wrap { height: 4px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--green-mid); border-radius: 2px; transition: width .6s ease; }
+
+/* Tabs internes récoltes */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  background: var(--bg2);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.tnav {
+  flex: 1;
+  padding: 7px 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Karla', sans-serif;
+  font-size: .68rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all .2s;
+  font-weight: 500;
+}
+.tnav.active { background: var(--bg); color: var(--accent); border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.tab-section { display: none; }
+.tab-section.active { display: block; }
+.top-tab-nav{display:flex;gap:4px;margin-bottom:12px;background:var(--bg2);padding:3px;border-radius:8px;border:1px solid var(--border)}
+.top-tnav{flex:1;padding:7px 6px;border:none;background:transparent;color:var(--text-muted);font-family:'Karla',sans-serif;font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s;font-weight:500}
+.top-tnav.active{background:var(--bg);color:var(--accent);border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.top-tab-section{display:none}.top-tab-section.active{display:block}
+
+/* TOAST */
 .toast {
   position: fixed;
   bottom: 20px;
@@ -502,87 +487,124 @@ td:first-child { color: var(--text); font-weight: 500; }
   z-index: 1000;
   transition: transform .3s ease;
   box-shadow: 0 4px 16px rgba(0,0,0,.2);
-  font-family: 'DM Mono', monospace;
 }
-
 .toast.show { transform: translateX(-50%) translateY(0); }
 
-.empty {
-  text-align: center;
-  padding: 30px;
-  color: var(--text-muted);
-  font-size: .82rem;
+/* Empty state */
+.empty { text-align: center; padding: 30px; color: var(--text-muted); font-size: .82rem; }
+
+/* ── CALENDRIER ── */
+.legende{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:.7rem;color:var(--text-muted)}
+.leg-item{display:flex;align-items:center;gap:6px}
+.leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+
+.cal-container{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:auto;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.cal-header{display:grid;grid-template-columns:160px repeat(12,1fr);border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);z-index:5}
+.cal-header-culture{padding:10px 12px;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500;border-right:1px solid var(--border)}
+.cal-header-month{padding:8px 4px;font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);text-align:center;border-right:1px solid rgba(42,64,48,.4)}
+.cal-header-month.current{color:var(--accent);font-weight:700}
+.cal-row{display:grid;grid-template-columns:160px repeat(12,1fr);border-bottom:1px solid rgba(42,64,48,.3);transition:background .15s;min-height:40px}
+.cal-row:last-child{border-bottom:none}
+.cal-row:hover{background:rgba(74,222,128,.04)}
+.cal-row.section-header{background:var(--bg2);min-height:28px}
+.cal-culture{padding:8px 12px;font-size:.75rem;color:var(--text);font-weight:500;border-right:1px solid var(--border);display:flex;align-items:center;gap:6px;cursor:pointer;line-height:1.3}
+.cal-culture:hover .culture-name{color:var(--green)}
+.culture-name{flex:1}
+.cal-section-label{padding:6px 12px;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);font-weight:700;grid-column:1/-1;display:flex;align-items:center;gap:8px}
+.cal-cell{position:relative;border-right:1px solid rgba(42,64,48,.2);display:flex;align-items:center;padding:3px 2px}
+.cal-cell.current-month{background:rgba(163,230,53,.04)}
+
+.bar{height:14px;border-radius:4px;position:absolute;min-width:4px;opacity:.85;transition:opacity .2s}
+.bar:hover{opacity:1}
+.bar-semis{background:var(--semis)}
+.bar-plantation{background:var(--plantation)}
+.bar-recolte-prev{background:var(--recolte);opacity:.4;border:1px dashed var(--recolte)}
+.bar-recolte-reel{background:var(--recolte-reel);opacity:.9}
+.bar-tooltip{position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:#0f1c10;border:1px solid var(--border2);border-radius:6px;padding:6px 10px;font-size:.65rem;color:var(--text);white-space:nowrap;z-index:20;pointer-events:none;display:none}
+.bar:hover .bar-tooltip{display:block}
+
+/* ── PLANIFIER ── */
+.plan-saisie-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+.del-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.85rem;padding:2px 4px;border-radius:4px;line-height:1;transition:color .2s}
+.del-btn:hover{color:var(--red)}
+.th-sort{cursor:pointer;user-select:none;white-space:nowrap}
+.th-sort:hover{color:var(--green)}
+.th-sort.active{color:var(--accent)}
+.sort-arrow{margin-left:4px;font-size:.6rem;opacity:.6}
+.th-sort.active .sort-arrow{opacity:1}
+.edit-btn-plan{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:4px;line-height:1;transition:color .2s;font-family:'Karla',sans-serif}
+.edit-btn-plan:hover{color:var(--accent)}
+.edit-row-plan{display:none;background:var(--bg2);border-top:1px dashed var(--border2)}
+.edit-row-plan.open{display:table-row}
+.edit-inner-plan{padding:14px 16px}
+.edit-grid-plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:10px}
+.edit-field-plan{display:flex;flex-direction:column;gap:3px}
+.edit-label-plan{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500}
+.edit-input-plan{background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text);outline:none;transition:border-color .2s;-webkit-appearance:none;width:100%}
+.edit-input-plan:focus{border-color:var(--green)}
+.edit-actions-plan{display:flex;gap:8px;margin-top:4px}
+.save-btn-plan{background:var(--green-mid);border:none;color:#0a120b;padding:7px 18px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;flex:1}
+.save-btn-plan:hover{background:var(--green)}
+.cancel-btn-plan{background:var(--surface);border:1px solid var(--border2);color:var(--text-muted);padding:7px 14px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.78rem;cursor:pointer}
+.dates-hint{display:none;font-size:.65rem;color:var(--accent);margin-bottom:8px;padding:6px 10px;background:rgba(163,230,53,.06);border-radius:6px;border:1px solid rgba(163,230,53,.2)}
+
+@media(max-width:600px){
+  .cal-header-culture,.cal-culture{font-size:.65rem;padding:6px 8px;width:120px}
+  .cal-header{grid-template-columns:120px repeat(12,1fr)}
+  .cal-row{grid-template-columns:120px repeat(12,1fr)}
 }
 
+/* Responsive general */
 @media(max-width:480px) {
+  .header-stats { gap: 10px; }
+  .hstat-val { font-size: 1.1rem; }
   th:nth-child(n+4), td:nth-child(n+4) { display: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- ── HEADER — identique à index.html ── -->
+<div class="toast" id="toast"></div>
+
 <header>
-  <div class="header-inner">
-    <div class="logo"><div class="logo-dot"></div>Jardin Vivant</div>
-    <div class="header-right">
+  <div class="header-top">
+    <a href="/" class="back-btn">← Dashboard</a>
+    <button onclick="showDiag()" style="background:transparent;border:none;color:var(--text-muted);font-size:.6rem;cursor:pointer;opacity:.4;letter-spacing:.05em" title="Diagnostic">⚙</button>
+    <div style="display:flex;align-items:center;gap:10px">
       <select class="saison-select" id="saisonSelect" onchange="changerSaison(this.value)" title="Filtrer par saison">
         <option value="toutes">Toutes les saisons</option>
       </select>
-      <button onclick="showDiag()" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:34px;height:34px;border-radius:8px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Diagnostic">⚙</button>
     </div>
+  </div>
+  <div class="header-title">🌿 Récoltes</div>
+  <div class="header-sub">Potager · Bacs · Serre aquaponique</div>
+  <div class="header-stats" id="headerStats">
+    <div class="hstat"><span class="hstat-val" id="hTotalKg">—</span><span class="hstat-lbl">kg récoltés</span></div>
+    <div class="hstat"><span class="hstat-val" id="hNbRecoltes">—</span><span class="hstat-lbl">récoltes</span></div>
+    <div class="hstat"><span class="hstat-val" id="hNbVarietes">—</span><span class="hstat-lbl">variétés</span></div>
+    <div class="hstat"><span class="hstat-val" id="hMeilleur">—</span><span class="hstat-lbl">meilleur rendement</span></div>
   </div>
 </header>
 
 <main>
-
-  <!-- NAV PRINCIPALE — identique à index.html nav-tabs -->
-  <div class="nav-tabs">
-    <button class="tab" onclick="window.location.href='/'">Dashboard</button>
-    <button class="tab" onclick="window.location.href='/'">Appareils</button>
-    <button class="tab" onclick="window.location.href='/bassin.html'">Bassin</button>
-    <button class="tab active">Cultures</button>
-    <button class="tab" onclick="window.location.href='/'">Conseils</button>
-  </div>
-
-  <!-- NAV SECONDAIRE — même charte que nav-tabs -->
-  <div class="nav-secondary">
-    <button class="nav-sec-tab active" onclick="showSecTab('recoltes', this)">🌿 Récoltes</button>
-    <button class="nav-sec-tab" onclick="showSecTab('calendrier', this)">📅 Calendrier</button>
-    <button class="nav-sec-tab" onclick="showSecTab('planifier', this)">✚ Planifier</button>
-  </div>
-
   <!-- SYNC BADGE -->
-  <div style="text-align:right;margin-bottom:8px;margin-top:4px">
-    <span id="syncBadge" style="font-size:.62rem;color:var(--green);letter-spacing:.08em;opacity:0;transition:opacity .5s;font-family:'DM Mono',monospace"></span>
+  <div style="text-align:right;margin-bottom:8px">
+    <span id="syncBadge" style="font-size:.62rem;color:var(--green);letter-spacing:.08em;opacity:0;transition:opacity .5s"></span>
   </div>
 
-  <!-- ══ ONGLET RÉCOLTES ══ -->
-  <div id="tab-recoltes">
+  <!-- BANDEAU NAVIGATION SECONDAIRE -->
+  <div class="sec-nav">
+    <button class="sec-tnav active" onclick="showSecTab('recoltes', this)">🌿 Récoltes</button>
+    <button class="sec-tnav" onclick="showSecTab('calendrier', this)">📅 Calendrier</button>
+    <button class="sec-tnav" onclick="showSecTab('planifier', this)">✚ Planifier</button>
+  </div>
 
-    <!-- STATS HEADER -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-      <div class="metric-card" style="flex:1;min-width:110px;padding:14px 16px">
-        <div class="metric-label">Total récolté</div>
-        <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:300;line-height:1;color:var(--text)" id="hTotalKg">—</div>
-        <div class="metric-unit">kg</div>
-      </div>
-      <div class="metric-card" style="flex:1;min-width:110px;padding:14px 16px">
-        <div class="metric-label">Récoltes</div>
-        <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:300;line-height:1;color:var(--text)" id="hNbRecoltes">—</div>
-        <div class="metric-unit">entrées</div>
-      </div>
-      <div class="metric-card" style="flex:1;min-width:110px;padding:14px 16px">
-        <div class="metric-label">Variétés</div>
-        <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:300;line-height:1;color:var(--text)" id="hNbVarietes">—</div>
-        <div class="metric-unit">cultivées</div>
-      </div>
-      <div class="metric-card" style="flex:1;min-width:140px;padding:14px 16px">
-        <div class="metric-label">Top rendement</div>
-        <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:300;line-height:1.2;color:var(--accent)" id="hMeilleur">—</div>
-        <div class="metric-unit">g/plant</div>
-      </div>
-    </div>
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ONGLET RÉCOLTES                                        -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="sec-tab active" id="sec-recoltes">
+
+    <!-- SAISIE RAPIDE -->
     <div class="section">
       <div class="stitle">✚ Nouvelle récolte</div>
       <div class="saisie-card">
@@ -629,14 +651,13 @@ td:first-child { color: var(--text); font-weight: 500; }
     <!-- STATS RÉSUMÉ -->
     <div class="section">
       <div class="stitle">📊 Vue d'ensemble</div>
-      <div class="stats-grid">
+      <div class="stats-grid" id="statsGrid">
         <div class="stat-card"><span class="stat-val" id="s1">—</span><span class="stat-lbl">Total récolté (kg)</span></div>
         <div class="stat-card"><span class="stat-val" id="s2">—</span><span class="stat-lbl">Serre (kg)</span></div>
         <div class="stat-card"><span class="stat-val" id="s3">—</span><span class="stat-lbl">Bacs (kg)</span></div>
         <div class="stat-card"><span class="stat-val" id="s4">—</span><span class="stat-lbl">Jardin (kg)</span></div>
       </div>
 
-      <!-- Onglets graphiques -->
       <div class="tab-nav">
         <button class="tnav active" onclick="showAnalyse('famille',this)">Par famille</button>
         <button class="tnav" onclick="showAnalyse('lieu',this)">Par lieu</button>
@@ -650,7 +671,6 @@ td:first-child { color: var(--text); font-weight: 500; }
           <div class="chart-wrap tall"><canvas id="chartFamille"></canvas></div>
         </div>
       </div>
-
       <div class="tab-section" id="analyse-lieu">
         <div class="charts-grid">
           <div class="chart-card">
@@ -663,14 +683,12 @@ td:first-child { color: var(--text); font-weight: 500; }
           </div>
         </div>
       </div>
-
       <div class="tab-section" id="analyse-mois">
         <div class="chart-card">
           <div class="chart-title">Récoltes par mois (g)</div>
           <div class="chart-wrap"><canvas id="chartMois"></canvas></div>
         </div>
       </div>
-
       <div class="tab-section" id="analyse-rendement">
         <div class="chart-card">
           <div class="chart-title">Top rendement poids/pied (g)</div>
@@ -698,13 +716,13 @@ td:first-child { color: var(--text); font-weight: 500; }
     <div class="section">
       <div class="stitle">📋 Journal des récoltes</div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px;gap:6px">
-        <select id="filterLieu" onchange="renderTable()" style="font-family:'DM Mono',monospace;font-size:.68rem;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text)">
+        <select id="filterLieu" onchange="renderTable()" style="font-family:'Karla',sans-serif;font-size:.75rem;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text)">
           <option value="">Tous les lieux</option>
           <option value="serre">Serre</option>
           <option value="bacs">Bacs</option>
           <option value="jardin">Jardin</option>
         </select>
-        <select id="filterFam" onchange="renderTable()" style="font-family:'DM Mono',monospace;font-size:.68rem;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text)">
+        <select id="filterFam" onchange="renderTable()" style="font-family:'Karla',sans-serif;font-size:.75rem;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text)">
           <option value="">Toutes familles</option>
         </select>
       </div>
@@ -724,40 +742,110 @@ td:first-child { color: var(--text); font-weight: 500; }
       </div>
     </div>
 
-  </div><!-- /tab-recoltes -->
+  </div><!-- /sec-recoltes -->
 
-  <!-- ══ ONGLET CALENDRIER ══ -->
-  <div id="tab-calendrier" style="display:none">
-    <div style="text-align:center;padding:60px 20px">
-      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-style:italic;color:var(--text-dim);margin-bottom:16px">Calendrier de plantation</div>
-      <a href="/calendrier.html" style="display:inline-block;background:var(--green-dark);color:var(--green);border:1px solid var(--green);padding:12px 24px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.78rem;text-decoration:none;letter-spacing:.05em">Ouvrir le calendrier →</a>
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ONGLET CALENDRIER — Vue annuelle                       -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="sec-tab" id="sec-calendrier">
+    <div class="section">
+      <div class="stitle">Vue annuelle</div>
+      <div class="legende">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--semis)"></div>Semis</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--plantation)"></div>Plantation</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--recolte);opacity:.5;border:1px dashed var(--recolte)"></div>Récolte prévue</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--recolte-reel)"></div>Récolte réelle</div>
+      </div>
+      <div class="cal-container" id="calContainer">
+        <div style="padding:30px;text-align:center;color:var(--text-muted)">Chargement…</div>
+      </div>
     </div>
-  </div>
+  </div><!-- /sec-calendrier -->
 
-  <!-- ══ ONGLET PLANIFIER ══ -->
-  <div id="tab-planifier" style="display:none">
-    <div style="text-align:center;padding:60px 20px">
-      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-style:italic;color:var(--text-dim);margin-bottom:16px">Planifier une culture</div>
-      <a href="/calendrier.html" style="display:inline-block;background:var(--green-dark);color:var(--green);border:1px solid var(--green);padding:12px 24px;border-radius:8px;font-family:'DM Mono',monospace;font-size:.78rem;text-decoration:none;letter-spacing:.05em">Ouvrir le calendrier →</a>
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ONGLET PLANIFIER                                       -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="sec-tab" id="sec-planifier">
+
+    <!-- Planifier une culture -->
+    <div class="section">
+      <div class="stitle">Planifier une culture</div>
+      <div class="saisie-card">
+        <div class="plan-saisie-grid">
+          <div class="field field-full">
+            <label class="field-label">Culture</label>
+            <input type="text" id="plan-inp-culture" placeholder="ex: Tomate cerise, Courgette…" autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="field-label">Lieu</label>
+            <select id="plan-inp-lieu">
+              <option value="serre">🏠 Serre</option>
+              <option value="bacs">🪴 Bacs</option>
+              <option value="jardin">🌳 Jardin</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Date de semis</label>
+            <input type="date" id="plan-inp-semis" onchange="planAutoCalcDates()">
+          </div>
+          <div class="field">
+            <label class="field-label">Date de plantation</label>
+            <input type="date" id="plan-inp-plantation" placeholder="Optionnel">
+          </div>
+          <div class="field">
+            <label class="field-label">Début récolte prévue <span style="color:var(--accent);font-size:.55rem">auto</span></label>
+            <input type="date" id="plan-inp-recolte-debut" placeholder="calculé auto">
+          </div>
+          <div class="field">
+            <label class="field-label">Fin récolte prévue <span style="color:var(--accent);font-size:.55rem">auto</span></label>
+            <input type="date" id="plan-inp-recolte-fin" placeholder="calculé auto">
+          </div>
+          <div class="field">
+            <label class="field-label">Nombre de plants</label>
+            <input type="number" id="plan-inp-nbplants" placeholder="ex: 6" min="1" step="1">
+          </div>
+          <div class="field">
+            <label class="field-label">Famille</label>
+            <select id="plan-inp-famille" onchange="planAutoCalcDates()">
+              <option value="">— Sélectionner</option>
+              <option>SALADES</option><option>BLETTES & ÉPINARDS</option><option>CHOUX</option>
+              <option>LÉGUMES RACINES</option><option>TOMATES</option><option>AUBERGINES</option>
+              <option>POIVRONS & PIMENTS</option><option>COURGETTES</option><option>CONCOMBRES</option>
+              <option>MELONS</option><option>AROMATIQUES</option><option>LÉGUMES ETE</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Type de culture</label>
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;cursor:pointer" onclick="document.getElementById('plan-inp-perpetuelle').click()">
+              <input type="checkbox" id="plan-inp-perpetuelle" onclick="event.stopPropagation()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+              <label for="plan-inp-perpetuelle" style="font-size:.82rem;color:var(--text-dim);cursor:pointer">Culture perpétuelle ♾️</label>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Notes</label>
+            <input type="text" id="plan-inp-notes" placeholder="variété, observations…">
+          </div>
+        </div>
+        <div class="dates-hint" id="plan-dates-hint"></div>
+        <button class="add-btn" onclick="planAddCulture()">Ajouter au calendrier</button>
+      </div>
     </div>
-  </div>
+
+    <!-- Cultures planifiées -->
+    <div class="section">
+      <div class="stitle">Cultures planifiées</div>
+      <div id="plan-listeCultures"></div>
+    </div>
+
+  </div><!-- /sec-planifier -->
 
 </main>
 
-<div class="toast" id="toast"></div>
-
 <script>
-// ── NAV SECONDAIRE ────────────────────────────────────────────
-function showSecTab(name, btn) {
-  document.querySelectorAll('.nav-sec-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-recoltes').style.display   = name === 'recoltes'   ? 'block' : 'none';
-  document.getElementById('tab-calendrier').style.display = name === 'calendrier' ? 'block' : 'none';
-  document.getElementById('tab-planifier').style.display  = name === 'planifier'  ? 'block' : 'none';
-  if (name === 'recoltes') renderAll();
-}
+// ══════════════════════════════════════════════════════════════
+// DONNÉES & CONSTANTES PARTAGÉES
+// ══════════════════════════════════════════════════════════════
 
-// ── DONNÉES ────────────────────────────────────────────────────
 const FAMILLES = {
   'Feuille chêne rouge perez':'SALADES','Batavia verte perez':'SALADES','Batavia rouge perez':'SALADES',
   'Rougette de Montpellier perez':'SALADES','Oseille':'SALADES','Mizuna':'SALADES','Roquette':'SALADES',
@@ -784,24 +872,40 @@ const FAMILLES = {
   'Persil géant d\'Italie':'AROMATIQUES','Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
 };
 
+const STORAGE_KEY     = 'jardin_recoltes_v2';
 const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
-function loadCalendrier() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY_CAL) || '[]'); } catch(e) { return []; } }
-let _calCache = null;
-function getCalCache() { if (!_calCache) _calCache = loadCalendrier(); return _calCache; }
-function invalidateCalCache() { _calCache = null; }
 
-// ── SAISONS ───────────────────────────────────────────────────
+// ── Navigation secondaire ────────────────────────────────────
+function showSecTab(name, btn) {
+  document.querySelectorAll('.sec-tab').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sec-tnav').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'calendrier') renderCalendrier();
+  if (name === 'planifier')  planRenderListe();
+}
+
+// ══════════════════════════════════════════════════════════════
+// SAISONS
+// ══════════════════════════════════════════════════════════════
+
 const _saisonAujourdhui = getSaisonFromDate(new Date().toISOString().slice(0,10));
 let currentSaison = _saisonAujourdhui ? _saisonAujourdhui.id : 'toutes';
 
 function getSaisonFromDate(dateStr) {
   if (!dateStr) return null;
   const d = new Date(dateStr);
-  const m = d.getMonth() + 1, j = d.getDate(), y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const j = d.getDate();
+  const y = d.getFullYear();
   if (m >= 9) return { type:'hiver', label:`Hiver ${y}–${y+1}`, id:`hiver-${y}-${y+1}` };
   if (m === 1 || (m === 2 && j <= 1)) return { type:'hiver', label:`Hiver ${y-1}–${y}`, id:`hiver-${y-1}-${y}` };
   return { type:'ete', label:`Été ${y}`, id:`ete-${y}` };
 }
+
+let _calCache = null;
+function getCalCache() { if (!_calCache) _calCache = loadCalendrier(); return _calCache; }
+function invalidateCalCache() { _calCache = null; }
 
 function getDatePlantationPourRecolte(recolteVegetal) {
   const cal = getCalCache();
@@ -813,10 +917,12 @@ function getDatePlantationPourRecolte(recolteVegetal) {
 }
 
 const PERPETUELLES_CONNUES = new Set([
-  'ciboulette perez','liveche','oseille','basilic perpetuel','persil','persil geant italie',
-  'thym','romarin','sauge','origan','estragon','menthe','cerfeuil','laurier','melisse',
-  'artichaut imperial','topinambour','rhubarbe','epinards malabar','poiree rubis char',
-  'blette perez','blette lucullus','celeri perez','framboisier','groseillier','baie de goji','kiwai',
+  'ciboulette perez','liveche','oseille','basilic perpetuel','persil',
+  'persil geant italie','thym','romarin','sauge','origan',
+  'estragon','menthe','cerfeuil','laurier','melisse',
+  'artichaut imperial','topinambour','rhubarbe','epinards malabar',
+  'poiree rubis char','blette perez','blette lucullus','celeri perez',
+  'framboisier','groseillier','baie de goji','kiwai',
   'figuier','abricotier','pommier',
 ]);
 
@@ -834,7 +940,9 @@ function isPerpetuelle(vegetal) {
 }
 
 function recoltePerpetuelleDansSaison(r, saisonId) {
-  const d = new Date(r.date), m = d.getMonth() + 1, annee = d.getFullYear();
+  const d = new Date(r.date);
+  const m = d.getMonth() + 1;
+  const annee = d.getFullYear();
   if (saisonId.startsWith('ete-')) {
     const anneeEte = parseInt(saisonId.split('-')[1]);
     if (annee !== anneeEte) return false;
@@ -842,7 +950,8 @@ function recoltePerpetuelleDansSaison(r, saisonId) {
   }
   if (saisonId.startsWith('hiver-')) {
     const parts = saisonId.split('-');
-    const anneeN = parseInt(parts[1]), anneeN1 = parseInt(parts[2]);
+    const anneeN = parseInt(parts[1]);
+    const anneeN1 = parseInt(parts[2]);
     if (annee === anneeN  && m >= 11) return true;
     if (annee === anneeN1 && m <= 2)  return true;
     return false;
@@ -859,7 +968,8 @@ function getSaisonRecolte(r) {
 function getRecoltesFiltered() {
   if (currentSaison === 'toutes') return recoltes;
   return recoltes.filter(r => {
-    if (isPerpetuelle(r.vegetal)) return recoltePerpetuelleDansSaison(r, currentSaison);
+    const perp = isPerpetuelle(r.vegetal);
+    if (perp) return recoltePerpetuelleDansSaison(r, currentSaison);
     const s = getSaisonRecolte(r);
     return s && s.id === currentSaison;
   });
@@ -891,118 +1001,190 @@ function buildSaisonSelect() {
 
 function changerSaison(val) { currentSaison = val; renderAll(); }
 
-function getNbPlants(vegetal) {
-  const cal = loadCalendrier();
-  const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
-  const match = cal.find(c => norm(c.culture) === norm(vegetal) || norm(c.culture).includes(norm(vegetal)) || norm(vegetal).includes(norm(c.culture)));
-  return match?.nbPlants || null;
-}
+// ══════════════════════════════════════════════════════════════
+// STORAGE RÉCOLTES
+// ══════════════════════════════════════════════════════════════
 
-function computeRendementPied(vegetal, totalPoids) {
-  const nb = getNbPlants(vegetal);
-  if (!nb || nb <= 0) return null;
-  return Math.round(totalPoids / nb);
-}
-
-function computeTopRendements(recFiltrees) {
-  const src = recFiltrees || getRecoltesFiltered();
-  const byVeg = {};
-  src.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
-  return Object.entries(byVeg)
-    .map(([vegetal, total]) => ({ vegetal, total, rPied: computeRendementPied(vegetal, total), nbPlants: getNbPlants(vegetal) }))
-    .filter(r => r.rPied !== null)
-    .sort((a, b) => b.rPied - a.rPied);
-}
-
-// ── RÉCOLTES INITIALES ────────────────────────────────────────
 const RECOLTES_INITIALES = [
-  { id:'h1',  vegetal:'Feuille chêne rouge perez', lieu:'serre',  poids:1748, date:'2026-01-15', note:4, famille:'SALADES' },
-  { id:'h2',  vegetal:'Mâche perez',               lieu:'serre',  poids:498,  date:'2026-01-20', note:4, famille:'SALADES' },
-  { id:'h3',  vegetal:'Oseille',                   lieu:'serre',  poids:137,  date:'2026-05-21', note:3, famille:'SALADES' },
-  { id:'h4',  vegetal:'Mizuna',                    lieu:'serre',  poids:35,   date:'2026-02-01', note:null, famille:'SALADES' },
-  { id:'h5',  vegetal:'Mizuna',                    lieu:'jardin', poids:64,   date:'2026-03-01', note:null, famille:'SALADES' },
-  { id:'h6',  vegetal:'Laitue romaine d\'Avignon', lieu:'serre',  poids:406,  date:'2026-05-17', note:null, famille:'SALADES' },
-  { id:'h7',  vegetal:'Blette perez',              lieu:'serre',  poids:2346, date:'2026-02-15', note:5, famille:'BLETTES & ÉPINARDS' },
-  { id:'h8',  vegetal:'Poirée rubis char',         lieu:'serre',  poids:362,  date:'2026-05-21', note:4, famille:'BLETTES & ÉPINARDS' },
-  { id:'h9',  vegetal:'Blette lucullus',           lieu:'serre',  poids:569,  date:'2026-02-20', note:4, famille:'BLETTES & ÉPINARDS' },
-  { id:'h10', vegetal:'Nero di toscana',           lieu:'serre',  poids:80,   date:'2026-02-10', note:3, famille:'BLETTES & ÉPINARDS' },
-  { id:'h11', vegetal:'Épinards malabar',          lieu:'serre',  poids:54,   date:'2026-05-21', note:null, famille:'BLETTES & ÉPINARDS' },
-  { id:'h12', vegetal:'Épinards perez bac',        lieu:'serre',  poids:2183, date:'2026-01-10', note:4, famille:'BLETTES & ÉPINARDS' },
-  { id:'h13', vegetal:'Chou pak choï perez',       lieu:'serre',  poids:4691, date:'2026-01-20', note:5, famille:'CHOUX' },
-  { id:'h14', vegetal:'Chou pe tsaï perez',        lieu:'serre',  poids:1355, date:'2026-02-01', note:4, famille:'CHOUX' },
-  { id:'h15', vegetal:'Chou rave perez',           lieu:'serre',  poids:705,  date:'2026-02-10', note:4, famille:'CHOUX' },
-  { id:'h16', vegetal:'Chou fleur précoce perez',  lieu:'serre',  poids:155,  date:'2026-03-01', note:3, famille:'CHOUX' },
-  { id:'h17', vegetal:'Chou tatsoï',               lieu:'serre',  poids:173,  date:'2026-02-15', note:3, famille:'CHOUX' },
-  { id:'h18', vegetal:'Brocoli perez',             lieu:'serre',  poids:130,  date:'2026-01-15', note:3, famille:'CHOUX' },
-  { id:'h19', vegetal:'Brocoli jet sessantina',    lieu:'serre',  poids:18,   date:'2026-02-01', note:2, famille:'CHOUX' },
-  { id:'h20', vegetal:'Betterave chiogga',         lieu:'serre',  poids:300,  date:'2026-03-15', note:4, famille:'LÉGUMES RACINES' },
-  { id:'h21', vegetal:'Fenouil perez',             lieu:'serre',  poids:436,  date:'2026-02-01', note:5, famille:'LÉGUMES RACINES' },
-  { id:'h22', vegetal:'Céleri perez',              lieu:'serre',  poids:433,  date:'2026-05-14', note:4, famille:'LÉGUMES RACINES' },
-  { id:'h23', vegetal:'Céleri perez',              lieu:'jardin', poids:152,  date:'2026-05-14', note:4, famille:'LÉGUMES RACINES' },
-  { id:'h24', vegetal:'Radis noirs',               lieu:'serre',  poids:306,  date:'2026-02-01', note:3, famille:'LÉGUMES RACINES' },
-  { id:'h25', vegetal:'Piment biquinho rouge',     lieu:'serre',  poids:3,    date:'2026-05-15', note:null, famille:'POIVRONS & PIMENTS' },
-  { id:'h26', vegetal:'Courgette zuboda',          lieu:'bacs',   poids:629,  date:'2026-05-15', note:null, famille:'COURGETTES' },
-  { id:'h27', vegetal:'Cornichon diamant',         lieu:'serre',  poids:76,   date:'2026-05-15', note:null, famille:'CONCOMBRES' },
-  { id:'h28', vegetal:'Mange-tout norli',          lieu:'jardin', poids:75,   date:'2026-05-15', note:3, famille:'LÉGUMES D\'ÉTÉ' },
-  { id:'h29', vegetal:'Basilic prospéra',          lieu:'serre',  poids:60,   date:'2026-05-14', note:null, famille:'AROMATIQUES' },
-  { id:'h30', vegetal:'Basilic prospéra',          lieu:'bacs',   poids:10,   date:'2026-05-14', note:null, famille:'AROMATIQUES' },
-  { id:'h31', vegetal:'Persil perez',              lieu:'serre',  poids:240,  date:'2026-02-01', note:4, famille:'AROMATIQUES' },
-  { id:'h32', vegetal:'Livèche',                   lieu:'bacs',   poids:10,   date:'2026-05-14', note:null, famille:'AROMATIQUES' },
+  { id:'h1', vegetal:'Feuille chêne rouge perez', lieu:'serre', poids:1748, date:'2026-01-15', note:4, famille:'SALADES' },
+  { id:'h2', vegetal:'Mâche perez', lieu:'serre', poids:498, date:'2026-01-20', note:4, famille:'SALADES' },
+  { id:'h3', vegetal:'Oseille', lieu:'serre', poids:137, date:'2026-05-21', note:3, famille:'SALADES' },
+  { id:'h4', vegetal:'Mizuna', lieu:'serre', poids:35, date:'2026-02-01', note:null, famille:'SALADES' },
+  { id:'h5', vegetal:'Mizuna', lieu:'jardin', poids:64, date:'2026-03-01', note:null, famille:'SALADES' },
+  { id:'h6', vegetal:'Laitue romaine d\'Avignon', lieu:'serre', poids:406, date:'2026-05-17', note:null, famille:'SALADES' },
+  { id:'h7', vegetal:'Blette perez', lieu:'serre', poids:2346, date:'2026-02-15', note:5, famille:'BLETTES & ÉPINARDS' },
+  { id:'h8', vegetal:'Poirée rubis char', lieu:'serre', poids:362, date:'2026-05-21', note:4, famille:'BLETTES & ÉPINARDS' },
+  { id:'h9', vegetal:'Blette lucullus', lieu:'serre', poids:569, date:'2026-02-20', note:4, famille:'BLETTES & ÉPINARDS' },
+  { id:'h10', vegetal:'Nero di toscana', lieu:'serre', poids:80, date:'2026-02-10', note:3, famille:'BLETTES & ÉPINARDS' },
+  { id:'h11', vegetal:'Épinards malabar', lieu:'serre', poids:54, date:'2026-05-21', note:null, famille:'BLETTES & ÉPINARDS' },
+  { id:'h12', vegetal:'Épinards perez bac', lieu:'serre', poids:2183, date:'2026-01-10', note:4, famille:'BLETTES & ÉPINARDS' },
+  { id:'h13', vegetal:'Chou pak choï perez', lieu:'serre', poids:4691, date:'2026-01-20', note:5, famille:'CHOUX' },
+  { id:'h14', vegetal:'Chou pe tsaï perez', lieu:'serre', poids:1355, date:'2026-02-01', note:4, famille:'CHOUX' },
+  { id:'h15', vegetal:'Chou rave perez', lieu:'serre', poids:705, date:'2026-02-10', note:4, famille:'CHOUX' },
+  { id:'h16', vegetal:'Chou fleur précoce perez', lieu:'serre', poids:155, date:'2026-03-01', note:3, famille:'CHOUX' },
+  { id:'h17', vegetal:'Chou tatsoï', lieu:'serre', poids:173, date:'2026-02-15', note:3, famille:'CHOUX' },
+  { id:'h18', vegetal:'Brocoli perez', lieu:'serre', poids:130, date:'2026-01-15', note:3, famille:'CHOUX' },
+  { id:'h19', vegetal:'Brocoli jet sessantina', lieu:'serre', poids:18, date:'2026-02-01', note:2, famille:'CHOUX' },
+  { id:'h20', vegetal:'Betterave chiogga', lieu:'serre', poids:300, date:'2026-03-15', note:4, famille:'LÉGUMES RACINES' },
+  { id:'h21', vegetal:'Fenouil perez', lieu:'serre', poids:436, date:'2026-02-01', note:5, famille:'LÉGUMES RACINES' },
+  { id:'h22', vegetal:'Céleri perez', lieu:'serre', poids:433, date:'2026-05-14', note:4, famille:'LÉGUMES RACINES' },
+  { id:'h23', vegetal:'Céleri perez', lieu:'jardin', poids:152, date:'2026-05-14', note:4, famille:'LÉGUMES RACINES' },
+  { id:'h24', vegetal:'Radis noirs', lieu:'serre', poids:306, date:'2026-02-01', note:3, famille:'LÉGUMES RACINES' },
+  { id:'h25', vegetal:'Piment biquinho rouge', lieu:'serre', poids:3, date:'2026-05-15', note:null, famille:'POIVRONS & PIMENTS' },
+  { id:'h26', vegetal:'Courgette zuboda', lieu:'bacs', poids:629, date:'2026-05-15', note:null, famille:'COURGETTES' },
+  { id:'h27', vegetal:'Cornichon diamant', lieu:'serre', poids:76, date:'2026-05-15', note:null, famille:'CONCOMBRES' },
+  { id:'h28', vegetal:'Mange-tout norli', lieu:'jardin', poids:75, date:'2026-05-15', note:3, famille:'LÉGUMES D\'ÉTÉ' },
+  { id:'h29', vegetal:'Basilic prospéra', lieu:'serre', poids:60, date:'2026-05-14', note:null, famille:'AROMATIQUES' },
+  { id:'h30', vegetal:'Basilic prospéra', lieu:'bacs', poids:10, date:'2026-05-14', note:null, famille:'AROMATIQUES' },
+  { id:'h31', vegetal:'Persil perez', lieu:'serre', poids:240, date:'2026-02-01', note:4, famille:'AROMATIQUES' },
+  { id:'h32', vegetal:'Livèche', lieu:'bacs', poids:10, date:'2026-05-14', note:null, famille:'AROMATIQUES' },
 ];
 
-// ── STORAGE ───────────────────────────────────────────────────
-const STORAGE_KEY = 'jardin_recoltes_v2';
-
 function loadRecoltes() {
-  try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); if (saved && saved.length > 0) return saved; } catch(e) {}
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (saved && saved.length > 0) return saved;
+  } catch(e) {}
   saveRecoltes(RECOLTES_INITIALES);
   return [...RECOLTES_INITIALES];
 }
-function saveRecoltes(data) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {} }
+
+function saveRecoltes(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
 
 let recoltes = loadRecoltes();
 let lastSheetSync = 0;
 
-// ── SYNC SHEETS ───────────────────────────────────────────────
+// ── Sync Google Sheets ────────────────────────────────────────
 async function syncFromSheets() {
   try {
     const r = await fetch('/api/sheets');
     const data = await r.json();
     if (data.success) {
       if (data.recoltes && data.recoltes.length > 0) {
-        recoltes = data.recoltes; saveRecoltes(recoltes);
-        buildSaisonSelect(); renderAll(); showSyncBadge('✓ Sync Sheets');
-      } else { await syncToSheets(); }
+        recoltes = data.recoltes;
+        saveRecoltes(recoltes);
+        buildSaisonSelect();
+        renderAll();
+        showSyncBadge('✓ Sync Sheets');
+      } else {
+        await syncToSheets();
+      }
     }
   } catch(e) { console.warn('Sync Sheets lecture:', e.message); }
 }
 
 async function syncToSheets() {
   try {
-    await fetch('/api/sheets', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ recoltes }) });
-    lastSheetSync = Date.now(); showSyncBadge('✓ Sauvegardé');
+    await fetch('/api/sheets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recoltes })
+    });
+    lastSheetSync = Date.now();
+    showSyncBadge('✓ Sauvegardé');
   } catch(e) { console.warn('Sync Sheets écriture:', e.message); }
 }
 
 function showSyncBadge(msg) {
   const el = document.getElementById('syncBadge');
   if (!el) return;
-  el.textContent = msg; el.style.opacity = '1';
+  el.textContent = msg;
+  el.style.opacity = '1';
   setTimeout(() => el.style.opacity = '0', 3000);
 }
 
 setInterval(syncToSheets, 24 * 60 * 60 * 1000);
-let sortField = 'date', sortAsc = false;
 
-// ── AUTOCOMPLETE ──────────────────────────────────────────────
+let sortField = 'date';
+let sortAsc = false;
+
+// ══════════════════════════════════════════════════════════════
+// STORAGE CALENDRIER
+// ══════════════════════════════════════════════════════════════
+
+const CULTURES_DEFAUT = [
+  { id:'d1', culture:'Blette perez', famille:'BLETTES & ÉPINARDS', lieu:'serre', semis:'2025-10-01', plantation:'2025-10-20', recolteDebut:'2025-12-15', recolteFin:'2026-04-30', nbPlants:2, estPerpetuelle:true, notes:'Historique PDF' },
+  { id:'d2', culture:'Chou pak choï perez', famille:'CHOUX', lieu:'serre', semis:'2025-10-15', plantation:'2025-11-05', recolteDebut:'2025-12-20', recolteFin:'2026-03-31', nbPlants:6, notes:'Historique PDF' },
+  { id:'d3', culture:'Chou pe tsaï perez', famille:'CHOUX', lieu:'serre', semis:'2025-10-15', plantation:'2025-11-05', recolteDebut:'2026-01-10', recolteFin:'2026-03-31', nbPlants:2, notes:'' },
+  { id:'d4', culture:'Épinards perez bac', famille:'BLETTES & ÉPINARDS', lieu:'serre', semis:'2025-09-15', plantation:'2025-10-01', recolteDebut:'2025-11-01', recolteFin:'2026-03-15', nbPlants:30, notes:'' },
+  { id:'d5', culture:'Feuille chêne rouge perez', famille:'SALADES', lieu:'serre', semis:'2025-10-01', plantation:'2025-10-20', recolteDebut:'2025-12-01', recolteFin:'2026-02-28', nbPlants:9, notes:'' },
+  { id:'d6', culture:'Fenouil perez', famille:'LÉGUMES RACINES', lieu:'serre', semis:'2025-10-01', plantation:'2025-10-25', recolteDebut:'2026-01-15', recolteFin:'2026-03-15', nbPlants:3, notes:'Note 5/5' },
+  { id:'d7', culture:'Céleri perez', famille:'LÉGUMES RACINES', lieu:'serre', semis:'2025-09-01', plantation:'2025-10-01', recolteDebut:'2026-02-01', recolteFin:'2026-06-30', nbPlants:2, estPerpetuelle:true, notes:'' },
+  { id:'d8', culture:'Persil perez', famille:'AROMATIQUES', lieu:'serre', semis:'2025-09-15', plantation:null, recolteDebut:'2025-11-15', recolteFin:'2026-06-30', nbPlants:2, estPerpetuelle:true, notes:'Semis direct' },
+  { id:'d9', culture:'Mâche perez', famille:'SALADES', lieu:'serre', semis:'2025-10-01', plantation:null, recolteDebut:'2025-12-01', recolteFin:'2026-02-28', nbPlants:null, notes:'Semis direct' },
+  { id:'d10', nbPlants:null, culture:'Tomate cerise sweet baby', famille:'TOMATES', lieu:'serre', semis:'2026-02-01', plantation:'2026-03-20', recolteDebut:'2026-06-01', recolteFin:'2026-10-31', notes:'' },
+  { id:'d11', nbPlants:null, culture:'Tomate cœur de bœuf', famille:'TOMATES', lieu:'bacs', semis:'2026-02-01', plantation:'2026-04-01', recolteDebut:'2026-07-01', recolteFin:'2026-10-15', notes:'' },
+  { id:'d12', nbPlants:null, culture:'Aubergine Barbentane', famille:'AUBERGINES', lieu:'serre', semis:'2026-02-15', plantation:'2026-04-15', recolteDebut:'2026-07-01', recolteFin:'2026-10-31', notes:'' },
+  { id:'d13', nbPlants:null, culture:'Courgette zuboda', famille:'COURGETTES', lieu:'bacs', semis:'2026-03-15', plantation:'2026-04-20', recolteDebut:'2026-05-15', recolteFin:'2026-09-30', notes:'' },
+  { id:'d14', nbPlants:null, culture:'Poivron balconi', famille:'POIVRONS & PIMENTS', lieu:'serre', semis:'2026-02-01', plantation:'2026-04-15', recolteDebut:'2026-07-15', recolteFin:'2026-10-31', notes:'' },
+  { id:'d15', nbPlants:null, culture:'Piment biquinho rouge', famille:'POIVRONS & PIMENTS', lieu:'serre', semis:'2026-02-15', plantation:'2026-04-15', recolteDebut:'2026-06-01', recolteFin:'2026-10-31', notes:'' },
+  { id:'d16', nbPlants:null, culture:'Concombre F1 Citaro', famille:'CONCOMBRES', lieu:'serre', semis:'2026-03-15', plantation:'2026-04-20', recolteDebut:'2026-06-01', recolteFin:'2026-09-30', notes:'' },
+  { id:'d17', nbPlants:null, culture:'Melon artemis', famille:'MELONS', lieu:'jardin', semis:'2026-04-01', plantation:'2026-05-01', recolteDebut:'2026-07-15', recolteFin:'2026-09-15', notes:'' },
+  { id:'d18', nbPlants:null, culture:'Pastèque baby sugar', famille:'MELONS', lieu:'jardin', semis:'2026-04-01', plantation:'2026-05-01', recolteDebut:'2026-08-01', recolteFin:'2026-09-30', notes:'' },
+  { id:'d19', nbPlants:null, culture:'Basilic prospéra', famille:'AROMATIQUES', lieu:'serre', semis:'2026-03-01', plantation:'2026-04-01', recolteDebut:'2026-05-01', recolteFin:'2026-10-31', notes:'' },
+  { id:'d20', nbPlants:null, culture:'Cornichon diamant', famille:'CONCOMBRES', lieu:'serre', semis:'2026-03-15', plantation:'2026-04-20', recolteDebut:'2026-05-15', recolteFin:'2026-09-15', notes:'' },
+  { id:'d21', nbPlants:null, culture:'Mange-tout norli', famille:'LÉGUMES ETE', lieu:'jardin', semis:'2026-03-01', plantation:null, recolteDebut:'2026-05-01', recolteFin:'2026-07-15', notes:'Semis direct' },
+  { id:'d22', nbPlants:null, culture:'Betterave chiogga', famille:'LÉGUMES RACINES', lieu:'serre', semis:'2025-11-01', plantation:null, recolteDebut:'2026-02-01', recolteFin:'2026-04-30', notes:'' },
+];
+
+function loadCalendrier() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_CAL) || 'null');
+    if (saved && saved.length > 0) return saved;
+  } catch(e) {}
+  saveCalendrier(CULTURES_DEFAUT);
+  return [...CULTURES_DEFAUT];
+}
+
+function saveCalendrier(data) {
+  try { localStorage.setItem(STORAGE_KEY_CAL, JSON.stringify(data)); } catch(e) {}
+}
+
+let cultures = loadCalendrier();
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS PARTAGÉS
+// ══════════════════════════════════════════════════════════════
+
+function fmtDate(d) { if (!d) return '—'; const [y,m,j] = d.split('-'); return j+'/'+m+'/'+y; }
+function fmtDateShort(d) { if (!d) return '—'; const [,m,j] = d.split('-'); return j+'/'+m; }
+function fmtKg(g) { return g >= 1000 ? (g/1000).toFixed(2)+' kg' : g+' g'; }
+function stars(n) { if (!n) return ''; return '★'.repeat(n)+'☆'.repeat(5-n); }
+function lieuBadge(l) {
+  const map = { serre:'badge-serre', bacs:'badge-bacs', jardin:'badge-jardin' };
+  const lbl = { serre:'🏠 Serre', bacs:'🪴 Bacs', jardin:'🌳 Jardin' };
+  return `<span class="badge ${map[l]||''}">${lbl[l]||l}</span>`;
+}
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+function addDays(dateStr, days) { const d = new Date(dateStr); d.setDate(d.getDate() + days); return d.toISOString().slice(0,10); }
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function daysBetween(d1, d2) { if (!d1||!d2) return null; return Math.round((new Date(d2)-new Date(d1))/86400000); }
+
+// ══════════════════════════════════════════════════════════════
+// VÉGÉTAUX & SUGGESTIONS
+// ══════════════════════════════════════════════════════════════
+
 function getVegetauxConnus() {
   const cal = getCalCache();
-  return [...new Set([...cal.map(c => c.culture), ...Object.keys(FAMILLES), ...recoltes.map(r => r.vegetal)])].sort((a,b) => a.localeCompare(b,'fr'));
+  return [...new Set([
+    ...cal.map(c => c.culture),
+    ...Object.keys(FAMILLES),
+    ...recoltes.map(r => r.vegetal)
+  ])].sort((a, b) => a.localeCompare(b, 'fr'));
 }
 
 function getCalEntryPourVegetal(vegetal) {
   const cal = getCalCache();
-  const norm = s => s.toLowerCase().replace(/[éèêëàâîïôùûüç]/g, c => ({é:'e',è:'e',ê:'e',ë:'e',à:'a',â:'a',î:'i',ï:'i',ô:'o',ù:'u',û:'u',ü:'u',ç:'c'}[c]||c)).replace(/[^a-z0-9 ]/g,' ').trim();
+  const norm = s => s.toLowerCase().replace(/[éèêëàâîïôùûüç]/g, c =>
+    ({é:'e',è:'e',ê:'e',ë:'e',à:'a',â:'a',î:'i',ï:'i',ô:'o',ù:'u',û:'u',ü:'u',ç:'c'}[c]||c)
+  ).replace(/[^a-z0-9 ]/g,' ').trim();
   const nv = norm(vegetal);
   return cal.find(c => norm(c.culture) === nv)
       || cal.find(c => { const nc = norm(c.culture); return nc.length > 6 && (nv.startsWith(nc) || nc.startsWith(nv)); })
@@ -1017,9 +1199,11 @@ function showSuggestions(val) {
   el.innerHTML = matches.map(v => {
     const calEntry = getCalEntryPourVegetal(v);
     const fam = FAMILLES[v] || calEntry?.famille || '';
-    const lieuIcon = {serre:'🏠',bacs:'🪴',jardin:'🌳'}[calEntry?.lieu] || '';
+    const lieuIcon = { serre:'🏠', bacs:'🪴', jardin:'🌳' }[calEntry?.lieu] || '';
     const perpIcon = calEntry?.estPerpetuelle || isPerpetuelle(v) ? ' ♾️' : '';
-    return `<div class="suggestion-item" onmousedown="selectSuggestion('${v.replace(/'/g,"\\'")}')"><span>${v}${perpIcon}</span><span class="fam">${lieuIcon} ${fam}</span></div>`;
+    return `<div class="suggestion-item" onmousedown="selectSuggestion('${v.replace(/'/g,"\\'")}')">
+      <span>${v}${perpIcon}</span><span class="fam">${lieuIcon} ${fam}</span>
+    </div>`;
   }).join('');
   el.style.display = 'block';
 }
@@ -1034,7 +1218,10 @@ function selectSuggestion(val) {
 
 function hideSuggestions() { setTimeout(() => document.getElementById('suggestions').style.display='none', 200); }
 
-// ── AJOUTER ───────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// RÉCOLTES — ACTIONS
+// ══════════════════════════════════════════════════════════════
+
 function addRecolte() {
   const vegetal = document.getElementById('inp-vegetal').value.trim();
   const lieu    = document.getElementById('inp-lieu').value;
@@ -1044,8 +1231,12 @@ function addRecolte() {
   if (!vegetal) { alert('Indique le végétal récolté.'); return; }
   if (!poids || poids <= 0) { alert('Indique un poids valide.'); return; }
   if (!date) { alert('Indique une date.'); return; }
-  recoltes.unshift({ id:'r'+Date.now(), vegetal, lieu, poids, date, note: note ? parseInt(note) : null, famille: FAMILLES[vegetal] || 'AUTRE' });
-  saveRecoltes(recoltes); syncToSheets(); invalidateCalCache();
+  const famille = FAMILLES[vegetal] || 'AUTRE';
+  const newRec = { id:'r'+Date.now(), vegetal, lieu, poids, date, note: note ? parseInt(note) : null, famille };
+  recoltes.unshift(newRec);
+  saveRecoltes(recoltes);
+  syncToSheets();
+  invalidateCalCache();
   document.getElementById('inp-vegetal').value = '';
   document.getElementById('inp-poids').value = '';
   document.getElementById('inp-note').value = '';
@@ -1069,7 +1260,9 @@ function deleteRecolte(id, e) {
   e.stopPropagation();
   if (!confirm('Supprimer cette récolte ?')) return;
   recoltes = recoltes.filter(r => r.id !== id);
-  saveRecoltes(recoltes); syncToSheets(); _rebuildAndRender();
+  saveRecoltes(recoltes);
+  syncToSheets();
+  _rebuildAndRender();
 }
 
 function showEdit(id, e) { e.stopPropagation(); document.getElementById('view-'+id).style.display='none'; document.getElementById('edit-'+id).style.display='block'; }
@@ -1086,35 +1279,52 @@ function saveEdit(id, e) {
   const idx = recoltes.findIndex(r => r.id === id);
   if (idx === -1) return;
   recoltes[idx] = { ...recoltes[idx], vegetal, poids, lieu, date, note: note ? parseInt(note) : null, famille: FAMILLES[vegetal] || recoltes[idx].famille || 'AUTRE' };
-  saveRecoltes(recoltes); syncToSheets(); renderAll();
+  saveRecoltes(recoltes);
+  syncToSheets();
+  renderAll();
   showToast('✓ Récolte modifiée — ' + vegetal);
 }
 
-// ── TOAST ─────────────────────────────────────────────────────
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2800);
+// ══════════════════════════════════════════════════════════════
+// RENDEMENT
+// ══════════════════════════════════════════════════════════════
+
+function getNbPlants(vegetal) {
+  const cal = loadCalendrier();
+  const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
+  const match = cal.find(c => norm(c.culture) === norm(vegetal) || norm(c.culture).includes(norm(vegetal)) || norm(vegetal).includes(norm(c.culture)));
+  return match?.nbPlants || null;
 }
 
-// ── FORMAT ────────────────────────────────────────────────────
-function fmtDate(d) { if (!d) return '—'; const [y,m,j] = d.split('-'); return j+'/'+m+'/'+y; }
-function fmtKg(g) { return g >= 1000 ? (g/1000).toFixed(2)+' kg' : g+' g'; }
-function stars(n) { if (!n) return ''; return '★'.repeat(n)+'☆'.repeat(5-n); }
-function lieuBadge(l) {
-  const map = {serre:'badge-serre',bacs:'badge-bacs',jardin:'badge-jardin'};
-  const lbl = {serre:'🏠 Serre',bacs:'🪴 Bacs',jardin:'🌳 Jardin'};
-  return `<span class="badge ${map[l]||''}">${lbl[l]||l}</span>`;
+function computeRendementPied(vegetal, totalPoids) {
+  const nb = getNbPlants(vegetal);
+  if (!nb || nb <= 0) return null;
+  return Math.round(totalPoids / nb);
 }
 
-// ── STATS ─────────────────────────────────────────────────────
+function computeTopRendements(recFiltrees) {
+  const src = recFiltrees || getRecoltesFiltered();
+  const byVeg = {};
+  src.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
+  return Object.entries(byVeg)
+    .map(([vegetal, total]) => ({ vegetal, total, rPied: computeRendementPied(vegetal, total), nbPlants: getNbPlants(vegetal) }))
+    .filter(r => r.rPied !== null)
+    .sort((a, b) => b.rPied - a.rPied);
+}
+
+// ══════════════════════════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════════════════════════
+
 function computeStats() {
   const rf = getRecoltesFiltered();
-  const total  = rf.reduce((s,r)=>s+r.poids,0);
-  const serre  = rf.filter(r=>r.lieu==='serre').reduce((s,r)=>s+r.poids,0);
-  const bacs   = rf.filter(r=>r.lieu==='bacs').reduce((s,r)=>s+r.poids,0);
-  const jardin = rf.filter(r=>r.lieu==='jardin').reduce((s,r)=>s+r.poids,0);
-  return { total, serre, bacs, jardin, varietes: new Set(rf.map(r=>r.vegetal)).size };
+  return {
+    total:   rf.reduce((s,r)=>s+r.poids,0),
+    serre:   rf.filter(r=>r.lieu==='serre').reduce((s,r)=>s+r.poids,0),
+    bacs:    rf.filter(r=>r.lieu==='bacs').reduce((s,r)=>s+r.poids,0),
+    jardin:  rf.filter(r=>r.lieu==='jardin').reduce((s,r)=>s+r.poids,0),
+    varietes: new Set(rf.map(r=>r.vegetal)).size
+  };
 }
 
 function renderStats() {
@@ -1126,41 +1336,50 @@ function renderStats() {
   document.getElementById('hTotalKg').textContent = (s.total/1000).toFixed(1);
   document.getElementById('hNbRecoltes').textContent = getRecoltesFiltered().length;
   document.getElementById('hNbVarietes').textContent = s.varietes;
-  const topR = computeTopRendements(getRecoltesFiltered());
-  if (topR.length) document.getElementById('hMeilleur').textContent = topR[0].vegetal.split(' ')[0]+' ('+topR[0].rPied+'g/p)';
-  else {
-    const byVeg = {}; getRecoltesFiltered().forEach(r => { byVeg[r.vegetal]=(byVeg[r.vegetal]||0)+r.poids; });
-    const best = Object.entries(byVeg).sort((a,b)=>b[1]-a[1])[0];
-    document.getElementById('hMeilleur').textContent = best ? best[0].split(' ')[0] : '—';
+  const recFiltreesPourTop = getRecoltesFiltered();
+  const topR = computeTopRendements(recFiltreesPourTop);
+  if (topR.length) {
+    document.getElementById('hMeilleur').textContent = topR[0].vegetal.split(' ')[0] + ' (' + topR[0].rPied + 'g/p)';
+  } else {
+    const byVeg = {};
+    recFiltreesPourTop.forEach(r => { byVeg[r.vegetal] = (byVeg[r.vegetal]||0) + r.poids; });
+    const bestTotal = Object.entries(byVeg).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('hMeilleur').textContent = bestTotal ? bestTotal[0].split(' ')[0] : '—';
   }
 }
 
-// ── CHARTS ────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// CHARTS RÉCOLTES
+// ══════════════════════════════════════════════════════════════
+
 const chartInstances = {};
 function destroyChart(id) { if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; } }
 const PALETTE = ['#3d7a4f','#7ab990','#c47c2b','#3a6ea5','#b84040','#8a6a3a','#6a3a8a','#3a8a8a','#8a3a6a','#5a8a3a'];
 
 function renderChartFamille() {
   const byFam = {};
-  getRecoltesFiltered().forEach(r => { byFam[r.famille]=(byFam[r.famille]||0)+r.poids; });
+  getRecoltesFiltered().forEach(r => { byFam[r.famille] = (byFam[r.famille]||0) + r.poids; });
   const sorted = Object.entries(byFam).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
   destroyChart('chartFamille');
-  chartInstances['chartFamille'] = new Chart(document.getElementById('chartFamille').getContext('2d'), {
+  const ctx = document.getElementById('chartFamille').getContext('2d');
+  chartInstances['chartFamille'] = new Chart(ctx, {
     type:'bar',
-    data:{ labels:sorted.map(([k])=>k), datasets:[{data:sorted.map(([,v])=>v),backgroundColor:PALETTE,borderRadius:6}] },
+    data:{ labels:sorted.map(([k])=>k), datasets:[{ data:sorted.map(([,v])=>v), backgroundColor:PALETTE, borderRadius:6 }] },
     options:{ responsive:true,maintainAspectRatio:false,animation:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtKg(c.parsed.y)}}},
-      scales:{x:{ticks:{color:'#8fb898',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#8fb898',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(255,255,255,.04)'}}} }
+      scales:{x:{ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(0,0,0,.06)'}}} }
   });
 }
 
 function renderChartLieu() {
-  const s = computeStats(); destroyChart('chartLieu');
-  chartInstances['chartLieu'] = new Chart(document.getElementById('chartLieu').getContext('2d'), {
+  const s = computeStats();
+  destroyChart('chartLieu');
+  const ctx = document.getElementById('chartLieu').getContext('2d');
+  chartInstances['chartLieu'] = new Chart(ctx, {
     type:'doughnut',
-    data:{labels:['Serre','Bacs','Jardin'],datasets:[{data:[s.serre,s.bacs,s.jardin],backgroundColor:['#3a6ea5','#c47c2b','#3d7a4f'],borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,animation:false,
-      plugins:{legend:{position:'bottom',labels:{color:'#8fb898',font:{size:10}}},tooltip:{callbacks:{label:c=>c.label+': '+fmtKg(c.parsed)}}}}
+    data:{ labels:['Serre','Bacs','Jardin'], datasets:[{ data:[s.serre,s.bacs,s.jardin], backgroundColor:['#3a6ea5','#c47c2b','#3d7a4f'], borderWidth:0 }] },
+    options:{ responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{position:'bottom',labels:{color:'#6b6259',font:{size:10}}},tooltip:{callbacks:{label:c=>c.label+': '+fmtKg(c.parsed)}}} }
   });
 }
 
@@ -1169,32 +1388,34 @@ function renderChartEvolution() {
   getRecoltesFiltered().forEach(r => { const m=r.date.substring(0,7); byMonth[m]=(byMonth[m]||0)+r.poids; });
   const months = Object.keys(byMonth).sort();
   destroyChart('chartEvolution');
-  chartInstances['chartEvolution'] = new Chart(document.getElementById('chartEvolution').getContext('2d'), {
+  const ctx = document.getElementById('chartEvolution').getContext('2d');
+  chartInstances['chartEvolution'] = new Chart(ctx, {
     type:'line',
-    data:{labels:months.map(m=>{const[,mo]=m.split('-');return ['','Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][parseInt(mo)];}),
-      datasets:[{data:months.map(m=>byMonth[m]),borderColor:'#3d7a4f',backgroundColor:'rgba(61,122,79,.1)',borderWidth:2,fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:'#3d7a4f'}]},
-    options:{responsive:true,maintainAspectRatio:false,animation:false,
+    data:{ labels:months.map(m=>{ const[y,mo]=m.split('-'); return ['','Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][parseInt(mo)]; }),
+      datasets:[{ data:months.map(m=>byMonth[m]), borderColor:'#3d7a4f', backgroundColor:'rgba(61,122,79,.1)', borderWidth:2, fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:'#3d7a4f' }] },
+    options:{ responsive:true,maintainAspectRatio:false,animation:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtKg(c.parsed.y)}}},
-      scales:{x:{ticks:{color:'#8fb898',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#8fb898',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(255,255,255,.04)'}}}}
+      scales:{x:{ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(0,0,0,.06)'}}} }
   });
 }
 
 function renderChartMois() {
   const byMonth = {};
-  getRecoltesFiltered().forEach(r => { const m=r.date.substring(0,7); if(!byMonth[m])byMonth[m]={serre:0,bacs:0,jardin:0}; byMonth[m][r.lieu]=(byMonth[m][r.lieu]||0)+r.poids; });
+  getRecoltesFiltered().forEach(r => { const m=r.date.substring(0,7); if(!byMonth[m]) byMonth[m]={serre:0,bacs:0,jardin:0}; byMonth[m][r.lieu]=(byMonth[m][r.lieu]||0)+r.poids; });
   const months = Object.keys(byMonth).sort();
-  const lbls = months.map(m=>{const[,mo]=m.split('-');return ['','Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][parseInt(mo)];});
+  const lbls = months.map(m=>{ const[,mo]=m.split('-'); return ['','Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][parseInt(mo)]; });
   destroyChart('chartMois');
-  chartInstances['chartMois'] = new Chart(document.getElementById('chartMois').getContext('2d'), {
+  const ctx = document.getElementById('chartMois').getContext('2d');
+  chartInstances['chartMois'] = new Chart(ctx, {
     type:'bar',
-    data:{labels:lbls,datasets:[
-      {label:'Serre', data:months.map(m=>byMonth[m].serre), backgroundColor:'#3a6ea5',borderRadius:4},
-      {label:'Bacs',  data:months.map(m=>byMonth[m].bacs),  backgroundColor:'#c47c2b',borderRadius:4},
-      {label:'Jardin',data:months.map(m=>byMonth[m].jardin),backgroundColor:'#3d7a4f',borderRadius:4},
+    data:{ labels:lbls, datasets:[
+      { label:'Serre', data:months.map(m=>byMonth[m].serre), backgroundColor:'#3a6ea5', borderRadius:4 },
+      { label:'Bacs',  data:months.map(m=>byMonth[m].bacs),  backgroundColor:'#c47c2b', borderRadius:4 },
+      { label:'Jardin',data:months.map(m=>byMonth[m].jardin),backgroundColor:'#3d7a4f', borderRadius:4 },
     ]},
-    options:{responsive:true,maintainAspectRatio:false,animation:false,
-      plugins:{legend:{position:'bottom',labels:{color:'#8fb898',font:{size:10}}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtKg(c.parsed.y)}}},
-      scales:{x:{stacked:true,ticks:{color:'#8fb898',font:{size:9}},grid:{display:false}},y:{stacked:true,ticks:{color:'#8fb898',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(255,255,255,.04)'}}}}
+    options:{ responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{position:'bottom',labels:{color:'#6b6259',font:{size:10}}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtKg(c.parsed.y)}}},
+      scales:{x:{stacked:true,ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},y:{stacked:true,ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(0,0,0,.06)'}}} }
   });
 }
 
@@ -1211,65 +1432,76 @@ function renderChartRendement() {
   const shortName = v => v.replace(/ perez$/i,'').replace(/ char$/i,'').replace(/ sessantina$/i,'').replace(/ bac$/i,'');
   chartInstances['chartRendement'] = new Chart(ctx, {
     type:'bar',
-    data:{labels:top.map(r=>shortName(r.vegetal)),datasets:[{data:top.map(r=>r.rPied),backgroundColor:PALETTE,borderRadius:6}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const item=top[c.dataIndex];return c.parsed.x+'g/pied · '+item.nbPlants+' plants · total '+(item.total>=1000?(item.total/1000).toFixed(2)+'kg':item.total+'g');}}}},
-      scales:{x:{ticks:{color:'#8fb898',font:{size:9},callback:v=>v+'g'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#8fb898',font:{size:10}},grid:{display:false}}}}
+    data:{ labels:top.map(r=>shortName(r.vegetal)), datasets:[{ data:top.map(r=>r.rPied), backgroundColor:PALETTE, borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{ const item=top[c.dataIndex]; return c.parsed.x+'g/pied · '+item.nbPlants+' plants · total '+(item.total>=1000?(item.total/1000).toFixed(2)+'kg':item.total+'g'); }}}},
+      scales:{x:{ticks:{color:'#9e9488',font:{size:9},callback:v=>v+'g'},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#6b6259',font:{size:10}},grid:{display:false}}} }
   });
 }
 
-// ── TOP PLANTES ───────────────────────────────────────────────
-const LIEU_COLOR = {serre:'var(--blue)',bacs:'var(--amber)',jardin:'var(--green)'};
-const LIEU_LABEL = {serre:'🏠 Serre',bacs:'🪴 Bacs',jardin:'🌳 Jardin'};
+// ══════════════════════════════════════════════════════════════
+// TOP PLANTES
+// ══════════════════════════════════════════════════════════════
+
+const LIEU_COLOR = { serre:'var(--blue)', bacs:'var(--amber)', jardin:'var(--green)' };
+const LIEU_LABEL = { serre:'🏠 Serre', bacs:'🪴 Bacs', jardin:'🌳 Jardin' };
 
 function getLieuPrincipal(vegetal) {
   const byLieu = {};
-  recoltes.filter(r=>r.vegetal===vegetal).forEach(r=>{byLieu[r.lieu]=(byLieu[r.lieu]||0)+r.poids;});
+  recoltes.filter(r=>r.vegetal===vegetal).forEach(r=>{ byLieu[r.lieu]=(byLieu[r.lieu]||0)+r.poids; });
   if (!Object.keys(byLieu).length) return null;
   return Object.entries(byLieu).sort((a,b)=>b[1]-a[1])[0][0];
 }
 
 function renderTopLieu(lieuFilter, containerId, accentColor) {
-  const el = document.getElementById(containerId); if (!el) return;
+  const el = document.getElementById(containerId);
+  if (!el) return;
   const byVeg = {};
   const base = getRecoltesFiltered();
-  (lieuFilter==='tous' ? base : base.filter(r=>r.lieu===lieuFilter)).forEach(r=>{byVeg[r.vegetal]=(byVeg[r.vegetal]||0)+r.poids;});
+  const recFiltrees = lieuFilter === 'tous' ? base : base.filter(r=>r.lieu===lieuFilter);
+  recFiltrees.forEach(r => { byVeg[r.vegetal]=(byVeg[r.vegetal]||0)+r.poids; });
   const sorted = Object.entries(byVeg).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if (!sorted.length) { el.innerHTML='<div style="font-size:.75rem;color:var(--text-muted);padding:10px 0;font-style:italic">Aucune récolte enregistrée pour ce lieu.</div>'; return; }
   const max = sorted[0][1];
   const ranks = ['gold','silver','bronze','',''];
-  const isTous = lieuFilter==='tous';
-  el.innerHTML = sorted.map(([v,p],i)=>{
-    const fam=FAMILLES[v]||'', rPied=computeRendementPied(v,p), nbPlants=getNbPlants(v);
+  const isTous = lieuFilter === 'tous';
+  el.innerHTML = sorted.map(([v,p],i) => {
+    const fam = FAMILLES[v] || '';
+    const rPied = computeRendementPied(v, p);
+    const nbPlants = getNbPlants(v);
     const lieuPrinc = isTous ? getLieuPrincipal(v) : lieuFilter;
     const color = LIEU_COLOR[lieuPrinc] || accentColor;
-    const rendLabel = rPied ? ` · <span style="color:${color};font-weight:500">${rPied}g/plant</span>`
-      : nbPlants ? '' : ' · <span style="color:var(--text-muted);font-size:.6rem">plants non renseignés</span>';
-    const lBadge = isTous && lieuPrinc ? `<span style="margin-left:6px;font-size:.6rem;padding:1px 6px;border-radius:8px;background:${color}18;color:${color};border:1px solid ${color}40">${LIEU_LABEL[lieuPrinc]||lieuPrinc}</span>` : '';
-    return `<div class="top-item" onclick="window.location='/variete.html?v=${encodeURIComponent(v)}'" style="cursor:pointer;border-color:${i===0?color+'40':'var(--border)'}">
+    const rendLabel = rPied ? ` · <span style="color:${color};font-weight:500">${rPied}g/plant</span>` : nbPlants ? '' : ' · <span style="color:var(--text-muted);font-size:.6rem">plants non renseignés</span>';
+    const lieuBadgeHtml = isTous && lieuPrinc ? `<span style="margin-left:6px;font-size:.6rem;padding:1px 6px;border-radius:8px;background:${color}18;color:${color};border:1px solid ${color}40">${LIEU_LABEL[lieuPrinc]||lieuPrinc}</span>` : '';
+    const vEnc = encodeURIComponent(v);
+    return `<div class="top-item" onclick="window.location='/variete.html?v=${vEnc}'" style="cursor:pointer;border-color:${i===0?color+'40':'var(--border)'}">
       <div class="top-rank ${ranks[i]}">${i+1}</div>
-      <div style="flex:1"><div class="top-name">${v}${lBadge}</div><div class="top-sub">${fam}${rendLabel}</div>
-      <div class="bar-wrap"><div class="bar-fill" style="width:${(p/max*100).toFixed(0)}%;background:${color}"></div></div></div>
-      <div class="top-val" style="color:${color}">${fmtKg(p)}</div></div>`;
+      <div style="flex:1"><div class="top-name">${v}${lieuBadgeHtml}</div><div class="top-sub">${fam}${rendLabel}</div><div class="bar-wrap"><div class="bar-fill" style="width:${(p/max*100).toFixed(0)}%;background:${color}"></div></div></div>
+      <div class="top-val" style="color:${color}">${fmtKg(p)}</div>
+    </div>`;
   }).join('');
 }
 
-const TOP_ACCENT = {serre:'var(--blue)',bacs:'var(--amber)',jardin:'var(--green)',tous:'var(--accent)'};
-const TOP_IDS    = {serre:'topSerre',bacs:'topBacs',jardin:'topJardin',tous:'topTous'};
+const TOP_ACCENT = { serre:'var(--blue)', bacs:'var(--amber)', jardin:'var(--green)', tous:'var(--accent)' };
+const TOP_IDS    = { serre:'topSerre', bacs:'topBacs', jardin:'topJardin', tous:'topTous' };
 let currentTopLieu = 'serre';
 
 function showTop(lieu, btn) {
   document.querySelectorAll('.top-tab-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.top-tnav').forEach(t=>t.classList.remove('active'));
   document.getElementById('top-'+lieu).classList.add('active');
-  btn.classList.add('active'); currentTopLieu = lieu;
+  btn.classList.add('active');
+  currentTopLieu = lieu;
   renderTopLieu(lieu, TOP_IDS[lieu], TOP_ACCENT[lieu]);
 }
 
 function renderTop() { renderTopLieu(currentTopLieu, TOP_IDS[currentTopLieu], TOP_ACCENT[currentTopLieu]); }
 
-// ── TABLEAU ───────────────────────────────────────────────────
-function sortBy(field) { if (sortField===field) sortAsc=!sortAsc; else {sortField=field;sortAsc=false;} renderTable(); }
+// ══════════════════════════════════════════════════════════════
+// TABLEAU RÉCOLTES
+// ══════════════════════════════════════════════════════════════
+
+function sortBy(field) { if (sortField===field) sortAsc=!sortAsc; else { sortField=field; sortAsc=false; } renderTable(); }
 
 function renderTable() {
   const filterLieu = document.getElementById('filterLieu').value;
@@ -1277,17 +1509,20 @@ function renderTable() {
   let data = [...getRecoltesFiltered()];
   if (filterLieu) data = data.filter(r=>r.lieu===filterLieu);
   if (filterFam)  data = data.filter(r=>r.famille===filterFam);
-  data.sort((a,b)=>{
+  data.sort((a,b) => {
     let va=a[sortField], vb=b[sortField];
-    if (sortField==='poids'){va=+va;vb=+vb;} if (sortField==='note'){va=va||0;vb=vb||0;}
-    if(va<vb)return sortAsc?-1:1; if(va>vb)return sortAsc?1:-1; return 0;
+    if (sortField==='poids') { va=+va; vb=+vb; }
+    if (sortField==='note')  { va=va||0; vb=vb||0; }
+    if (va<vb) return sortAsc?-1:1;
+    if (va>vb) return sortAsc?1:-1;
+    return 0;
   });
   const tbody = document.getElementById('tablebody');
-  tbody.innerHTML = data.map(r=>`
+  tbody.innerHTML = data.map(r => `
     <tr onclick="toggleDetail('${r.id}')">
-      <td><a href="/variete.html?v=${encodeURIComponent(r.vegetal)}" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none;font-weight:500;border-bottom:1px dashed rgba(163,230,53,.4)">${r.vegetal}</a></td>
+      <td><a href="/variete.html?v=${encodeURIComponent(r.vegetal)}" onclick="event.stopPropagation()" style="color:var(--green);text-decoration:none;font-weight:500;border-bottom:1px dashed var(--green-mid)">${r.vegetal}</a></td>
       <td>${lieuBadge(r.lieu)}</td>
-      <td style="font-family:'Fraunces',serif;font-weight:300">${fmtKg(r.poids)}</td>
+      <td>${fmtKg(r.poids)}</td>
       <td>${fmtDate(r.date)}</td>
       <td><span class="stars">${stars(r.note)}</span></td>
     </tr>
@@ -1300,41 +1535,26 @@ function renderTable() {
           <div class="detail-item"><div class="detail-key">Date</div><div class="detail-val">${fmtDate(r.date)}</div></div>
           ${r.note?`<div class="detail-item"><div class="detail-key">Note</div><div class="detail-val stars">${stars(r.note)} (${r.note}/5)</div></div>`:''}
           <div class="detail-item" style="display:flex;gap:8px;align-items:center;grid-column:1/-1">
-            <button onclick="showEdit('${r.id}',event)" style="background:var(--green-light);border:1px solid var(--green);color:var(--green);padding:4px 10px;border-radius:6px;font-family:'DM Mono',monospace;font-size:.68rem;cursor:pointer">✏ Modifier</button>
-            <button onclick="deleteRecolte('${r.id}',event)" style="background:var(--red-light);border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;font-family:'DM Mono',monospace;font-size:.68rem;cursor:pointer">Supprimer</button>
+            <button onclick="showEdit('${r.id}',event)" style="background:var(--green-light);border:1px solid var(--green);color:var(--green);padding:4px 10px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer">✏ Modifier</button>
+            <button onclick="deleteRecolte('${r.id}',event)" style="background:var(--red-light);border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer">Supprimer</button>
           </div>
         </div>
         <div class="edit-form" id="edit-${r.id}" style="display:none;padding:12px 16px;background:var(--bg);border-top:1px dashed var(--border2)">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-            <div><div class="detail-key" style="margin-bottom:4px">Végétal</div>
-            <input id="e-veg-${r.id}" value="${r.vegetal.replace(/"/g,'&quot;')}" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text)"></div>
-            <div><div class="detail-key" style="margin-bottom:4px">Poids (g)</div>
-            <input id="e-poids-${r.id}" type="number" value="${r.poids}" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text)"></div>
-            <div><div class="detail-key" style="margin-bottom:4px">Lieu</div>
-            <select id="e-lieu-${r.id}" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text);-webkit-appearance:none">
-              <option value="serre" ${r.lieu==='serre'?'selected':''}>🏠 Serre</option>
-              <option value="bacs"  ${r.lieu==='bacs' ?'selected':''}>🪴 Bacs</option>
-              <option value="jardin"${r.lieu==='jardin'?'selected':''}>🌳 Jardin</option>
-            </select></div>
-            <div><div class="detail-key" style="margin-bottom:4px">Date</div>
-            <input id="e-date-${r.id}" type="date" value="${r.date}" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text)"></div>
-            <div><div class="detail-key" style="margin-bottom:4px">Note</div>
-            <select id="e-note-${r.id}" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text);-webkit-appearance:none">
-              <option value="">— Sans note</option>
-              <option value="5" ${r.note===5?'selected':''}>⭐⭐⭐⭐⭐</option>
-              <option value="4" ${r.note===4?'selected':''}>⭐⭐⭐⭐</option>
-              <option value="3" ${r.note===3?'selected':''}>⭐⭐⭐</option>
-              <option value="2" ${r.note===2?'selected':''}>⭐⭐</option>
-              <option value="1" ${r.note===1?'selected':''}>⭐</option>
-            </select></div>
+            <div><div class="detail-key" style="margin-bottom:4px">Végétal</div><input id="e-veg-${r.id}" value="${r.vegetal.replace(/"/g,'&quot;')}" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text)"></div>
+            <div><div class="detail-key" style="margin-bottom:4px">Poids (g)</div><input id="e-poids-${r.id}" type="number" value="${r.poids}" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text)"></div>
+            <div><div class="detail-key" style="margin-bottom:4px">Lieu</div><select id="e-lieu-${r.id}" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text);-webkit-appearance:none"><option value="serre" ${r.lieu==='serre'?'selected':''}>🏠 Serre</option><option value="bacs" ${r.lieu==='bacs'?'selected':''}>🪴 Bacs</option><option value="jardin" ${r.lieu==='jardin'?'selected':''}>🌳 Jardin</option></select></div>
+            <div><div class="detail-key" style="margin-bottom:4px">Date</div><input id="e-date-${r.id}" type="date" value="${r.date}" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text)"></div>
+            <div><div class="detail-key" style="margin-bottom:4px">Note</div><select id="e-note-${r.id}" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-family:'Karla',sans-serif;font-size:.82rem;color:var(--text);-webkit-appearance:none"><option value="">— Sans note</option><option value="5" ${r.note===5?'selected':''}>⭐⭐⭐⭐⭐</option><option value="4" ${r.note===4?'selected':''}>⭐⭐⭐⭐</option><option value="3" ${r.note===3?'selected':''}>⭐⭐⭐</option><option value="2" ${r.note===2?'selected':''}>⭐⭐</option><option value="1" ${r.note===1?'selected':''}>⭐</option></select></div>
           </div>
           <div style="display:flex;gap:8px">
-            <button onclick="saveEdit('${r.id}',event)" style="background:var(--green);border:none;color:#0a120b;padding:7px 16px;border-radius:6px;font-family:'DM Mono',monospace;font-size:.75rem;font-weight:500;cursor:pointer;flex:1">Enregistrer</button>
-            <button onclick="cancelEdit('${r.id}',event)" style="background:var(--surface);border:1px solid var(--border2);color:var(--text-muted);padding:7px 12px;border-radius:6px;font-family:'DM Mono',monospace;font-size:.75rem;cursor:pointer">Annuler</button>
+            <button onclick="saveEdit('${r.id}',event)" style="background:var(--green);border:none;color:#fff;padding:7px 16px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;flex:1">Enregistrer</button>
+            <button onclick="cancelEdit('${r.id}',event)" style="background:var(--surface);border:1px solid var(--border2);color:var(--text-muted);padding:7px 12px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.78rem;cursor:pointer">Annuler</button>
           </div>
         </div>
       </td>
-    </tr>`).join('');
+    </tr>
+  `).join('');
   if (!data.length) tbody.innerHTML = '<tr><td colspan="5"><div class="empty">Aucune récolte pour ces filtres.</div></td></tr>';
 }
 
@@ -1359,35 +1579,487 @@ function showAnalyse(name, btn) {
   else if (name==='rendement') renderChartRendement();
 }
 
-function renderAll() { renderStats(); renderChartFamille(); renderTop(); populateFamFilter(); renderTable(); }
+function renderAll() {
+  renderStats();
+  renderChartFamille();
+  renderTop();
+  populateFamFilter();
+  renderTable();
+}
 
-// ── DIAGNOSTIC ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// CALENDRIER — Vue annuelle
+// ══════════════════════════════════════════════════════════════
+
+const FAMILLES_COLORS_CAL = {
+  'SALADES':'#3d7a4f','BLETTES & ÉPINARDS':'#22c55e','CHOUX':'#7ab990',
+  'LÉGUMES RACINES':'#c47c2b','TOMATES':'#b84040','AUBERGINES':'#8a3a6a',
+  'POIVRONS & PIMENTS':'#b85c2b','COURGETTES':'#8a7a3a','CONCOMBRES':'#3a7a6e',
+  'MELONS':'#7a6a22','AROMATIQUES':'#5a7a3a',"LÉGUMES D'ÉTÉ":'#3a5a7a',
+};
+
+const CAL_MONTHS = [
+  {label:'Sep',year:2025,m:8},{label:'Oct',year:2025,m:9},{label:'Nov',year:2025,m:10},{label:'Déc',year:2025,m:11},
+  {label:'Jan',year:2026,m:0},{label:'Fév',year:2026,m:1},{label:'Mar',year:2026,m:2},{label:'Avr',year:2026,m:3},
+  {label:'Mai',year:2026,m:4},{label:'Jun',year:2026,m:5},{label:'Jul',year:2026,m:6},{label:'Aoû',year:2026,m:7},
+];
+
+function dateToCol(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  const y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
+  for (let i = 0; i < CAL_MONTHS.length; i++) {
+    if (CAL_MONTHS[i].year === y && CAL_MONTHS[i].m === m) {
+      const daysInM = new Date(y, m+1, 0).getDate();
+      return i + (day-1)/daysInM;
+    }
+  }
+  const startMs = new Date(CAL_MONTHS[0].year, CAL_MONTHS[0].m, 1).getTime();
+  const endMs   = new Date(CAL_MONTHS[11].year, CAL_MONTHS[11].m+1, 1).getTime();
+  const dMs     = new Date(dateStr).getTime();
+  if (dMs < startMs) return 0;
+  if (dMs >= endMs)  return 12;
+  return null;
+}
+
+function renderBar(container, startStr, endStr, className, tooltip) {
+  if (!startStr || !endStr) return;
+  const s = dateToCol(startStr);
+  const e = dateToCol(endStr);
+  if (s === null || e === null) return;
+  const sc = clamp(s, 0, 12);
+  const ec = clamp(e, 0, 12);
+  if (ec <= sc) return;
+  const bar = document.createElement('div');
+  bar.className = 'bar ' + className;
+  bar.style.left = (sc/12*100) + '%';
+  bar.style.width = ((ec-sc)/12*100) + '%';
+  bar.style.top = '50%';
+  bar.style.transform = 'translateY(-50%)';
+  const tip = document.createElement('div');
+  tip.className = 'bar-tooltip';
+  tip.textContent = tooltip;
+  bar.appendChild(tip);
+  container.appendChild(bar);
+}
+
+function getRecoltesPourCulture(cultureName) {
+  const norm = s => s.toLowerCase().replace(/[^a-z]/g,'');
+  return recoltes.filter(r => norm(r.vegetal).includes(norm(cultureName)) || norm(cultureName).includes(norm(r.vegetal)));
+}
+
+function getPremiereDateReelle(cultureName) {
+  const recs = getRecoltesPourCulture(cultureName);
+  if (!recs.length) return null;
+  return recs.map(r=>r.date).sort()[0];
+}
+
+function getDerniereDateReelle(cultureName) {
+  const recs = getRecoltesPourCulture(cultureName);
+  if (!recs.length) return null;
+  return recs.map(r=>r.date).sort().pop();
+}
+
+function renderCalendrier() {
+  const container = document.getElementById('calContainer');
+  const today = new Date();
+
+  let html = '<div class="cal-header">';
+  html += '<div class="cal-header-culture">Culture</div>';
+  CAL_MONTHS.forEach(mo => {
+    const isCurrent = (mo.year === today.getFullYear() && mo.m === today.getMonth());
+    html += `<div class="cal-header-month${isCurrent?' current':''}">${mo.label}</div>`;
+  });
+  html += '</div>';
+
+  const byFam = {};
+  cultures.forEach(c => { const fam = c.famille||'AUTRE'; if (!byFam[fam]) byFam[fam]=[]; byFam[fam].push(c); });
+
+  const famOrder = ['SALADES','BLETTES & ÉPINARDS','CHOUX','LÉGUMES RACINES','TOMATES','AUBERGINES',
+    'POIVRONS & PIMENTS','COURGETTES','CONCOMBRES','MELONS',"LÉGUMES D'ÉTÉ",'AROMATIQUES','AUTRE'];
+
+  container.innerHTML = html;
+
+  famOrder.forEach(fam => {
+    if (!byFam[fam]) return;
+    const famRow = document.createElement('div');
+    famRow.className = 'cal-row section-header';
+    const famLabel = document.createElement('div');
+    famLabel.className = 'cal-section-label';
+    famLabel.innerHTML = `<span style="color:${FAMILLES_COLORS_CAL[fam]||'var(--text-muted)'}">●</span>${fam}`;
+    famRow.appendChild(famLabel);
+    container.appendChild(famRow);
+
+    byFam[fam].forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'cal-row';
+      const cultureCell = document.createElement('div');
+      cultureCell.className = 'cal-culture';
+      const lieuIcons = { serre:'🏠', bacs:'🪴', jardin:'🌳' };
+      cultureCell.innerHTML = `<span style="font-size:.8rem">${lieuIcons[c.lieu]||''}</span><span class="culture-name" style="text-decoration:underline dotted;text-decoration-color:var(--border2)">${c.culture}</span>`;
+      cultureCell.title = (c.notes ? c.notes+' — ' : '') + 'Voir la fiche';
+      cultureCell.style.cursor = 'pointer';
+      cultureCell.addEventListener('click', () => { window.location.href = '/variete.html?v='+encodeURIComponent(c.culture); });
+      row.appendChild(cultureCell);
+
+      const barsCell = document.createElement('div');
+      barsCell.style.cssText = 'position:relative;grid-column:2/-1;display:block;';
+
+      if (c.semis && c.plantation) {
+        renderBar(barsCell, c.semis, c.plantation, 'bar-semis', `Semis : ${fmtDateShort(c.semis)} → plantation ${fmtDateShort(c.plantation)}`);
+      } else if (c.semis && !c.plantation) {
+        const semisEnd = new Date(c.semis); semisEnd.setDate(semisEnd.getDate()+14);
+        renderBar(barsCell, c.semis, semisEnd.toISOString().slice(0,10), 'bar-semis', `Semis direct : ${fmtDateShort(c.semis)}`);
+      }
+      if (c.plantation && c.recolteDebut) {
+        renderBar(barsCell, c.plantation, c.recolteDebut, 'bar-plantation', `En place : ${fmtDateShort(c.plantation)} → ${fmtDateShort(c.recolteDebut)}`);
+      }
+      if (c.recolteDebut && c.recolteFin) {
+        renderBar(barsCell, c.recolteDebut, c.recolteFin, 'bar-recolte-prev', `Récolte prévue : ${fmtDateShort(c.recolteDebut)} → ${fmtDateShort(c.recolteFin)}`);
+      }
+      const premierReel = getPremiereDateReelle(c.culture);
+      const dernierReel = getDerniereDateReelle(c.culture);
+      if (premierReel) {
+        const finReel = dernierReel || premierReel;
+        const finReelDate = new Date(finReel); finReelDate.setDate(finReelDate.getDate()+1);
+        renderBar(barsCell, premierReel, finReelDate.toISOString().slice(0,10), 'bar-recolte-reel',
+          `Récolte réelle : ${fmtDateShort(premierReel)}${premierReel!==dernierReel?' → '+fmtDateShort(dernierReel):''}`);
+      }
+      row.appendChild(barsCell);
+      container.appendChild(row);
+    });
+  });
+
+  // Ligne aujourd'hui
+  const todayCol = dateToCol(today.toISOString().slice(0,10));
+  if (todayCol !== null) {
+    container.style.position = 'relative';
+    const line = document.createElement('div');
+    line.style.cssText = `position:absolute;top:0;bottom:0;width:2px;background:var(--accent);opacity:.6;pointer-events:none;z-index:10;`;
+    line.style.left = `calc(160px + ${todayCol/12} * (100% - 160px))`;
+    container.appendChild(line);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// PLANIFIER — Durées et logique
+// ══════════════════════════════════════════════════════════════
+
+const DUREES_FAMILLE = {
+  'SALADES':            { semisPlanteation:30, plantationRecolte:45, dureeRecolte:60 },
+  'BLETTES & ÉPINARDS': { semisPlanteation:35, plantationRecolte:50, dureeRecolte:90 },
+  'CHOUX':              { semisPlanteation:35, plantationRecolte:60, dureeRecolte:60 },
+  'LÉGUMES RACINES':    { semisPlanteation:0,  plantationRecolte:90, dureeRecolte:60 },
+  'TOMATES':            { semisPlanteation:50, plantationRecolte:75, dureeRecolte:120 },
+  'AUBERGINES':         { semisPlanteation:60, plantationRecolte:75, dureeRecolte:90 },
+  'POIVRONS & PIMENTS': { semisPlanteation:60, plantationRecolte:90, dureeRecolte:120 },
+  'COURGETTES':         { semisPlanteation:25, plantationRecolte:45, dureeRecolte:90 },
+  'CONCOMBRES':         { semisPlanteation:25, plantationRecolte:45, dureeRecolte:75 },
+  'MELONS':             { semisPlanteation:30, plantationRecolte:75, dureeRecolte:60 },
+  'AROMATIQUES':        { semisPlanteation:30, plantationRecolte:30, dureeRecolte:150 },
+  'LÉGUMES ETE':        { semisPlanteation:20, plantationRecolte:60, dureeRecolte:60 },
+};
+
+function calcDatesRecolte(semis, famille) {
+  const dur = DUREES_FAMILLE[famille];
+  if (!semis || !dur) return { debut:null, fin:null };
+  const debut = addDays(semis, dur.semisPlanteation + dur.plantationRecolte);
+  return { debut, fin: addDays(debut, dur.dureeRecolte) };
+}
+
+function planAutoCalcDates() {
+  const semis   = document.getElementById('plan-inp-semis').value;
+  const famille = document.getElementById('plan-inp-famille').value;
+  if (!semis || !famille) return;
+  const { debut, fin } = calcDatesRecolte(semis, famille);
+  if (debut) {
+    const debutEl = document.getElementById('plan-inp-recolte-debut');
+    const finEl   = document.getElementById('plan-inp-recolte-fin');
+    if (!debutEl.value) debutEl.value = debut;
+    if (!finEl.value)   finEl.value   = fin;
+    const hint = document.getElementById('plan-dates-hint');
+    const dur = DUREES_FAMILLE[famille];
+    hint.textContent = `Estimé : ${dur.semisPlanteation+dur.plantationRecolte}j du semis à la première récolte, fenêtre de ${dur.dureeRecolte}j`;
+    hint.style.display = 'block';
+  }
+}
+
+function planAddCulture() {
+  const culture        = document.getElementById('plan-inp-culture').value.trim();
+  const lieu           = document.getElementById('plan-inp-lieu').value;
+  const semis          = document.getElementById('plan-inp-semis').value;
+  const plantation     = document.getElementById('plan-inp-plantation').value;
+  const recolteDebut   = document.getElementById('plan-inp-recolte-debut').value;
+  const recolteFin     = document.getElementById('plan-inp-recolte-fin').value;
+  const famille        = document.getElementById('plan-inp-famille').value;
+  const nbPlants       = parseInt(document.getElementById('plan-inp-nbplants').value) || null;
+  const estPerpetuelle = document.getElementById('plan-inp-perpetuelle').checked;
+  const notes          = document.getElementById('plan-inp-notes').value.trim();
+
+  if (!culture || !semis) { alert('Le nom de la culture et la date de semis sont obligatoires.'); return; }
+
+  let finalDebut = recolteDebut, finalFin = recolteFin;
+  if ((!finalDebut || !finalFin) && famille) {
+    const auto = calcDatesRecolte(semis, famille);
+    if (!finalDebut) finalDebut = auto.debut;
+    if (!finalFin)   finalFin   = auto.fin;
+  }
+
+  const newCulture = { id:'c'+Date.now(), culture, lieu, semis, plantation:plantation||null, recolteDebut:finalDebut, recolteFin:finalFin, famille, nbPlants, notes, estPerpetuelle };
+  cultures.push(newCulture);
+  saveCalendrier(cultures);
+  invalidateCalCache();
+  planRenderListe();
+  showToast('✓ ' + culture + ' ajouté au calendrier');
+
+  // Reset
+  document.getElementById('plan-inp-culture').value = '';
+  document.getElementById('plan-inp-semis').value = '';
+  document.getElementById('plan-inp-plantation').value = '';
+  document.getElementById('plan-inp-recolte-debut').value = '';
+  document.getElementById('plan-inp-recolte-fin').value = '';
+  document.getElementById('plan-inp-nbplants').value = '';
+  document.getElementById('plan-inp-perpetuelle').checked = false;
+  document.getElementById('plan-inp-notes').value = '';
+  document.getElementById('plan-dates-hint').style.display = 'none';
+}
+
+function planDeleteCulture(id, e) {
+  e.stopPropagation();
+  if (!confirm('Supprimer cette culture du calendrier ?')) return;
+  cultures = cultures.filter(c => c.id !== id);
+  saveCalendrier(cultures);
+  invalidateCalCache();
+  planRenderListe();
+  showToast('Culture supprimée');
+}
+
+function planToggleEditRow(id, e) {
+  e.stopPropagation();
+  const row = document.getElementById('plan-edit-row-'+id);
+  const isOpen = row.classList.contains('open');
+  document.querySelectorAll('.edit-row-plan.open').forEach(r => r.classList.remove('open'));
+  if (!isOpen) row.classList.add('open');
+}
+
+function planCancelEdit(id, e) { e.stopPropagation(); document.getElementById('plan-edit-row-'+id).classList.remove('open'); }
+
+function planSaveEdit(id, e) {
+  e.stopPropagation();
+  const idx = cultures.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  const culture      = document.getElementById(`pec-culture-${id}`).value.trim();
+  const lieu         = document.getElementById(`pec-lieu-${id}`).value;
+  const famille      = document.getElementById(`pec-famille-${id}`).value;
+  const semis        = document.getElementById(`pec-semis-${id}`).value;
+  const plantation   = document.getElementById(`pec-plantation-${id}`).value || null;
+  const recolteDebut = document.getElementById(`pec-rdebut-${id}`).value;
+  const recolteFin   = document.getElementById(`pec-rfin-${id}`).value;
+  const nbPlants       = parseInt(document.getElementById(`pec-nbplants-${id}`).value) || null;
+  const estPerpetuelle = document.getElementById(`pec-perpetuelle-${id}`).checked;
+  const notes          = document.getElementById(`pec-notes-${id}`).value.trim();
+  if (!culture || !semis || !recolteDebut || !recolteFin) { alert('Culture, semis et dates de récolte sont obligatoires.'); return; }
+  cultures[idx] = { ...cultures[idx], culture, lieu, famille, semis, plantation, recolteDebut, recolteFin, nbPlants, estPerpetuelle, notes };
+  saveCalendrier(cultures);
+  invalidateCalCache();
+  planRenderListe();
+  showToast('✓ ' + culture + ' mis à jour');
+}
+
+let planSortCol = 'culture';
+let planSortDir = 1;
+
+function planSortListe(col) {
+  if (planSortCol === col) planSortDir *= -1;
+  else { planSortCol = col; planSortDir = 1; }
+  planRenderListe();
+}
+
+function planSortedCultures() {
+  return [...cultures].sort((a,b) => {
+    let va, vb;
+    switch(planSortCol) {
+      case 'culture': va=a.culture||''; vb=b.culture||''; break;
+      case 'famille': va=a.famille||''; vb=b.famille||''; break;
+      case 'semis':   va=a.semis||'';   vb=b.semis||'';   break;
+      case 'recolte': va=a.recolteDebut||''; vb=b.recolteDebut||''; break;
+      case 'plants':  va=a.nbPlants||0; vb=b.nbPlants||0; break;
+      default: va=''; vb='';
+    }
+    if (typeof va === 'number') return (va-vb)*planSortDir;
+    return va.localeCompare(vb,'fr')*planSortDir;
+  });
+}
+
+function planRenderListe() {
+  const el = document.getElementById('plan-listeCultures');
+  if (!cultures.length) { el.innerHTML='<div class="empty">Aucune culture planifiée.</div>'; return; }
+  const lieuIcons = { serre:'🏠', bacs:'🪴', jardin:'🌳' };
+  const familles = ['SALADES','BLETTES & ÉPINARDS','CHOUX','LÉGUMES RACINES','TOMATES','AUBERGINES',
+    'POIVRONS & PIMENTS','COURGETTES','CONCOMBRES','MELONS','AROMATIQUES','LÉGUMES ETE'];
+
+  const sa = (col) => `<span class="sort-arrow">${planSortCol===col?(planSortDir===1?'▲':'▼'):'⇅'}</span>`;
+
+  const rows = planSortedCultures().map(c => {
+    const recs = getRecoltesPourCulture(c.culture);
+    const hasReel = recs.length > 0;
+    const plantsBadge = c.nbPlants
+      ? `<span style="color:var(--green)">${c.nbPlants} plants</span>`
+      : `<span style="color:var(--amber);font-size:.68rem" title="Renseignez pour calculer g/pied">⚠ à renseigner</span>`;
+
+    return `
+      <tr id="plan-view-row-${c.id}" style="border-bottom:1px solid var(--border);cursor:pointer"
+          onmouseover="this.style.background='var(--green-light)'"
+          onmouseout="this.style.background=''"
+          onclick="planToggleEditRow('${c.id}',event)">
+        <td style="padding:9px 12px;color:var(--text);font-weight:500">
+          <span style="cursor:pointer;text-decoration:underline dotted;text-decoration-color:var(--border2)" onclick="event.stopPropagation();window.location.href='/variete.html?v='+encodeURIComponent('${c.culture.replace(/'/g,"\\'")}')">
+            ${lieuIcons[c.lieu]||''} ${c.culture}
+          </span>
+          ${hasReel?'<span style="margin-left:6px;font-size:.6rem;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.3);padding:1px 5px;border-radius:8px">✓ récolté</span>':''}
+          ${c.estPerpetuelle?'<span style="margin-left:4px;font-size:.6rem;background:rgba(163,230,53,.1);color:var(--accent);border:1px solid rgba(163,230,53,.3);padding:1px 5px;border-radius:8px">♾️ perpétuelle</span>':''}
+        </td>
+        <td style="padding:9px 12px;color:var(--text-dim);font-size:.75rem">${c.famille||'—'}</td>
+        <td style="padding:9px 12px;color:var(--text-dim)">${fmtDate(c.semis)}</td>
+        <td style="padding:9px 12px;color:var(--text-dim)">${fmtDate(c.recolteDebut)} → ${fmtDate(c.recolteFin)}</td>
+        <td style="padding:9px 12px">${plantsBadge}</td>
+        <td style="padding:9px 8px;text-align:right;white-space:nowrap">
+          <button class="edit-btn-plan" onclick="planToggleEditRow('${c.id}',event)" title="Modifier">✏</button>
+          <button class="del-btn" onclick="planDeleteCulture('${c.id}',event)" title="Supprimer">✕</button>
+        </td>
+      </tr>
+      <tr class="edit-row-plan" id="plan-edit-row-${c.id}">
+        <td colspan="6">
+          <div class="edit-inner-plan">
+            <div class="edit-grid-plan">
+              <div class="edit-field-plan" style="grid-column:1/-1">
+                <label class="edit-label-plan">Culture</label>
+                <input class="edit-input-plan" id="pec-culture-${c.id}" value="${c.culture.replace(/"/g,'&quot;')}">
+              </div>
+              <div class="edit-field-plan">
+                <label class="edit-label-plan">Lieu</label>
+                <select class="edit-input-plan" id="pec-lieu-${c.id}">
+                  <option value="serre" ${c.lieu==='serre'?'selected':''}>🏠 Serre</option>
+                  <option value="bacs"  ${c.lieu==='bacs' ?'selected':''}>🪴 Bacs</option>
+                  <option value="jardin"${c.lieu==='jardin'?'selected':''}>🌳 Jardin</option>
+                </select>
+              </div>
+              <div class="edit-field-plan">
+                <label class="edit-label-plan">Famille</label>
+                <select class="edit-input-plan" id="pec-famille-${c.id}">
+                  <option value="">—</option>
+                  ${familles.map(f=>`<option value="${f}" ${c.famille===f?'selected':''}>${f}</option>`).join('')}
+                </select>
+              </div>
+              <div class="edit-field-plan">
+                <label class="edit-label-plan">Nb de plants</label>
+                <input class="edit-input-plan" type="number" id="pec-nbplants-${c.id}" value="${c.nbPlants||''}" placeholder="ex: 6" min="1">
+              </div>
+              <div class="edit-field-plan">
+                <label class="edit-label-plan">Type</label>
+                <div style="display:flex;align-items:center;gap:8px;padding:9px 10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;cursor:pointer" onclick="document.getElementById('pec-perpetuelle-${c.id}').click()">
+                  <input type="checkbox" id="pec-perpetuelle-${c.id}" ${c.estPerpetuelle?'checked':''} onclick="event.stopPropagation()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+                  <span style="font-size:.82rem;color:var(--text-dim)">Perpétuelle ♾️</span>
+                </div>
+              </div>
+              <div class="edit-field-plan">
+                <label class="edit-label-plan">Date de semis</label>
+                <input class="edit-input-plan" type="date" id="pec-semis-${c.id}" value="${c.semis||''}">
+              </div>
+              <div class="edit-field-plan">
+                <label class="edit-label-plan">Plantation</label>
+                <input class="edit-input-plan" type="date" id="pec-plantation-${c.id}" value="${c.plantation||''}">
+              </div>
+              <div class="edit-field-plan">
+                <label class="edit-label-plan">Début récolte</label>
+                <input class="edit-input-plan" type="date" id="pec-rdebut-${c.id}" value="${c.recolteDebut||''}">
+              </div>
+              <div class="edit-field-plan">
+                <label class="edit-label-plan">Fin récolte</label>
+                <input class="edit-input-plan" type="date" id="pec-rfin-${c.id}" value="${c.recolteFin||''}">
+              </div>
+              <div class="edit-field-plan" style="grid-column:1/-1">
+                <label class="edit-label-plan">Notes</label>
+                <input class="edit-input-plan" id="pec-notes-${c.id}" value="${(c.notes||'').replace(/"/g,'&quot;')}" placeholder="observations…">
+              </div>
+            </div>
+            <div class="edit-actions-plan">
+              <button class="save-btn-plan" onclick="planSaveEdit('${c.id}',event)">Enregistrer</button>
+              <button class="cancel-btn-plan" onclick="planCancelEdit('${c.id}',event)">Annuler</button>
+              <button class="cancel-btn-plan" onclick="planDeleteCulture('${c.id}',event)" style="margin-left:auto;color:var(--red);border-color:rgba(248,113,113,.4)">🗑 Supprimer</button>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  el.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+      <thead style="background:var(--bg2);border-bottom:1px solid var(--border)">
+        <tr>
+          <th class="th-sort ${planSortCol==='culture'?'active':''}" onclick="planSortListe('culture')" style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Culture${sa('culture')}</th>
+          <th class="th-sort ${planSortCol==='famille'?'active':''}" onclick="planSortListe('famille')" style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Famille${sa('famille')}</th>
+          <th class="th-sort ${planSortCol==='semis'?'active':''}" onclick="planSortListe('semis')" style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Semis${sa('semis')}</th>
+          <th class="th-sort ${planSortCol==='recolte'?'active':''}" onclick="planSortListe('recolte')" style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Récolte prévue${sa('recolte')}</th>
+          <th class="th-sort ${planSortCol==='plants'?'active':''}" onclick="planSortListe('plants')" style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Plants${sa('plants')}</th>
+          <th style="padding:8px 8px;text-align:right;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500">Actions</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// DIAGNOSTIC
+// ══════════════════════════════════════════════════════════════
+
 function showDiag() {
   var cal = JSON.parse(localStorage.getItem('jardin_calendrier_v1') || '[]');
   var recs = JSON.parse(localStorage.getItem('jardin_recoltes_v2') || '[]');
-  var lines = ['=== DIAGNOSTIC ===','currentSaison: '+currentSaison,'Recoltes: '+recs.length,'Calendrier: '+cal.length+' cultures','','--- Dernieres recoltes ---'];
-  recs.slice(0,5).forEach(function(r){lines.push(r.date+' '+r.vegetal);});
-  var msg = lines.join('\n');
+  var normStr = function(s) {
+    return s.toLowerCase()
+      .replace(/[eéèêë]/g,'e').replace(/[aàâ]/g,'a').replace(/[iîï]/g,'i')
+      .replace(/[oô]/g,'o').replace(/[uùûü]/g,'u').replace(/c/g,'c')
+      .replace(/[^a-z ]/g,' ').trim();
+  };
+  var lines = ['=== DIAGNOSTIC ==='];
+  lines.push('currentSaison: ' + currentSaison);
+  lines.push('Recoltes: ' + recs.length);
+  lines.push('Calendrier: ' + cal.length + ' cultures');
+  var SEP = String.fromCharCode(10);
+  var msg = lines.join(SEP);
   if (confirm(msg)) {
-    if (navigator.clipboard) navigator.clipboard.writeText(msg).then(function(){alert('Copie OK');});
+    if (navigator.clipboard) navigator.clipboard.writeText(msg).then(function() { alert('Copie OK'); });
   } else {
     if (confirm('Reset calendrier uniquement ? (recoltes preservees)')) {
-      localStorage.removeItem('jardin_calendrier_v1'); invalidateCalCache(); _rebuildAndRender(); alert('Calendrier reinitialise.');
+      localStorage.removeItem('jardin_calendrier_v1');
+      invalidateCalCache();
+      cultures = loadCalendrier();
+      _rebuildAndRender();
+      alert('Calendrier reinitialise.');
     }
   }
 }
 
-// ── INIT ──────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+
 document.getElementById('inp-date').valueAsDate = new Date();
+document.getElementById('plan-inp-semis').valueAsDate = new Date();
+
 invalidateCalCache();
 buildSaisonSelect();
+
 const sSelect = document.getElementById('saisonSelect');
 if (sSelect) {
-  const opts = Array.from(sSelect.options).map(o=>o.value);
+  const opts = Array.from(sSelect.options).map(o => o.value);
   if (opts.includes(currentSaison)) sSelect.value = currentSaison;
   else if (opts.length > 1) { currentSaison = opts[1]; sSelect.value = currentSaison; }
   else { currentSaison = 'toutes'; sSelect.value = 'toutes'; }
 }
+
 renderAll();
 syncFromSheets();
 </script>
