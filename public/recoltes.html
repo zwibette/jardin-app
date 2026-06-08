@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Récoltes — Jardin Vivant</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Karla:wght@300;400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,200&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
@@ -30,6 +30,120 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* ── HEADER PRINCIPAL (identique index.html) ── */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(10,18,11,.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+.site-header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+.logo {
+  font-family: 'Fraunces', serif;
+  font-size: 1.2rem;
+  font-weight: 300;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.logo-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+.nav-tabs-main {
+  display: flex;
+  gap: 3px;
+  background: var(--surface);
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.nav-tab-main {
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 7px;
+  transition: all .2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.nav-tab-main:hover { color: var(--text-dim); }
+.nav-tab-main.active {
+  background: #142016;
+  color: var(--accent);
+  border: 1px solid var(--border);
+}
+
+/* ── SOUS-NAV CULTURES ── */
+.sub-nav {
+  background: #0f1c10;
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+.sub-nav-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 44px;
+}
+.sub-nav-label {
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #4a6b52;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+.sub-tab {
+  padding: 5px 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4a6b52;
+  font-family: 'Karla', sans-serif;
+  font-size: .7rem;
+  letter-spacing: .05em;
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all .2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.sub-tab:hover { color: #8fb898; border-color: var(--border); }
+.sub-tab.active {
+  background: rgba(163,230,53,.1);
+  border-color: rgba(163,230,53,.35);
+  color: #a3e635;
+}
+
 body {
   font-family: 'Karla', sans-serif;
   background: var(--bg);
@@ -50,14 +164,15 @@ body::before {
   opacity: 0.6;
 }
 
-/* HEADER */
-header {
+/* HEADER PAGE */
+.page-header {
   background: #0f1c10;
   border-bottom: 1px solid var(--border);
   color: var(--text);
   padding: 20px 20px 16px;
   position: relative;
   z-index: 10;
+  max-width: 100%;
 }
 
 .header-top {
@@ -556,12 +671,36 @@ td:first-child { color: var(--text); font-weight: 500; }
 
 <div class="toast" id="toast"></div>
 
-<header>
+<!-- ── HEADER PRINCIPAL (identique index.html) ── -->
+<header class="site-header">
+  <div class="site-header-inner">
+    <a href="/" class="logo"><div class="logo-dot"></div>Jardin Vivant</a>
+    <div class="nav-tabs-main">
+      <a href="/" class="nav-tab-main">Dashboard</a>
+      <a href="/appareils.html" class="nav-tab-main">Appareils</a>
+      <a href="/bassin.html" class="nav-tab-main">Bassin</a>
+      <a href="/recoltes.html" class="nav-tab-main active">Cultures</a>
+      <a href="/conseils.html" class="nav-tab-main">Conseils</a>
+    </div>
+  </div>
+</header>
+
+<!-- ── SOUS-NAV CULTURES ── -->
+<div class="sub-nav">
+  <div class="sub-nav-inner">
+    <span class="sub-nav-label">Cultures —</span>
+    <a href="/recoltes.html" class="sub-tab active">🌿 Récoltes</a>
+    <a href="/calendrier.html" class="sub-tab">📅 Calendrier</a>
+    <a href="/planifier.html" class="sub-tab">📋 Planifier</a>
+  </div>
+</div>
+
+<!-- ── HEADER PAGE ── -->
+<div class="page-header">
   <div class="header-top">
-    <a href="/" class="back-btn">← Dashboard</a>
+    <div></div>
     <button onclick="showDiag()" style="background:transparent;border:none;color:var(--text-muted);font-size:.6rem;cursor:pointer;opacity:.4;letter-spacing:.05em" title="Diagnostic">⚙</button>
     <div style="display:flex;align-items:center;gap:10px">
-      <a href="/calendrier.html" class="back-btn" style="background:rgba(163,230,53,.12);border-color:rgba(163,230,53,.3);color:var(--accent)">📅 Calendrier</a>
       <select class="saison-select" id="saisonSelect" onchange="changerSaison(this.value)" title="Filtrer par saison">
         <option value="toutes">Toutes les saisons</option>
       </select>
@@ -575,7 +714,7 @@ td:first-child { color: var(--text); font-weight: 500; }
     <div class="hstat"><span class="hstat-val" id="hNbVarietes">—</span><span class="hstat-lbl">variétés</span></div>
     <div class="hstat"><span class="hstat-val" id="hMeilleur">—</span><span class="hstat-lbl">meilleur rendement</span></div>
   </div>
-</header>
+</div>
 
 <main>
 
