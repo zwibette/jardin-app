@@ -52,173 +52,54 @@ body::before {
   opacity: 0.6;
 }
 
-/* ── HEADER PRINCIPAL (style bassin/index) ── */
-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(10,18,11,.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 16px;
-}
+/* ── HEADER — identique à index.html ── */
+header{position:sticky;top:0;z-index:100;background:rgba(10,18,11,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 16px}
+.header-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:var(--accent);display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.header-right{display:flex;align-items:center;gap:10px}
+.header-status{font-size:.62rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
 
-.header-inner {
-  max-width: 960px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-}
-
-.logo {
-  font-family: 'Fraunces', serif;
-  font-size: 1.2rem;
-  font-weight: 300;
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-}
-
-.logo-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--green);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.header-stats-inline {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.hstat-inline {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.hstat-val {
-  font-family: 'Fraunces', serif;
-  font-size: 1.1rem;
-  font-weight: 300;
-  line-height: 1;
-  color: var(--text);
-}
-
-.hstat-lbl {
-  font-size: .55rem;
-  color: var(--text-muted);
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  margin-top: 1px;
-}
-
+/* ── SAISON SELECT (dans le header-right) ── */
 .saison-select {
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.15);
-  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
   font-family: 'DM Mono', monospace;
   font-size: .62rem;
   letter-spacing: .06em;
-  padding: 5px 8px;
+  padding: 4px 8px;
   border-radius: 7px;
   cursor: pointer;
   outline: none;
   -webkit-appearance: none;
+  transition: border-color .2s;
 }
-
 .saison-select:focus { border-color: var(--accent); }
-.saison-select option { background: #0f1c10; color: var(--text); }
+.saison-select option { background: #0a120b; color: var(--text); }
 
-/* ── NAV PRINCIPALE (style bassin/index) ── */
-.nav-main {
-  max-width: 960px;
-  margin: 0 auto;
-  display: flex;
-  gap: 3px;
-  padding: 8px 16px 0;
-}
+/* ── NAV PRINCIPALE — identique à index.html nav-tabs, mais dans main ── */
+.nav-tabs{display:flex;gap:3px;margin-bottom:0;background:var(--surface);padding:3px;border-radius:10px;border:1px solid var(--border)}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
+.tab.active{background:#142016;color:var(--accent);border:1px solid var(--border)}
+.tab:hover:not(.active){color:var(--text-dim)}
 
-.nav-main-tab {
-  flex: 1;
-  padding: 8px 4px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: 'DM Mono', monospace;
-  font-size: .65rem;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  border-radius: 7px 7px 0 0;
-  transition: all .2s;
-  border-bottom: 2px solid transparent;
-}
+/* ── NAV SECONDAIRE — même charte que nav-tabs mais pills ── */
+.nav-secondary{margin-top:6px;margin-bottom:16px;display:flex;gap:3px;background:var(--surface);padding:3px;border-radius:10px;border:1px solid var(--border)}
+.nav-sec-tab{flex:1;padding:7px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s;white-space:nowrap}
+.nav-sec-tab.active{background:#142016;color:var(--accent);border:1px solid var(--border)}
+.nav-sec-tab:hover:not(.active){color:var(--text-dim)}
 
-.nav-main-tab:hover:not(.active) { color: var(--text-dim); }
-.nav-main-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+/* ── CONTENU PRINCIPAL — identique à index.html ── */
+main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 
-/* ── NAV SECONDAIRE ── */
-.nav-secondary {
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  padding: 0 16px;
-  position: sticky;
-  top: 56px;
-  z-index: 90;
-}
-
-.nav-secondary-inner {
-  max-width: 960px;
-  margin: 0 auto;
-  display: flex;
-  gap: 2px;
-}
-
-.nav-sec-tab {
-  padding: 10px 18px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: 'DM Mono', monospace;
-  font-size: .68rem;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all .2s;
-  white-space: nowrap;
-}
-
-.nav-sec-tab:hover:not(.active) { color: var(--text-dim); }
-.nav-sec-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-/* ── CONTENU PRINCIPAL ── */
-main {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 20px 16px 40px;
-  position: relative;
-  z-index: 1;
-}
-
-/* ── SECTION TITLES ── */
+/* ── METRIC CARDS — identique à index.html ── */
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green-dark),transparent);opacity:.6}
+.metric-label{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;font-family:'DM Mono',monospace}
+.metric-unit{font-size:.8rem;color:var(--text-muted);margin-top:4px}
 .stitle {
   font-family: 'Fraunces', serif;
   font-size: 1rem;
@@ -634,74 +515,74 @@ td:first-child { color: var(--text); font-weight: 500; }
 }
 
 @media(max-width:480px) {
-  .header-stats-inline { display: none; }
   th:nth-child(n+4), td:nth-child(n+4) { display: none; }
-  .nav-sec-tab { padding: 10px 10px; font-size: .6rem; }
 }
 </style>
 </head>
 <body>
 
-<div class="toast" id="toast"></div>
-
-<!-- ── HEADER PRINCIPAL ── -->
+<!-- ── HEADER — identique à index.html ── -->
 <header>
   <div class="header-inner">
-    <a href="/" class="logo"><div class="logo-dot"></div>🌿 Jardin Vivant</a>
+    <div class="logo"><div class="logo-dot"></div>Jardin Vivant</div>
     <div class="header-right">
-      <div class="header-stats-inline">
-        <div class="hstat-inline">
-          <span class="hstat-val" id="hTotalKg">—</span>
-          <span class="hstat-lbl">kg récoltés</span>
-        </div>
-        <div class="hstat-inline">
-          <span class="hstat-val" id="hNbRecoltes">—</span>
-          <span class="hstat-lbl">récoltes</span>
-        </div>
-        <div class="hstat-inline">
-          <span class="hstat-val" id="hNbVarietes">—</span>
-          <span class="hstat-lbl">variétés</span>
-        </div>
-        <div class="hstat-inline">
-          <span class="hstat-val" id="hMeilleur" style="font-size:.85rem;">—</span>
-          <span class="hstat-lbl">top rendement</span>
-        </div>
-      </div>
       <select class="saison-select" id="saisonSelect" onchange="changerSaison(this.value)" title="Filtrer par saison">
         <option value="toutes">Toutes les saisons</option>
       </select>
-      <button onclick="showDiag()" style="background:transparent;border:none;color:var(--text-muted);font-size:.7rem;cursor:pointer;opacity:.35" title="Diagnostic">⚙</button>
+      <button onclick="showDiag()" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:34px;height:34px;border-radius:8px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Diagnostic">⚙</button>
     </div>
-  </div>
-  <!-- Nav principale -->
-  <div class="nav-main">
-    <button class="nav-main-tab" onclick="window.location.href='/'">Dashboard</button>
-    <button class="nav-main-tab" onclick="window.location.href='/'">Appareils</button>
-    <button class="nav-main-tab active">Cultures</button>
-    <button class="nav-main-tab" onclick="window.location.href='/'">Conseils</button>
   </div>
 </header>
 
-<!-- ── NAV SECONDAIRE ── -->
-<div class="nav-secondary">
-  <div class="nav-secondary-inner">
-    <button class="nav-sec-tab active" id="sec-recoltes" onclick="showSecTab('recoltes', this)">🌿 Récoltes</button>
-    <button class="nav-sec-tab" id="sec-calendrier" onclick="showSecTab('calendrier', this)">📅 Calendrier</button>
-    <button class="nav-sec-tab" id="sec-planifier" onclick="showSecTab('planifier', this)">✚ Planifier</button>
-  </div>
-</div>
-
 <main>
 
+  <!-- NAV PRINCIPALE — identique à index.html nav-tabs -->
+  <div class="nav-tabs">
+    <button class="tab" onclick="window.location.href='/'">Dashboard</button>
+    <button class="tab" onclick="window.location.href='/'">Appareils</button>
+    <button class="tab" onclick="window.location.href='/bassin.html'">Bassin</button>
+    <button class="tab active">Cultures</button>
+    <button class="tab" onclick="window.location.href='/'">Conseils</button>
+  </div>
+
+  <!-- NAV SECONDAIRE — même charte que nav-tabs -->
+  <div class="nav-secondary">
+    <button class="nav-sec-tab active" onclick="showSecTab('recoltes', this)">🌿 Récoltes</button>
+    <button class="nav-sec-tab" onclick="showSecTab('calendrier', this)">📅 Calendrier</button>
+    <button class="nav-sec-tab" onclick="showSecTab('planifier', this)">✚ Planifier</button>
+  </div>
+
   <!-- SYNC BADGE -->
-  <div style="text-align:right;margin-bottom:8px">
+  <div style="text-align:right;margin-bottom:8px;margin-top:4px">
     <span id="syncBadge" style="font-size:.62rem;color:var(--green);letter-spacing:.08em;opacity:0;transition:opacity .5s;font-family:'DM Mono',monospace"></span>
   </div>
 
   <!-- ══ ONGLET RÉCOLTES ══ -->
   <div id="tab-recoltes">
 
-    <!-- SAISIE RAPIDE -->
+    <!-- STATS HEADER -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      <div class="metric-card" style="flex:1;min-width:110px;padding:14px 16px">
+        <div class="metric-label">Total récolté</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:300;line-height:1;color:var(--text)" id="hTotalKg">—</div>
+        <div class="metric-unit">kg</div>
+      </div>
+      <div class="metric-card" style="flex:1;min-width:110px;padding:14px 16px">
+        <div class="metric-label">Récoltes</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:300;line-height:1;color:var(--text)" id="hNbRecoltes">—</div>
+        <div class="metric-unit">entrées</div>
+      </div>
+      <div class="metric-card" style="flex:1;min-width:110px;padding:14px 16px">
+        <div class="metric-label">Variétés</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.8rem;font-weight:300;line-height:1;color:var(--text)" id="hNbVarietes">—</div>
+        <div class="metric-unit">cultivées</div>
+      </div>
+      <div class="metric-card" style="flex:1;min-width:140px;padding:14px 16px">
+        <div class="metric-label">Top rendement</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:300;line-height:1.2;color:var(--accent)" id="hMeilleur">—</div>
+        <div class="metric-unit">g/plant</div>
+      </div>
+    </div>
     <div class="section">
       <div class="stitle">✚ Nouvelle récolte</div>
       <div class="saisie-card">
@@ -862,6 +743,8 @@ td:first-child { color: var(--text); font-weight: 500; }
   </div>
 
 </main>
+
+<div class="toast" id="toast"></div>
 
 <script>
 // ── NAV SECONDAIRE ────────────────────────────────────────────
