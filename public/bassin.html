@@ -455,7 +455,7 @@ function renderParamsGrid() {
         <span class="param-status ${st||'na'}" id="ps-${p.id}"></span>
         <input class="param-input${autoClass}${stClass}" id="pi-${p.id}" type="number" step="0.01"
           value="${val}" placeholder="—"
-          oninput="onParamChange('${p.id}',this.value)">
+          oninput="onParamChange('${p.id}',this.value)${p.autoFill ? ';markManualInput(\''+p.id+'\')' : ''}">
       </div>
     </div>`;
   }).join('');
@@ -474,26 +474,48 @@ function onParamChange(id, val) {
   st.className  = 'param-status ' + (val !== '' ? s : 'na');
 }
 
-// ── VALEURS AUTO (pré-remplissage depuis capteurs MyFood) ────
+// ── VALEURS AUTO (depuis capteurs MyFood via index.html → localStorage) ────
+// index.html écrit 'bassin_myfood_latest' à chaque appel /api/myfood réussi.
+// On lit toujours la valeur la plus récente et on l'injecte dans les champs
+// pH et température eau, en affichant un badge "serre" pour indiquer l'origine.
 function loadAutoValues() {
   const myfood = (() => { try { return JSON.parse(localStorage.getItem('bassin_myfood_latest')||'null'); } catch(e){return null;} })();
-  if (myfood) {
-    // Pré-remplir seulement si l'utilisateur n'a pas déjà saisi une valeur manuellement
-    if (myfood.ph !== null && myfood.ph !== undefined && lastEau.ph === undefined) {
-      lastEau.ph = myfood.ph;
-    }
-    if (myfood.waterTemp !== null && myfood.waterTemp !== undefined && lastEau.temperature === undefined) {
-      lastEau.temperature = myfood.waterTemp;
-    }
-  }
-  ['ph','temperature'].forEach(id => {
+  if (!myfood) return;
+
+  const MAX_AGE_MS = 12 * 60 * 60 * 1000; // données valides 12h max
+  const age = myfood.ts ? Date.now() - myfood.ts : Infinity;
+  if (age > MAX_AGE_MS) return;
+
+  const mapping = { ph: myfood.ph, temperature: myfood.waterTemp };
+  const tsLabel = myfood.ts ? new Date(myfood.ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+
+  Object.entries(mapping).forEach(([id, val]) => {
+    if (val === null || val === undefined) return;
     const inp = document.getElementById('pi-'+id);
-    if (inp && lastEau[id] !== undefined && lastEau[id] !== '') {
-      inp.value = lastEau[id];
-      onParamChange(id, lastEau[id]);
-      inp.classList.add('auto'); // style bleuté pour signaler l'origine capteur
+    if (!inp) return;
+    // Injecter uniquement si pas de saisie manuelle plus récente
+    const manualKey = 'bassin_manual_'+id;
+    const manualTs  = parseInt(localStorage.getItem(manualKey) || '0');
+    if (manualTs > (myfood.ts || 0)) return; // saisie manuelle plus récente → ne pas écraser
+    inp.value = val;
+    inp.classList.add('auto');
+    onParamChange(id, val);
+    // Badge d'origine sous le champ
+    const badgeId = 'myfood-badge-'+id;
+    let badge = document.getElementById(badgeId);
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.id = badgeId;
+      badge.style.cssText = 'font-size:.58rem;color:var(--accent);letter-spacing:.05em;margin-top:2px;opacity:.8';
+      inp.parentNode.appendChild(badge);
     }
+    badge.textContent = '📡 Serre' + (tsLabel ? ' · ' + tsLabel : '');
   });
+}
+
+// Marquer une saisie manuelle pour ne pas être écrasée par les données serre
+function markManualInput(id) {
+  try { localStorage.setItem('bassin_manual_'+id, Date.now().toString()); } catch(e) {}
 }
 
 // ── ANALYSE EAU ──────────────────────────────────────────────
