@@ -48,17 +48,26 @@ module.exports = async function handler(req, res) {
 
   try {
     const token = await getToken();
-    const url = `${BASE}/api/v1/ProductUnit/GetProductUnitDetailForUser?ProductUnitId=${unitId}`;
-    const r = await fetch(url, {
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Accept': 'application/json',
-        'Accept-Language': 'en-US',
-      }
-    });
-    const raw = await r.text();
+    // Tester les deux routes connues avec id= (paramètre confirmé par MyFood)
+    const endpoints = [
+      `${BASE}/api/v1/ProductUnit/GetProductUnitDetailForUser?id=${unitId}`,
+      `${BASE}/api/v1/ProductionUnit/GetProductionUnitDetailForUser?id=${unitId}`,
+    ];
 
-    if (raw.trim().startsWith('<')) {
+    let raw = null;
+    for (const url of endpoints) {
+      const r = await fetch(url, {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Accept': 'application/json',
+          'Accept-Language': 'en-US',
+        }
+      });
+      const text = await r.text();
+      if (!text.trim().startsWith('<')) { raw = text; break; }
+    }
+
+    if (!raw) {
       return res.status(503).json({ success: false, error: 'MyFood API inaccessible (Blazor WASM)' });
     }
 
