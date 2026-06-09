@@ -538,11 +538,9 @@ td:first-child { color: var(--text); font-weight: 500; }
 
   <!-- NAV PRINCIPALE — identique à index.html nav-tabs -->
   <div class="nav-tabs">
-    <button class="tab" onclick="window.location.href='/'">Dashboard</button>
-    <button class="tab" onclick="window.location.href='/'">Appareils</button>
+    <button class="tab" onclick="window.location.href='/'">Serre</button>
     <button class="tab" onclick="window.location.href='/bassin.html'">Bassin</button>
     <button class="tab active">Cultures</button>
-    <button class="tab" onclick="window.location.href='/'">Conseils</button>
   </div>
 
   <!-- NAV SECONDAIRE — même charte que nav-tabs -->
@@ -1103,16 +1101,10 @@ function renderStats() {
   document.getElementById('s3').textContent = (s.bacs/1000).toFixed(2);
   document.getElementById('s4').textContent = (s.jardin/1000).toFixed(2);
 
-  // s5 : total de pieds plantés pour les variétés récoltées cette saison
+  // s5 : total de pieds plantés — somme de tous les nbPlants du calendrier
   const cal = getCalCache();
-  const vegsFiltered = new Set(getRecoltesFiltered().map(r => r.vegetal));
-  const norm = str => str.toLowerCase().replace(/[éèêëàâîïôùûüç]/g, c => ({é:'e',è:'e',ê:'e',ë:'e',à:'a',â:'a',î:'i',ï:'i',ô:'o',ù:'u',û:'u',ü:'u',ç:'c'}[c]||c)).replace(/[^a-z0-9 ]/g,' ').trim();
   let totalPlants = 0;
-  vegsFiltered.forEach(veg => {
-    const nv = norm(veg);
-    const entries = cal.filter(c => norm(c.culture) === nv || (norm(c.culture).length > 6 && (norm(c.culture).startsWith(nv.substring(0,6)) || nv.startsWith(norm(c.culture).substring(0,6)))));
-    entries.forEach(e => { if (e.nbPlants) totalPlants += e.nbPlants; });
-  });
+  cal.forEach(c => { if (c.nbPlants) totalPlants += c.nbPlants; });
   document.getElementById('s5').textContent = totalPlants || '—';
 
   // s6 : nombre de variétés différentes cultivées sur la saison (depuis le calendrier)
