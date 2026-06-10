@@ -26,7 +26,6 @@ body::before{content:'';position:fixed;inset:0;background:
   radial-gradient(ellipse at 85% 70%,rgba(45,212,191,.04) 0%,transparent 50%);
   pointer-events:none;z-index:0}
 
-/* ── HEADER (même structure que index, palette bleue) ── */
 header{position:sticky;top:0;z-index:100;background:rgba(5,14,15,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 16px}
 .header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:56px}
 .logo{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:var(--accent);display:flex;align-items:center;gap:8px}
@@ -35,11 +34,18 @@ header{position:sticky;top:0;z-index:100;background:rgba(5,14,15,.95);backdrop-f
 .header-right{display:flex;align-items:center;gap:10px}
 .header-status{font-size:.62rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
 
-/* ── NAV TABS (même structure que index, teintes bleues) ── */
-.nav-tabs{display:flex;gap:3px;margin-bottom:20px;background:var(--surface2);padding:3px;border-radius:10px;border:1px solid var(--border)}
+/* ── NAV PRINCIPAL ── */
+.nav-tabs{display:flex;gap:3px;margin-bottom:8px;background:var(--surface2);padding:3px;border-radius:10px;border:1px solid var(--border)}
 .tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
 .tab:hover:not(.active){color:var(--accent)}
 .tab.active{background:var(--blue-dark);color:var(--accent);border:1px solid rgba(56,189,248,.3)}
+
+/* ── NAV SECONDAIRE (L'eau / Les poissons) ── */
+.nav-sub{display:flex;gap:3px;margin-bottom:16px;background:rgba(5,14,15,.7);padding:3px;border-radius:8px;border:1px solid var(--border)}
+.tab-sub{flex:1;padding:7px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s}
+.tab-sub:hover:not(.active){color:var(--teal)}
+.tab-sub.active{background:var(--blue-dark);color:var(--teal);border:1px solid rgba(45,212,191,.3)}
+.subsection{display:none}.subsection.active{display:block}
 
 /* ── LAYOUT ── */
 main{max-width:960px;margin:0 auto;padding:16px;position:relative;z-index:1}
@@ -48,21 +54,50 @@ main{max-width:960px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .stitle{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:400;font-style:italic;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .stitle span{font-size:.6rem;font-style:normal;font-family:'DM Mono',monospace;color:var(--text-muted);letter-spacing:.1em}
 
-/* ── BASSINS CONFIG ── */
-.bassins-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
-.bassin-item{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:14px 18px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:130px;cursor:pointer;transition:all .25s;position:relative}
-.bassin-item:hover{border-color:var(--accent)}
-.bassin-item .bassin-num{font-family:'Fraunces',serif;font-size:2rem;font-weight:300;line-height:1;color:var(--accent)}
-.bassin-item .bassin-lbl{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
-.bassin-item .bassin-vol{font-size:.85rem;color:var(--teal);font-weight:400;cursor:pointer;border-bottom:1px dashed var(--border2)}
-.bassin-item .bassin-vol:hover{color:var(--blue)}
-.bassin-edit-input{background:var(--bg2);border:1px solid var(--accent);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:.9rem;padding:4px 8px;outline:none;width:90px;text-align:center}
-.add-bassin-btn{background:transparent;border:1px dashed var(--border2);border-radius:12px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.75rem;padding:14px 20px;cursor:pointer;transition:all .2s;min-width:130px}
-.add-bassin-btn:hover{border-color:var(--accent);color:var(--accent)}
-.del-bassin-btn{position:absolute;top:6px;right:6px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.75rem;opacity:.4;transition:opacity .2s}
-.del-bassin-btn:hover{opacity:1;color:var(--red)}
-.total-eau-badge{background:var(--blue-dark);border:1px solid rgba(96,212,232,.25);border-radius:8px;padding:8px 14px;font-size:.75rem;color:var(--blue);display:inline-flex;align-items:center;gap:8px}
-.total-eau-badge strong{font-family:'Fraunces',serif;font-size:1.1rem;color:var(--accent)}
+/* ── ÉTAT SANTÉ BAC (comme serre-brief index.html) ── */
+.bac-brief{border-radius:12px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--border)}
+.bac-brief-ok  {border-color:rgba(45,212,191,.4);background:rgba(45,212,191,.06)}
+.bac-brief-warn{border-color:#92400e;background:rgba(251,191,36,.07)}
+.bac-brief-crit{border-color:#991b1b;background:rgba(248,113,113,.07)}
+.bac-brief-loading{background:var(--surface2);border:1px solid var(--border)}
+.bb-title{font-size:.88rem;font-weight:500;color:var(--text)}
+.bac-brief-ok .bb-title{color:var(--teal)}.bac-brief-warn .bb-title{color:var(--amber)}.bac-brief-crit .bb-title{color:var(--red)}
+.bb-items{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.bb-row{display:flex;align-items:flex-start;gap:7px;font-size:.76rem;color:var(--text-dim);line-height:1.4}
+.bb-row.ok{color:var(--teal)}.bb-row.warn{color:var(--amber)}.bb-row.crit{color:var(--red)}
+.bb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.bb-dot.ok{background:var(--teal)}.bb-dot.warn{background:var(--amber)}.bb-dot.crit{background:var(--red)}
+.bb-meta{font-size:.62rem;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap}
+
+/* ── MÉTRIQUES (pH & Temp eau) ── */
+.metrics-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:480px){.metrics-2col{grid-template-columns:1fr}}
+.metric-card-bac{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.metric-card-bac::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.35}
+.mc-label{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.mc-val{font-family:'Fraunces',serif;font-size:2.4rem;font-weight:300;line-height:1;margin:4px 0 2px}
+.mc-val.ok{color:var(--teal)}
+.mc-val.warn{color:var(--amber)}
+.mc-val.crit{color:var(--red)}
+.mc-val.na{color:var(--text-muted)}
+.mc-unit{font-size:.78rem;color:var(--text-muted);margin-top:2px}
+.dot-mc{width:6px;height:6px;border-radius:50%;display:inline-block}
+.dot-teal{background:var(--teal);box-shadow:0 0 5px var(--teal)}
+.dot-amber{background:var(--amber);box-shadow:0 0 5px var(--amber)}
+.dot-red{background:var(--red);box-shadow:0 0 5px var(--red)}
+.dot-gray{background:var(--text-muted)}
+
+/* ── GRAPHIQUES ── */
+.chart-card-bac{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:14px;margin-bottom:12px}
+.chart-title-bac{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.chart-wrap-bac{position:relative;height:130px}
+.chart-stats{display:flex;gap:14px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);flex-wrap:wrap}
+.cstat{font-size:.6rem;color:var(--text-muted);display:flex;flex-direction:column;gap:2px}
+.cstat-val{font-family:'Fraunces',serif;font-size:.85rem;color:var(--text-dim)}
+.range-selector{display:flex;gap:3px}
+.range-btn{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.06em;padding:2px 7px;border-radius:5px;cursor:pointer;transition:all .2s}
+.range-btn.active{background:var(--blue-dark);border-color:var(--accent);color:var(--accent)}
+.chart-overlay-bac{position:absolute;inset:0;background:rgba(5,14,15,.7);display:flex;align-items:center;justify-content:center;border-radius:8px;z-index:2}
 
 /* ── QUALITÉ EAU ── */
 .params-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
@@ -108,11 +143,11 @@ main{max-width:960px;margin:0 auto;padding:16px;position:relative;z-index:1}
 @keyframes spin{to{transform:rotate(360deg)}}
 .analyse-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px;color:var(--text-muted);font-size:.75rem}
 
-/* ── HISTORIQUE ── */
+/* ── HISTORIQUE MODAL ── */
 .historique-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;overflow-y:auto;padding:20px}
 .historique-modal.open{display:flex;align-items:flex-start;justify-content:center}
 .historique-inner{background:var(--surface);border:1px solid var(--border2);border-radius:16px;max-width:860px;width:100%;margin:auto;overflow:hidden}
-.historique-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.historique-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .historique-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:400;color:var(--accent)}
 .historique-close{background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;line-height:1}
 .historique-body{padding:20px}
@@ -120,15 +155,35 @@ main{max-width:960px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .hist-tab{padding:6px 10px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.05em;cursor:pointer;border-radius:6px;transition:all .2s}
 .hist-tab.active{background:var(--surface2);color:var(--accent);border:1px solid var(--border2)}
 .hist-chart-wrap{height:160px;margin-bottom:16px}
-.hist-analyse-btn{background:var(--bg2);border:1px solid var(--border2);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:.72rem;padding:8px 16px;border-radius:7px;cursor:pointer;transition:all .2s;width:100%;margin-bottom:12px}
+.hist-analyse-btn{background:var(--bg2);border:1px solid var(--border2);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:.72rem;padding:8px 16px;border-radius:7px;cursor:pointer;transition:all .2s;margin-bottom:8px}
 .hist-analyse-btn:hover{border-color:var(--accent);color:var(--accent)}
-.hist-analyse-result{font-size:.8rem;line-height:1.8;color:var(--text-dim);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;max-height:260px;overflow-y:auto}
+.hist-del-day-btn{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);color:var(--red);font-family:'DM Mono',monospace;font-size:.72rem;padding:8px 16px;border-radius:7px;cursor:pointer;transition:all .2s;margin-bottom:12px}
+.hist-del-day-btn:hover{background:rgba(248,113,113,.15)}
+.hist-analyse-result{font-size:.8rem;line-height:1.8;color:var(--text-dim);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;max-height:260px;overflow-y:auto;margin-bottom:12px}
 .hist-entries{max-height:200px;overflow-y:auto}
-.hist-entry{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.72rem}
+.hist-entry{display:grid;grid-template-columns:auto 1fr auto;gap:8px 16px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.72rem;align-items:center}
 .hist-entry:last-child{border-bottom:none}
 .hist-date{color:var(--text-muted);white-space:nowrap}
 .hist-vals{color:var(--text-dim);flex-wrap:wrap;display:flex;gap:6px}
 .hist-val-item{background:var(--surface2);border-radius:4px;padding:1px 6px;font-size:.65rem}
+.hist-del-entry{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.75rem;padding:2px 6px;border-radius:4px;transition:color .2s}
+.hist-del-entry:hover{color:var(--red)}
+
+/* ── BASSINS CONFIG ── */
+.bassins-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.bassin-item{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:14px 18px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:130px;cursor:pointer;transition:all .25s;position:relative}
+.bassin-item:hover{border-color:var(--accent)}
+.bassin-item .bassin-num{font-family:'Fraunces',serif;font-size:2rem;font-weight:300;line-height:1;color:var(--accent)}
+.bassin-item .bassin-lbl{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+.bassin-item .bassin-vol{font-size:.85rem;color:var(--teal);font-weight:400;cursor:pointer;border-bottom:1px dashed var(--border2)}
+.bassin-item .bassin-vol:hover{color:var(--blue)}
+.bassin-edit-input{background:var(--bg2);border:1px solid var(--accent);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:.9rem;padding:4px 8px;outline:none;width:90px;text-align:center}
+.add-bassin-btn{background:transparent;border:1px dashed var(--border2);border-radius:12px;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.75rem;padding:14px 20px;cursor:pointer;transition:all .2s;min-width:130px}
+.add-bassin-btn:hover{border-color:var(--accent);color:var(--accent)}
+.del-bassin-btn{position:absolute;top:6px;right:6px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.75rem;opacity:.4;transition:opacity .2s}
+.del-bassin-btn:hover{opacity:1;color:var(--red)}
+.total-eau-badge{background:var(--blue-dark);border:1px solid rgba(96,212,232,.25);border-radius:8px;padding:8px 14px;font-size:.75rem;color:var(--blue);display:inline-flex;align-items:center;gap:8px}
+.total-eau-badge strong{font-family:'Fraunces',serif;font-size:1.1rem;color:var(--accent)}
 
 /* ── POISSONS ── */
 .poissons-total{text-align:center;padding:20px 0 12px}
@@ -158,6 +213,9 @@ main{max-width:960px;margin:0 auto;padding:16px;position:relative;z-index:1}
 .fish-btn{background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted);border-radius:8px;padding:8px 16px;font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
 .fish-btn:hover{border-color:var(--teal);color:var(--teal)}
 
+/* ── VARIETY BADGE ── */
+.variety-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:12px;padding:2px 8px;font-size:.65rem;color:var(--accent)}
+
 /* ── TOAST ── */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--accent);color:#050e0f;padding:9px 20px;border-radius:20px;font-size:.78rem;z-index:1000;transition:transform .3s ease;box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -165,7 +223,6 @@ main{max-width:960px;margin:0 auto;padding:16px;position:relative;z-index:1}
 /* ── DIVERS ── */
 .empty-msg{text-align:center;padding:20px;color:var(--text-muted);font-size:.75rem;font-style:italic}
 select.event-input{-webkit-appearance:none}
-.variety-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:12px;padding:2px 8px;font-size:.65rem;color:var(--accent)}
 </style>
 </head>
 <body>
@@ -181,7 +238,10 @@ select.event-input{-webkit-appearance:none}
     <div class="historique-body">
       <div class="hist-tabs" id="histTabs"></div>
       <div class="hist-chart-wrap"><canvas id="histChart"></canvas></div>
-      <button class="hist-analyse-btn" onclick="analyseHistorique()">✦ Analyser l'évolution avec l'IA</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+        <button class="hist-analyse-btn" onclick="analyseHistorique()" style="flex:1">✦ Analyser l'évolution avec l'IA</button>
+        <button class="hist-del-day-btn" onclick="supprimerJour()" title="Supprimer toutes les entrées du jour sélectionné">🗑 Supprimer un jour</button>
+      </div>
       <div id="histAnalyseResult" style="display:none" class="hist-analyse-result"></div>
       <div id="histEntries" class="hist-entries"></div>
     </div>
@@ -196,109 +256,194 @@ select.event-input{-webkit-appearance:none}
     </div>
   </div>
 </header>
+
 <main>
+  <!-- NAV PRINCIPAL -->
   <div class="nav-tabs">
     <button class="tab" onclick="window.location.href='/'">Serre</button>
-    
     <button class="tab active">Bassin</button>
     <button class="tab" onclick="window.location.href='/recoltes.html'">Cultures</button>
-    
   </div>
 
-
-  <!-- ① QUALITÉ DE L'EAU -->
-  <div class="section-card">
-    <div class="stitle">💧 Qualité de mon eau <span>saisie manuelle + capteurs</span></div>
-    <div class="params-grid" id="paramsGrid"></div>
-    <div class="analyze-bar">
-      <button class="analyze-btn" id="analyzeBtn" onclick="lancerAnalyseEau()">
-        <span id="analyzeIcon">✦</span> Analyser avec l'IA
-      </button>
-      <a class="history-link" onclick="openHistorique()">📈 Historique</a>
-      <span class="last-save-info" id="lastSaveInfo"></span>
-    </div>
-    <div id="analyseResult"></div>
+  <!-- NAV SECONDAIRE -->
+  <div class="nav-sub">
+    <button class="tab-sub active" onclick="showSub('eau', this)">💧 L'eau</button>
+    <button class="tab-sub" onclick="showSub('poissons', this)">🐟 Les poissons</button>
   </div>
 
-  <!-- ② CONSEILS POISSONS IA -->
-  <div class="section-card">
-    <div class="stitle">🌊 Conseils pour tes poissons <span>IA · météo · saison</span></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div style="font-size:.72rem;color:var(--text-muted)">Conseils personnalisés basés sur ta situation actuelle</div>
-      <button class="fish-btn" id="fishConseilsBtn" onclick="genererConseilsPoissons()">
-        <span id="fishBtnIcon">✦</span> Générer les conseils
-      </button>
-    </div>
-    <div id="fishConseilsBody">
-      <div class="empty-msg">Clique sur "Générer les conseils" pour obtenir des recommandations personnalisées pour tes poissons.</div>
-    </div>
-  </div>
+  <!-- ─── SOUS-SECTION : L'EAU ─── -->
+  <div class="subsection active" id="sub-eau">
 
-  <!-- ③ CONFIGURATION BASSINS -->
-  <div class="section-card" id="cardBassins">
-    <div class="stitle">🪣 Mes bassins <span>cliquer pour modifier</span></div>
-    <div class="bassins-row" id="bassinsRow"></div>
-    <div id="totalEauRow" style="margin-top:4px"></div>
-  </div>
-
-  <!-- ④ GESTION POISSONS -->
-  <div class="section-card">
-    <div class="stitle">🐟 Population de poissons</div>
-    <div class="poissons-total">
-      <div class="poissons-big" id="poissonsTotalDisplay">0 poissons</div>
-    </div>
-    <div id="fourchetteBadge" class="fourchette-badge" style="max-width:560px;margin:8px auto">— renseigner les bassins pour voir la fourchette idéale</div>
-    <div class="events-grid">
-      <!-- Arrivée -->
-      <div class="event-card">
-        <div class="event-title">🐣 Nouvelle arrivée</div>
-        <div class="event-field">
-          <label class="event-label">Nombre</label>
-          <input class="event-input" type="number" id="arr-nb" min="1" placeholder="ex: 10">
-        </div>
-        <div class="event-field">
-          <label class="event-label">Variété</label>
-          <select class="event-input" id="arr-variete">
-            <option value="Poisson rouge">Poisson rouge</option>
-            <option value="Carpe koï">Carpe koï</option>
-            <option value="Truite arc-en-ciel">Truite arc-en-ciel</option>
-            <option value="Tilapia">Tilapia</option>
-            <option value="Perche">Perche</option>
-            <option value="Autre">Autre</option>
-          </select>
-        </div>
-        <div class="event-field" id="arr-autre-wrap" style="display:none">
-          <label class="event-label">Préciser</label>
-          <input class="event-input" type="text" id="arr-autre" placeholder="Nom de l'espèce">
-        </div>
-        <div class="event-field">
-          <label class="event-label">Taille moy. (cm)</label>
-          <input class="event-input" type="number" id="arr-taille" min="1" max="200" placeholder="ex: 8">
-        </div>
-        <button class="event-btn event-btn-arrivee" onclick="ajouterPoissons()">✓ Ajouter</button>
-      </div>
-      <!-- Décès -->
-      <div class="event-card">
-        <div class="event-title">⚫ Décès</div>
-        <div class="event-field">
-          <label class="event-label">Nombre</label>
-          <input class="event-input" type="number" id="dec-nb" min="1" placeholder="ex: 2">
-        </div>
-        <div class="event-field">
-          <label class="event-label">Variété présente dans le bassin</label>
-          <select class="event-input" id="dec-variete">
-            <option value="">— Sélectionner</option>
-          </select>
-        </div>
-        <button class="event-btn event-btn-deces" onclick="declarerDeces()">⚫ Enregistrer</button>
+    <!-- SANTÉ DU BAC -->
+    <div id="bacBrief">
+      <div class="bac-brief bac-brief-loading">
+        <div class="bb-title" style="color:var(--text-muted)">Calcul de la santé du bac…</div>
       </div>
     </div>
-    <!-- Journal évènements -->
-    <div style="margin-top:16px">
-      <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Derniers évènements</div>
-      <div id="eventLog" class="event-log"><div class="empty-msg">Aucun évènement enregistré</div></div>
+
+    <!-- MÉTRIQUES pH ET TEMPÉRATURE EAU -->
+    <div class="metrics-2col">
+      <div class="metric-card-bac" id="card-ph-bac">
+        <div class="mc-label"><span class="dot-mc dot-gray" id="dot-ph-bac"></span>🔬 pH de l'eau</div>
+        <div class="mc-val na" id="val-ph-bac">—</div>
+        <div class="mc-unit" id="unit-ph-bac">capteur ou saisie manuelle</div>
+      </div>
+      <div class="metric-card-bac" id="card-temp-eau">
+        <div class="mc-label"><span class="dot-mc dot-gray" id="dot-temp-eau"></span>🌡️ Température eau</div>
+        <div class="mc-val na" id="val-temp-eau">—</div>
+        <div class="mc-unit" id="unit-temp-eau">°C — bassin</div>
+      </div>
     </div>
-  </div>
+
+    <!-- GRAPHIQUES pH et Température eau -->
+    <div class="chart-card-bac">
+      <div class="chart-title-bac">
+        <span>pH de l'eau</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="range-selector">
+            <button class="range-btn active" onclick="setRangePh('24h',this)">24h</button>
+            <button class="range-btn" onclick="setRangePh('3d',this)">3j</button>
+            <button class="range-btn" onclick="setRangePh('7d',this)">7j</button>
+            <button class="range-btn" onclick="setRangePh('30d',this)">30j</button>
+          </div>
+          <span id="chartPhInfo" style="font-size:.58rem;color:var(--text-muted)">—</span>
+        </div>
+      </div>
+      <div class="chart-wrap-bac">
+        <canvas id="chartPh"></canvas>
+        <div id="overlayPh" class="chart-overlay-bac" style="display:none"><div class="loading-ring"></div></div>
+      </div>
+      <div class="chart-stats" id="statsChartPh">
+        <div class="cstat"><span class="cstat-val" id="ph-min">—</span><span>Min</span></div>
+        <div class="cstat"><span class="cstat-val" id="ph-moy">—</span><span>Moy</span></div>
+        <div class="cstat"><span class="cstat-val" id="ph-max">—</span><span>Max</span></div>
+      </div>
+    </div>
+
+    <div class="chart-card-bac">
+      <div class="chart-title-bac">
+        <span>Température de l'eau</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="range-selector">
+            <button class="range-btn active" onclick="setRangeTempEau('24h',this)">24h</button>
+            <button class="range-btn" onclick="setRangeTempEau('3d',this)">3j</button>
+            <button class="range-btn" onclick="setRangeTempEau('7d',this)">7j</button>
+            <button class="range-btn" onclick="setRangeTempEau('30d',this)">30j</button>
+          </div>
+          <span id="chartTempEauInfo" style="font-size:.58rem;color:var(--text-muted)">—</span>
+        </div>
+      </div>
+      <div class="chart-wrap-bac">
+        <canvas id="chartTempEau"></canvas>
+        <div id="overlayTempEau" class="chart-overlay-bac" style="display:none"><div class="loading-ring"></div></div>
+      </div>
+      <div class="chart-stats">
+        <div class="cstat"><span class="cstat-val" id="te-min">—</span><span>Min</span></div>
+        <div class="cstat"><span class="cstat-val" id="te-moy">—</span><span>Moy</span></div>
+        <div class="cstat"><span class="cstat-val" id="te-max">—</span><span>Max</span></div>
+      </div>
+    </div>
+
+    <!-- QUALITÉ DE L'EAU (saisie) -->
+    <div class="section-card">
+      <div class="stitle">💧 Qualité de mon eau <span>saisie manuelle + capteurs</span></div>
+      <div class="params-grid" id="paramsGrid"></div>
+      <div class="analyze-bar">
+        <button class="analyze-btn" id="analyzeBtn" onclick="lancerAnalyseEau()">
+          <span id="analyzeIcon">✦</span> Analyser avec l'IA
+        </button>
+        <a class="history-link" onclick="openHistorique()">📈 Historique</a>
+        <span class="last-save-info" id="lastSaveInfo"></span>
+      </div>
+      <div id="analyseResult"></div>
+    </div>
+
+    <!-- CONFIGURATION BASSINS -->
+    <div class="section-card" id="cardBassins">
+      <div class="stitle">🪣 Mes bassins <span>cliquer pour modifier</span></div>
+      <div class="bassins-row" id="bassinsRow"></div>
+      <div id="totalEauRow" style="margin-top:4px"></div>
+    </div>
+
+  </div><!-- /sub-eau -->
+
+  <!-- ─── SOUS-SECTION : LES POISSONS ─── -->
+  <div class="subsection" id="sub-poissons">
+
+    <!-- GESTION POISSONS -->
+    <div class="section-card">
+      <div class="stitle">🐟 Population de poissons</div>
+      <div class="poissons-total">
+        <div class="poissons-big" id="poissonsTotalDisplay">0 poissons</div>
+      </div>
+      <div id="fourchetteBadge" class="fourchette-badge" style="max-width:560px;margin:8px auto">— renseigner les bassins pour voir la fourchette idéale</div>
+      <div class="events-grid">
+        <!-- Arrivée -->
+        <div class="event-card">
+          <div class="event-title">🐣 Nouvelle arrivée</div>
+          <div class="event-field">
+            <label class="event-label">Nombre</label>
+            <input class="event-input" type="number" id="arr-nb" min="1" placeholder="ex: 10">
+          </div>
+          <div class="event-field">
+            <label class="event-label">Variété</label>
+            <select class="event-input" id="arr-variete">
+              <option value="Poisson rouge">Poisson rouge</option>
+              <option value="Carpe koï">Carpe koï</option>
+              <option value="Truite arc-en-ciel">Truite arc-en-ciel</option>
+              <option value="Tilapia">Tilapia</option>
+              <option value="Perche">Perche</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          <div class="event-field" id="arr-autre-wrap" style="display:none">
+            <label class="event-label">Préciser</label>
+            <input class="event-input" type="text" id="arr-autre" placeholder="Nom de l'espèce">
+          </div>
+          <div class="event-field">
+            <label class="event-label">Taille moy. (cm)</label>
+            <input class="event-input" type="number" id="arr-taille" min="1" max="200" placeholder="ex: 8">
+          </div>
+          <button class="event-btn event-btn-arrivee" onclick="ajouterPoissons()">✓ Ajouter</button>
+        </div>
+        <!-- Décès -->
+        <div class="event-card">
+          <div class="event-title">⚫ Décès</div>
+          <div class="event-field">
+            <label class="event-label">Nombre</label>
+            <input class="event-input" type="number" id="dec-nb" min="1" placeholder="ex: 2">
+          </div>
+          <div class="event-field">
+            <label class="event-label">Variété présente dans le bassin</label>
+            <select class="event-input" id="dec-variete">
+              <option value="">— Sélectionner</option>
+            </select>
+          </div>
+          <button class="event-btn event-btn-deces" onclick="declarerDeces()">⚫ Enregistrer</button>
+        </div>
+      </div>
+      <!-- Journal évènements -->
+      <div style="margin-top:16px">
+        <div style="font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Derniers évènements</div>
+        <div id="eventLog" class="event-log"><div class="empty-msg">Aucun évènement enregistré</div></div>
+      </div>
+    </div>
+
+    <!-- CONSEILS POISSONS IA -->
+    <div class="section-card">
+      <div class="stitle">🌊 Conseils pour tes poissons <span>IA · météo · saison</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:.72rem;color:var(--text-muted)">Conseils personnalisés basés sur ta situation actuelle</div>
+        <button class="fish-btn" id="fishConseilsBtn" onclick="genererConseilsPoissons()">
+          <span id="fishBtnIcon">✦</span> Générer les conseils
+        </button>
+      </div>
+      <div id="fishConseilsBody">
+        <div class="empty-msg">Clique sur "Générer les conseils" pour obtenir des recommandations personnalisées.</div>
+      </div>
+    </div>
+
+  </div><!-- /sub-poissons -->
 
 </main>
 
@@ -309,24 +454,23 @@ const KEY_POISSONS  = 'bassin_poissons_v1';
 const KEY_EAU_HIST  = 'bassin_eau_hist_v1';
 const KEY_EAU_LAST  = 'bassin_eau_last_v1';
 const KEY_EVENTS    = 'bassin_events_v1';
+const KEY_PHTEMP_HIST = 'bassin_phtemp_hist_v1'; // historique continu ph/temp eau pour graphiques
 
 function load(key, def) { try { return JSON.parse(localStorage.getItem(key) || 'null') ?? def; } catch(e) { return def; } }
 function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
 
 // ── ÉTAT ──────────────────────────────────────────────────────
-let bassins   = load(KEY_BASSINS,   [{ id:1, volume:500 }, { id:2, volume:500 }]);
-let poissons  = load(KEY_POISSONS,  []); // [{variete, nb, tailleMoy}]
-let eauHist   = load(KEY_EAU_HIST,  []); // [{ts, params:{...}}]
-let events    = load(KEY_EVENTS,    []); // [{ts, type:'arrivee'|'deces', variete, nb}]
-let lastEau   = load(KEY_EAU_LAST,  {});
+let bassins  = load(KEY_BASSINS,  [{ id:1, volume:500 }, { id:2, volume:500 }]);
+let poissons = load(KEY_POISSONS, []);
+let eauHist  = load(KEY_EAU_HIST, []);
+let events   = load(KEY_EVENTS,   []);
+let lastEau  = load(KEY_EAU_LAST, {});
+let phTempHist = load(KEY_PHTEMP_HIST, []); // [{ts, ph, temp}]
 let histChart = null, histParam = 'ph', histAnalyseLoading = false;
+let chartPh = null, chartTempEau = null;
+let currentRangePh = '24h', currentRangeTempEau = '24h';
 
-// ── PARAMÈTRES EAU (définition) ───────────────────────────────
-// autoFill = pré-rempli depuis capteurs mais toujours éditable
-// unitAlt  = unité alternative sélectionnable
-// ecMode   = 'uscm' | 'tds' (persisté dans lastEau._ecMode)
-// khMode   = 'dh' | 'mgl'  (persisté dans lastEau._khMode)
-// ghMode   = 'dh' | 'mgl'  (persisté dans lastEau._ghMode)
+// ── PARAMÈTRES EAU ────────────────────────────────────────────
 const PARAMS_EAU = [
   { id:'ph',         label:'pH',              unit:'',        autoFill:true,  seuils:[6.0,6.5,7.5,8.0], desc:'pH de l\'eau' },
   { id:'temperature',label:'Temp. eau',       unit:'°C',      autoFill:true,  seuils:[15,18,26,28],     desc:'Température eau' },
@@ -341,6 +485,38 @@ const PARAMS_EAU = [
   { id:'oxygene',    label:'Oxygène dissous', unit:'mg/L',    autoFill:false, seuils:[5,6,12,15],       desc:'O₂ dissous' },
 ];
 
+// ── SEUILS MÉTIER CENTRALISÉS ─────────────────────────────────
+// pH aquaponie : OK [6.7–7.0], WARN [6.5–7.3], CRIT hors [6.2–7.6]
+// Température eau : saisonnière — on utilise valeurs moyennes "toutes saisons" : OK [21–25], WARN [18–27], CRIT <18 ou >30
+
+function getSeuilPh() {
+  // Retourne { critMin, warnMin, idealMin, idealMax, warnMax, critMax }
+  return { critMin:6.2, warnMin:6.5, idealMin:6.7, idealMax:7.0, warnMax:7.3, critMax:7.6 };
+}
+
+function getSeuilTempEau() {
+  const m = new Date().getMonth() + 1; // 1-12
+  if (m >= 6 && m <= 8)   return { critMin:18, warnMin:21, warnMax:27, critMax:30 }; // été
+  if (m >= 3 && m <= 5 || m >= 9 && m <= 11) return { critMin:18, warnMin:21, warnMax:25, critMax:30 }; // printemps/automne
+  return { critMin:18, warnMin:18, warnMax:22, critMax:28 }; // hiver
+}
+
+function statusPh(v) {
+  if (v == null || isNaN(v)) return 'na';
+  const s = getSeuilPh();
+  if (v < s.critMin || v > s.critMax) return 'crit';
+  if (v < s.warnMin || v > s.warnMax) return 'warn';
+  return 'ok';
+}
+
+function statusTempEau(v) {
+  if (v == null || isNaN(v)) return 'na';
+  const s = getSeuilTempEau();
+  if (v < s.critMin || v > s.critMax) return 'crit';
+  if (v < s.warnMin || v > s.warnMax) return 'warn';
+  return 'ok';
+}
+
 function getParamStatut(id, val) {
   if (val === null || val === '' || isNaN(parseFloat(val))) return 'na';
   const p = PARAMS_EAU.find(x => x.id === id);
@@ -350,6 +526,247 @@ function getParamStatut(id, val) {
   if (v < critMin || v > critMax) return 'crit';
   if (v < warnMin || v > warnMax) return 'warn';
   return 'ok';
+}
+
+// ── NAVIGATION SOUS-SECTIONS ──────────────────────────────────
+function showSub(name, btn) {
+  document.querySelectorAll('.subsection').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-sub').forEach(t => t.classList.remove('active'));
+  document.getElementById('sub-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── SANTÉ DU BAC (brief) ──────────────────────────────────────
+function renderBacBrief() {
+  const el = document.getElementById('bacBrief');
+  const ph   = lastEau.ph   != null ? parseFloat(lastEau.ph)   : null;
+  const temp = lastEau.temperature != null ? parseFloat(lastEau.temperature) : null;
+
+  const phSt   = ph   != null ? statusPh(ph)       : null;
+  const teSt   = temp != null ? statusTempEau(temp) : null;
+
+  // Détecter variation brusque de pH (entre les 2 derniers relevés)
+  let phVariation = null;
+  if (eauHist.length >= 2) {
+    const last2 = eauHist.slice(-2);
+    const ph1 = last2[0]?.params?.ph, ph2 = last2[1]?.params?.ph;
+    if (ph1 != null && ph2 != null) phVariation = Math.abs(ph2 - ph1);
+  }
+  const phVariationWarn = phVariation != null && phVariation > 0.5;
+
+  const alertes = [];
+  if (phSt === 'crit')  alertes.push({ st:'crit', txt: 'pH ' + ph?.toFixed(2) + ' — critique, nitrification compromise' });
+  else if (phSt === 'warn') {
+    const s = getSeuilPh();
+    if (ph < s.warnMin) alertes.push({ st:'warn', txt: 'pH ' + ph?.toFixed(2) + ' — trop bas, nitrification ralentie' });
+    else alertes.push({ st:'warn', txt: 'pH ' + ph?.toFixed(2) + ' — trop élevé, absorption minéraux réduite' });
+  }
+  if (phVariationWarn) alertes.push({ st:'warn', txt: 'Variation pH brusque : ' + phVariation.toFixed(2) + ' entre les 2 derniers relevés — à surveiller' });
+  if (teSt === 'crit')  alertes.push({ st:'crit', txt: 'Temp. eau ' + temp?.toFixed(1) + '°C — critique pour les poissons' });
+  else if (teSt === 'warn') alertes.push({ st:'warn', txt: 'Temp. eau ' + temp?.toFixed(1) + '°C — hors de la plage optimale saisonnière' });
+
+  const globalSt = alertes.some(a => a.st === 'crit') ? 'crit' : alertes.length ? 'warn' : 'ok';
+  const titles = {
+    ok:   '✅ Le bac se porte bien',
+    warn: '⚠️ ' + alertes.length + ' point' + (alertes.length > 1 ? 's' : '') + ' à surveiller',
+    crit: '🚨 Intervention urgente requise',
+  };
+
+  const items = globalSt === 'ok'
+    ? [
+        ph   != null ? { st:'ok', txt:'pH ' + ph.toFixed(2) + ' — dans la plage idéale' } : null,
+        temp != null ? { st:'ok', txt:'Température ' + temp.toFixed(1) + '°C — optimale' } : null,
+        ph == null && temp == null ? { st:'ok', txt:'Saisir les valeurs pour voir le diagnostic' } : null,
+      ].filter(Boolean)
+    : alertes;
+
+  el.innerHTML = `<div class="bac-brief bac-brief-${globalSt}">
+    <div class="bb-title">${titles[globalSt]}</div>
+    <div class="bb-items">${items.map(i=>`<div class="bb-row ${i.st}"><span class="bb-dot ${i.st}"></span><span>${i.txt}</span></div>`).join('')}</div>
+    <div class="bb-meta"><span>Plage idéale pH : 6.7–7.0</span><span>Temp. eau optimale selon saison</span></div>
+  </div>`;
+}
+
+// ── MÉTRIQUES ENCADRÉS ────────────────────────────────────────
+function updateMetriques() {
+  const ph   = lastEau.ph   != null ? parseFloat(lastEau.ph)   : null;
+  const temp = lastEau.temperature != null ? parseFloat(lastEau.temperature) : null;
+
+  const phSt = ph != null ? statusPh(ph) : 'na';
+  const teSt = temp != null ? statusTempEau(temp) : 'na';
+
+  const dotColorClass = { ok:'dot-teal', warn:'dot-amber', crit:'dot-red', na:'dot-gray' };
+
+  // pH
+  const phValEl  = document.getElementById('val-ph-bac');
+  const phDotEl  = document.getElementById('dot-ph-bac');
+  const phUnitEl = document.getElementById('unit-ph-bac');
+  if (phValEl) {
+    phValEl.textContent = ph != null ? ph.toFixed(2) : '—';
+    phValEl.className = 'mc-val ' + phSt;
+    phDotEl.className = 'dot-mc ' + dotColorClass[phSt];
+    phUnitEl.textContent = phSt === 'na' ? 'capteur ou saisie manuelle' :
+      phSt === 'ok' ? 'plage idéale 6.7–7.0' :
+      ph < 6.5 ? 'bas — nitrification ralentie' :
+      ph > 7.3 ? 'élevé — carence minéraux' : 'surveiller';
+  }
+
+  // Temp eau
+  const teValEl  = document.getElementById('val-temp-eau');
+  const teDotEl  = document.getElementById('dot-temp-eau');
+  const teUnitEl = document.getElementById('unit-temp-eau');
+  if (teValEl) {
+    teValEl.textContent = temp != null ? temp.toFixed(1) + '°' : '—';
+    teValEl.className = 'mc-val ' + teSt;
+    teDotEl.className = 'dot-mc ' + dotColorClass[teSt];
+    const sT = getSeuilTempEau();
+    teUnitEl.textContent = teSt === 'na' ? '°C — bassin' :
+      teSt === 'ok' ? `°C — optimal (${sT.warnMin}–${sT.warnMax}°C)` :
+      temp > 30 ? '°C — risque stress poissons, O₂ diminue' :
+      `°C — hors plage (${sT.warnMin}–${sT.warnMax}°C)`;
+  }
+}
+
+// ── GRAPHIQUES pH & TEMP EAU ──────────────────────────────────
+function addPhTempPoint(ph, temp) {
+  const h = load(KEY_PHTEMP_HIST, []);
+  h.push({ ts: new Date().toISOString(), ph, temp });
+  while (h.length > 2000) h.shift();
+  save(KEY_PHTEMP_HIST, h);
+  phTempHist = h;
+}
+
+function filterPhTempHist(range) {
+  const ms = { '24h': 86400000, '3d': 259200000, '7d': 604800000, '30d': 2592000000 };
+  const cutoff = Date.now() - (ms[range] || ms['24h']);
+  const filtered = phTempHist.filter(p => new Date(p.ts).getTime() >= cutoff);
+  // Sous-échantillonnage
+  const step = range === '30d' ? 12 : range === '7d' ? 3 : 1;
+  return filtered.filter((_, i) => i % step === 0);
+}
+
+function fmtTickBac(ts, range) {
+  const d = new Date(ts);
+  const jours = ['dim','lun','mar','mer','jeu','ven','sam'];
+  if (range === '24h') return d.getHours().toString().padStart(2,'0') + 'h';
+  if (range === '3d' || range === '7d') return jours[d.getDay()] + ' ' + d.getHours() + 'h';
+  return d.getDate() + '/' + (d.getMonth()+1);
+}
+
+function calcStats(values) {
+  const valid = values.filter(v => v != null && !isNaN(v));
+  if (!valid.length) return { min:'—', moy:'—', max:'—' };
+  const min = Math.min(...valid), max = Math.max(...valid);
+  const moy = valid.reduce((a,b) => a+b, 0) / valid.length;
+  return { min: min.toFixed(2), moy: moy.toFixed(2), max: max.toFixed(2) };
+}
+
+function renderChartPh(history, range) {
+  const ctx = document.getElementById('chartPh').getContext('2d');
+  if (chartPh) { chartPh.destroy(); chartPh = null; }
+  const vals = history.map(p => p.ph);
+  const stats = calcStats(vals);
+  document.getElementById('ph-min').textContent = stats.min;
+  document.getElementById('ph-moy').textContent = stats.moy;
+  document.getElementById('ph-max').textContent = stats.max;
+  if (!history.length) {
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    ctx.fillStyle='#2d6b78'; ctx.font='11px monospace'; ctx.textAlign='center';
+    ctx.fillText('Aucune donnée — saisir les paramètres pour alimenter l\'historique', ctx.canvas.width/2, ctx.canvas.height/2);
+    return;
+  }
+  const s = getSeuilPh();
+  chartPh = new Chart(ctx, {
+    type:'line',
+    data:{ labels: history.map(p => fmtTickBac(p.ts, range)), datasets:[{
+      data: vals, borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,.1)',
+      borderWidth:2, fill:true, tension:0.4,
+      pointRadius: history.length > 100 ? 0 : 3,
+      pointBackgroundColor: vals.map(v => {
+        const st = v != null ? statusPh(v) : 'na';
+        return st === 'crit' ? '#f87171' : st === 'warn' ? '#fbbf24' : '#2dd4bf';
+      })
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.y?.toFixed(2)+' pH'}} },
+      scales:{
+        x:{ ticks:{color:'#2d6b78',font:{size:9}}, grid:{color:'rgba(26,58,64,.4)'} },
+        y:{
+          min: Math.max(5.5, s.critMin - 0.2),
+          max: Math.min(9, s.critMax + 0.2),
+          ticks:{color:'#2d6b78',font:{size:9}},
+          grid:{color:'rgba(26,58,64,.4)'},
+          afterDataLimits(scale) {
+            // Zones de référence
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderChartTempEau(history, range) {
+  const ctx = document.getElementById('chartTempEau').getContext('2d');
+  if (chartTempEau) { chartTempEau.destroy(); chartTempEau = null; }
+  const vals = history.map(p => p.temp);
+  const stats = calcStats(vals);
+  document.getElementById('te-min').textContent = stats.min !== '—' ? stats.min + '°' : '—';
+  document.getElementById('te-moy').textContent = stats.moy !== '—' ? stats.moy + '°' : '—';
+  document.getElementById('te-max').textContent = stats.max !== '—' ? stats.max + '°' : '—';
+  if (!history.length) {
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    ctx.fillStyle='#2d6b78'; ctx.font='11px monospace'; ctx.textAlign='center';
+    ctx.fillText('Aucune donnée — saisir les paramètres pour alimenter l\'historique', ctx.canvas.width/2, ctx.canvas.height/2);
+    return;
+  }
+  chartTempEau = new Chart(ctx, {
+    type:'line',
+    data:{ labels: history.map(p => fmtTickBac(p.ts, range)), datasets:[{
+      data: vals, borderColor:'#2dd4bf', backgroundColor:'rgba(45,212,191,.1)',
+      borderWidth:2, fill:true, tension:0.4,
+      pointRadius: history.length > 100 ? 0 : 3,
+      pointBackgroundColor: vals.map(v => {
+        const st = v != null ? statusTempEau(v) : 'na';
+        return st === 'crit' ? '#f87171' : st === 'warn' ? '#fbbf24' : '#2dd4bf';
+      })
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>c.parsed.y?.toFixed(1)+'°C'}} },
+      scales:{
+        x:{ ticks:{color:'#2d6b78',font:{size:9}}, grid:{color:'rgba(26,58,64,.4)'} },
+        y:{ ticks:{color:'#2d6b78',font:{size:9},callback:v=>v+'°'}, grid:{color:'rgba(26,58,64,.4)'} }
+      }
+    }
+  });
+}
+
+function setRangePh(range, btn) {
+  currentRangePh = range;
+  btn.closest('.range-selector').querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const h = filterPhTempHist(range);
+  document.getElementById('chartPhInfo').textContent = h.length + ' pts';
+  renderChartPh(h, range);
+}
+
+function setRangeTempEau(range, btn) {
+  currentRangeTempEau = range;
+  btn.closest('.range-selector').querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const h = filterPhTempHist(range);
+  document.getElementById('chartTempEauInfo').textContent = h.length + ' pts';
+  renderChartTempEau(h, range);
+}
+
+function refreshCharts() {
+  const hPh = filterPhTempHist(currentRangePh);
+  document.getElementById('chartPhInfo').textContent = hPh.length + ' pts';
+  renderChartPh(hPh, currentRangePh);
+  const hTe = filterPhTempHist(currentRangeTempEau);
+  document.getElementById('chartTempEauInfo').textContent = hTe.length + ' pts';
+  renderChartTempEau(hTe, currentRangeTempEau);
 }
 
 // ── VOLUME TOTAL ──────────────────────────────────────────────
@@ -367,7 +784,6 @@ function renderBassins() {
       <div class="bassin-vol" id="bassin-vol-${b.id}" onclick="editVolume(${b.id})" title="Cliquer pour modifier">${b.volume} L</div>
     </div>`).join('') +
     `<button class="add-bassin-btn" onclick="addBassin()">+ Ajouter<br>un bassin</button>`;
-
   document.getElementById('totalEauRow').innerHTML =
     `<div class="total-eau-badge"><strong>${tot} L</strong> volume total · ${bassins.length} bassin${bassins.length>1?'s':''}</div>`;
   document.getElementById('totalEauHeader').textContent = tot + ' L';
@@ -407,20 +823,17 @@ function deleteBassin(id, e) {
 }
 
 // ── CHAMPS QUALITÉ EAU ────────────────────────────────────────
-// Retourne l'unité actuellement sélectionnée pour un paramètre
 function getUnitActuelle(p) {
   if (!p.unitKey) return p.unit;
   return lastEau[p.unitKey] || p.unit;
 }
 
-// Toggle unité pour KH, GH, EC
 function toggleUnit(paramId) {
   const p = PARAMS_EAU.find(x => x.id === paramId);
   if (!p || !p.unitKey) return;
   const current = getUnitActuelle(p);
   lastEau[p.unitKey] = (current === p.unit) ? p.unitAlt : p.unit;
   save(KEY_EAU_LAST, lastEau);
-  // Mettre à jour l'affichage du bouton unité
   const btn = document.getElementById('unit-btn-'+paramId);
   if (btn) btn.textContent = getUnitActuelle(p);
 }
@@ -430,12 +843,9 @@ function renderParamsGrid() {
   grid.innerHTML = PARAMS_EAU.map(p => {
     const val = lastEau[p.id] ?? '';
     const st  = val !== '' ? getParamStatut(p.id, val) : '';
-    // autoFill = pré-rempli depuis capteurs, mais l'utilisateur peut modifier
     const autoClass = p.autoFill && val !== '' ? ' auto' : '';
     const stClass   = st ? ' '+st : '';
     const unitActuelle = getUnitActuelle(p);
-
-    // Label avec unité : simple ou bouton toggle
     let unitHtml;
     if (p.unitAlt) {
       unitHtml = `<button id="unit-btn-${p.id}" onclick="toggleUnit('${p.id}')"
@@ -444,11 +854,9 @@ function renderParamsGrid() {
     } else {
       unitHtml = unitActuelle ? `<span class="unit">${unitActuelle}</span>` : '';
     }
-
     const autoHint = p.autoFill
       ? '<span style="font-size:.5rem;color:var(--accent);margin-left:4px" title="Pré-rempli depuis capteurs, modifiable">capteur ✎</span>'
       : '';
-
     return `<div class="param-field">
       <label class="param-label" style="flex-wrap:wrap;gap:4px">${p.label} ${unitHtml}${autoHint}</label>
       <div class="param-input-row">
@@ -462,7 +870,6 @@ function renderParamsGrid() {
 }
 
 function onParamChange(id, val) {
-  // Si c'était auto, on retire le style auto dès que l'utilisateur modifie
   const inp = document.getElementById('pi-'+id);
   if (inp) inp.classList.remove('auto');
   lastEau[id] = val === '' ? '' : parseFloat(val);
@@ -472,35 +879,29 @@ function onParamChange(id, val) {
   const s = getParamStatut(id, val);
   inp.className = inp.className.replace(/ ok| warn| crit/g,'') + (val !== '' ? ' '+s : '');
   st.className  = 'param-status ' + (val !== '' ? s : 'na');
+  // Mettre à jour les encadrés et le brief en temps réel
+  updateMetriques();
+  renderBacBrief();
 }
 
-// ── VALEURS AUTO (depuis capteurs MyFood via index.html → localStorage) ────
-// index.html écrit 'bassin_myfood_latest' à chaque appel /api/myfood réussi.
-// On lit toujours la valeur la plus récente et on l'injecte dans les champs
-// pH et température eau, en affichant un badge "serre" pour indiquer l'origine.
 function loadAutoValues() {
   const myfood = (() => { try { return JSON.parse(localStorage.getItem('bassin_myfood_latest')||'null'); } catch(e){return null;} })();
   if (!myfood) return;
-
-  const MAX_AGE_MS = 12 * 60 * 60 * 1000; // données valides 12h max
+  const MAX_AGE_MS = 12 * 60 * 60 * 1000;
   const age = myfood.ts ? Date.now() - myfood.ts : Infinity;
   if (age > MAX_AGE_MS) return;
-
   const mapping = { ph: myfood.ph, temperature: myfood.waterTemp };
   const tsLabel = myfood.ts ? new Date(myfood.ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
-
   Object.entries(mapping).forEach(([id, val]) => {
     if (val === null || val === undefined) return;
     const inp = document.getElementById('pi-'+id);
     if (!inp) return;
-    // Injecter uniquement si pas de saisie manuelle plus récente
     const manualKey = 'bassin_manual_'+id;
     const manualTs  = parseInt(localStorage.getItem(manualKey) || '0');
-    if (manualTs > (myfood.ts || 0)) return; // saisie manuelle plus récente → ne pas écraser
+    if (manualTs > (myfood.ts || 0)) return;
     inp.value = val;
     inp.classList.add('auto');
     onParamChange(id, val);
-    // Badge d'origine sous le champ
     const badgeId = 'myfood-badge-'+id;
     let badge = document.getElementById(badgeId);
     if (!badge) {
@@ -513,7 +914,6 @@ function loadAutoValues() {
   });
 }
 
-// Marquer une saisie manuelle pour ne pas être écrasée par les données serre
 function markManualInput(id) {
   try { localStorage.setItem('bassin_manual_'+id, Date.now().toString()); } catch(e) {}
 }
@@ -524,76 +924,58 @@ async function lancerAnalyseEau() {
   const icon  = document.getElementById('analyzeIcon');
   const resEl = document.getElementById('analyseResult');
   btn.classList.add('loading'); icon.textContent = '⟳';
-  resEl.innerHTML = `<div class="analyse-card"><div class="analyse-loading"><div class="loading-ring"></div><span>Analyse en cours… l'IA examine tes paramètres</span></div></div>`;
+  resEl.innerHTML = `<div class="analyse-card"><div class="analyse-loading"><div class="loading-ring"></div><span>Analyse en cours…</span></div></div>`;
 
-  // Collecter les valeurs saisies
   const params = {};
   PARAMS_EAU.forEach(p => {
     const v = document.getElementById('pi-'+p.id)?.value;
     if (v !== '' && v !== null && v !== undefined) params[p.id] = parseFloat(v);
   });
 
-  // Sauvegarder dans l'historique — 1 seul relevé par jour (le dernier remplace)
-  const todayKey = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  // Sauvegarder dans l'historique
+  const todayKey = new Date().toISOString().slice(0, 10);
   const entry = { ts: new Date().toISOString(), date: todayKey, params: { ...params } };
   const existingIdx = eauHist.findIndex(e => e.date === todayKey);
-  if (existingIdx !== -1) {
-    eauHist[existingIdx] = entry; // remplace le relevé du jour
-  } else {
-    eauHist.push(entry);
-  }
+  if (existingIdx !== -1) eauHist[existingIdx] = entry;
+  else eauHist.push(entry);
   save(KEY_EAU_HIST, eauHist);
   document.getElementById('lastSaveInfo').textContent = 'Sauvegardé le '+fmtDate(entry.ts);
 
-  // Contexte
-  const lieu       = localStorage.getItem('jardin_lieu_meteo_v1') || 'Sud de la France';
-  const totalL     = totalEau();
-  const popDesc    = poissons.map(p => p.nb+' '+p.variete+(p.tailleMoy?' (~'+p.tailleMoy+'cm)':'')).join(', ') || 'non renseignée';
-  const today      = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
-  const month      = new Date().getMonth()+1;
-  const season     = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+  // Alimenter l'historique graphiques ph/temp
+  if (params.ph != null || params.temperature != null) {
+    addPhTempPoint(params.ph ?? null, params.temperature ?? null);
+    refreshCharts();
+  }
+  updateMetriques();
+  renderBacBrief();
 
-  const paramsText = PARAMS_EAU
-    .filter(p => params[p.id] !== undefined)
-    .map(p => {
-      const unit = getUnitActuelle(p);
-      return `${p.label} : ${params[p.id]} ${unit}`;
-    })
-    .join('\n');
-
+  const lieu    = localStorage.getItem('jardin_lieu_meteo_v1') || 'Sud de la France';
+  const totalL  = totalEau();
+  const popDesc = poissons.map(p => p.nb+' '+p.variete+(p.tailleMoy?' (~'+p.tailleMoy+'cm)':'')).join(', ') || 'non renseignée';
+  const today   = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  const month   = new Date().getMonth()+1;
+  const season  = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+  const paramsText = PARAMS_EAU.filter(p => params[p.id] !== undefined)
+    .map(p => `${p.label} : ${params[p.id]} ${getUnitActuelle(p)}`).join('\n');
   const missing = PARAMS_EAU.filter(p => params[p.id] === undefined).map(p=>p.label).join(', ');
 
   const sysPrompt = `Tu es un expert en aquaponie, chimie de l'eau et pisciculture. Tu analyses les paramètres d'eau d'un bassin aquaponique.
 Contexte : Lieu : ${lieu}, date : ${today} (${season}), volume total : ${totalL} L, population : ${popDesc}.
-Produits disponibles pour correction : sulfate de magnésium (MgSO4), chélate de fer EDDHA (Fe-EDDHA), micronutriments (Mn ~15%, B ~15%, Zn ~5%, Cu ~5%, Mo ~0.5%), sulfate de potassium (K2SO4), chlorure de calcium (CaCl2), bicarbonate de potassium (KHCO3), bicarbonate de sodium (NaHCO3), pH moins (acide phosphorique ou citrique), eau du robinet, eau de pluie, eau osmosée, eau du Bas-Rhône.
-Sources d'eau disponibles : robinet local (eau calcaire généralement), eau de pluie (douce, pH neutre), eau osmosée (très pure, minéralisation nulle), eau Bas-Rhône (irrigation agricole, variable).
+Produits disponibles : sulfate de magnésium (MgSO4), chélate de fer EDDHA, micronutriments, sulfate de potassium (K2SO4), chlorure de calcium (CaCl2), bicarbonate de potassium (KHCO3), bicarbonate de sodium (NaHCO3), pH moins, eau du robinet, eau de pluie, eau osmosée, eau du Bas-Rhône.
 Réponds en HTML structuré (balises h3, strong, <span class="dose">, <div class="qcm-block">), en français, complet et détaillé.`;
 
-  const question = `Paramètres mesurés pour un bassin de ${totalL}L en aquaponie :
-${paramsText}
-${missing ? '\nParamètres non mesurés : '+missing : ''}
-
-ANALYSE DEMANDÉE :
-1. État général du bassin : synthèse globale avec niveau d'urgence
-2. Analyse détaillée de chaque paramètre hors plage (trop bas / trop haut) avec explications biologiques et risques pour les plantes et les poissons
-3. Corrections précises : pour CHAQUE problème, indiquer le produit exact, la dose en g ou mL pour ${totalL}L, la méthode d'application et la fréquence
-4. Gestion de l'eau : recommandations sur la source d'eau et les changements partiels si nécessaire (en % et volume pour ${totalL}L)
-5. Pour les paramètres manquants les plus critiques, formuler 2-3 hypothèses sur l'état du bassin et poser des questions à choix multiples (format <div class="qcm-block">) pour affiner le diagnostic
-6. Suivi recommandé : délais et ordre de priorité des actions`;
+  const question = `Paramètres mesurés pour un bassin de ${totalL}L en aquaponie :\n${paramsText}${missing ? '\nParamètres non mesurés : '+missing : ''}\n\nANALYSE DEMANDÉE :\n1. État général avec niveau d'urgence\n2. Analyse détaillée de chaque paramètre hors plage\n3. Corrections précises : produit exact, dose pour ${totalL}L, méthode\n4. Gestion de l'eau : recommandations source et renouvellement\n5. Hypothèses sur paramètres manquants avec questions à choix multiples\n6. Suivi recommandé : délais et priorités`;
 
   try {
     const r = await fetch('/api/conseils', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({system:sysPrompt, question}) });
-    const txt = await r.text();
-    const data = JSON.parse(txt);
+    const data = JSON.parse(await r.text());
     if (!data.success) throw new Error(data.error || 'Erreur API');
-
-    const html = formatAnalyseHTML(data.text || '');
     resEl.innerHTML = `<div class="analyse-card">
       <div class="analyse-header">
         <div class="analyse-title">🧬 Analyse de l'eau — ${fmtDateShort(entry.ts)}</div>
         <span style="font-size:.62rem;color:var(--text-muted)">${totalL}L · ${Object.keys(params).length} paramètres</span>
       </div>
-      <div class="analyse-body">${html}</div>
+      <div class="analyse-body">${formatAnalyseHTML(data.text || '')}</div>
     </div>`;
   } catch(e) {
     resEl.innerHTML = `<div class="analyse-card"><div class="analyse-body" style="color:var(--red)">❌ Erreur : ${e.message}</div></div>`;
@@ -613,13 +995,12 @@ function formatAnalyseHTML(text) {
     .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
 }
 
-// ── QCM INTERACTIF ────────────────────────────────────────────
 function selectQcm(btn, questionId) {
   btn.closest('.qcm-block').querySelectorAll('.qcm-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 }
 
-// ── HISTORIQUE ────────────────────────────────────────────────
+// ── HISTORIQUE (modal) ────────────────────────────────────────
 function openHistorique() {
   document.getElementById('historiqueModal').classList.add('open');
   renderHistTabs();
@@ -657,9 +1038,8 @@ function renderHistChart(paramId) {
   histChart = new Chart(ctx, {
     type:'line',
     data:{ labels, datasets:[{
-      data: vals, borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,.1)',
-      borderWidth:2, pointRadius:4, pointBackgroundColor:vals.map(v=>v===null?'transparent':getParamStatut(paramId,v)==='ok'?'#4ade80':getParamStatut(paramId,v)==='warn'?'#fbbf24':'#f87171'),
-      fill:true, tension:0.3, spanGaps:true
+      data:vals, borderColor:'#38bdf8', backgroundColor:'rgba(56,189,248,.1)',
+      borderWidth:2, fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#38bdf8', spanGaps:true
     }]},
     options:{
       responsive:true, maintainAspectRatio:false, animation:false,
@@ -681,16 +1061,47 @@ function renderHistEntries() {
       .filter(([,v])=>v!==undefined&&v!==null)
       .map(([k,v])=>{const p2=PARAMS_EAU.find(x=>x.id===k);return `<span class="hist-val-item">${p2?.label||k} : ${v} ${p2?.unit||''}</span>`;})
       .join('');
-    return `<div class="hist-entry"><span class="hist-date">${fmtDate(e.ts)}</span><div class="hist-vals">${vals||'—'}</div></div>`;
+    return `<div class="hist-entry">
+      <span class="hist-date">${fmtDate(e.ts)}</span>
+      <div class="hist-vals">${vals||'—'}</div>
+      <button class="hist-del-entry" onclick="supprimerEntree('${e.ts}')" title="Supprimer cette entrée">✕</button>
+    </div>`;
   }).join('');
+}
+
+// ── SUPPRIMER UNE ENTRÉE ──────────────────────────────────────
+function supprimerEntree(ts) {
+  if (!confirm('Supprimer ce relevé ?')) return;
+  eauHist = eauHist.filter(e => e.ts !== ts);
+  save(KEY_EAU_HIST, eauHist);
+  renderHistEntries();
+  renderHistTabs();
+  showToast('Relevé supprimé');
+}
+
+// ── SUPPRIMER TOUTE LA JOURNÉE ────────────────────────────────
+function supprimerJour() {
+  // Trouver les jours disponibles
+  const jours = [...new Set(eauHist.map(e => e.date || e.ts?.slice(0,10)))].filter(Boolean).sort().reverse();
+  if (!jours.length) { showToast('Aucun relevé à supprimer'); return; }
+  const choix = prompt('Entrez la date à supprimer (AAAA-MM-JJ) :\n\nJours disponibles :\n' + jours.join('\n'));
+  if (!choix || !choix.trim()) return;
+  const dateStr = choix.trim();
+  const avant = eauHist.length;
+  eauHist = eauHist.filter(e => (e.date || e.ts?.slice(0,10)) !== dateStr);
+  const apres = eauHist.length;
+  if (avant === apres) { showToast('Date introuvable : ' + dateStr); return; }
+  save(KEY_EAU_HIST, eauHist);
+  renderHistEntries();
+  renderHistTabs();
+  showToast((avant - apres) + ' relevé(s) du ' + dateStr + ' supprimé(s)');
 }
 
 async function analyseHistorique() {
   if (histAnalyseLoading) return;
   histAnalyseLoading = true;
   const resEl = document.getElementById('histAnalyseResult');
-  resEl.style.display = 'block';
-  resEl.textContent = '⟳ Analyse en cours…';
+  resEl.style.display = 'block'; resEl.textContent = '⟳ Analyse en cours…';
   const lieu   = localStorage.getItem('jardin_lieu_meteo_v1') || 'Sud de la France';
   const totalL = totalEau();
   const last30 = eauHist.slice(-30);
@@ -700,7 +1111,7 @@ async function analyseHistorique() {
     return fmtDateShort(e.ts)+' → '+vals;
   }).join('\n');
   const sysPrompt = `Tu es un expert en aquaponie. Analyse l'évolution des paramètres d'eau d'un bassin de ${totalL}L à ${lieu}. Réponds en français, concis et actionnable, max 300 mots.`;
-  const question  = `Voici les 30 derniers relevés d'eau :\n${summary}\n\nAnalyse les tendances, les dérives progressives, les corrélations entre paramètres, et donne 3 recommandations concrètes sur l'évolution observée dans le contexte de l'aquaponie.`;
+  const question  = `Voici les 30 derniers relevés d'eau :\n${summary}\n\nAnalyse les tendances, les dérives progressives, les corrélations entre paramètres, et donne 3 recommandations concrètes sur l'évolution observée.`;
   try {
     const r = await fetch('/api/conseils',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sysPrompt,question})});
     const data = JSON.parse(await r.text());
@@ -710,93 +1121,57 @@ async function analyseHistorique() {
   histAnalyseLoading = false;
 }
 
-// ── FOURCHETTE IDÉALE (densités MyFood) ──────────────────────
+// ── FOURCHETTE IDÉALE ─────────────────────────────────────────
 function updateFourchette() {
   const el = document.getElementById('fourchetteBadge');
   if (!el) return;
   const total = totalEau();
   if (!total) { el.innerHTML='— renseigner le volume des bassins'; return; }
-
   const principaux = [...poissons].sort((a,b)=>b.nb-a.nb);
   const espece = (principaux[0]?.variete || 'Poisson rouge').toLowerCase();
   const totalPoissons = poissons.reduce((s,p)=>s+p.nb, 0);
-
-  // Calcul nMin / nMax selon espèce et volume
   let nMin, nMax;
-  if (espece.includes('koï') || espece.includes('koi')) {
-    // Koï : densité ~1 poisson adulte / 250L
-    nMin = Math.max(1, Math.round(total / 400));
-    nMax = Math.max(1, Math.round(total / 250));
-  } else if (espece.includes('truite')) {
-    // MyFood : 10 truites / 500L
-    nMin = Math.max(1, Math.round(total / 500 * 7));
-    nMax = Math.round(total / 500 * 10);
-  } else if (espece.includes('tilapia')) {
-    nMin = Math.round(total / 500 * 20);
-    nMax = Math.round(total / 500 * 35);
-  } else {
-    // Poisson rouge MyFood : 300L→30-40, 500L→35-50 → on interpole linéairement
-    // pMin ≈ 0.10/L, pMax ≈ 0.13/L (300L) → 0.07/L, 0.10/L (500L) : on prend 0.08–0.10/L
-    nMin = Math.round(total * 0.08);
-    nMax = Math.round(total * 0.10);
-  }
-
-  const pct     = nMax > 0 ? Math.round(totalPoissons / nMax * 100) : 0;
-  const marge   = Math.max(0, nMax - totalPoissons);
-  const couleur = pct > 100 ? 'var(--red)' : pct > 85 ? 'var(--amber)' : pct < 30 ? 'var(--amber)' : 'var(--teal)';
-
-  // Phrase résumé
+  if (espece.includes('koï') || espece.includes('koi')) { nMin=Math.max(1,Math.round(total/400)); nMax=Math.max(1,Math.round(total/250)); }
+  else if (espece.includes('truite')) { nMin=Math.max(1,Math.round(total/500*7)); nMax=Math.round(total/500*10); }
+  else if (espece.includes('tilapia')) { nMin=Math.round(total/500*20); nMax=Math.round(total/500*35); }
+  else { nMin=Math.round(total*0.08); nMax=Math.round(total*0.10); }
+  const pct=nMax>0?Math.round(totalPoissons/nMax*100):0;
+  const marge=Math.max(0,nMax-totalPoissons);
+  const couleur=pct>100?'var(--red)':pct>85?'var(--amber)':pct<30?'var(--amber)':'var(--teal)';
   let phrase;
-  if (!totalPoissons) {
-    phrase = `Aucun poisson — le bassin peut accueillir ${nMin}–${nMax} poissons pour une aquaponie fonctionnelle.`;
-  } else if (pct > 110) {
-    phrase = `⚠️ Surpopulation : risque d'hypoxie, pics d'ammoniaque et stress sanitaire. Réduire de ${totalPoissons - nMax} poisson${totalPoissons - nMax > 1 ? 's' : ''}.`;
-  } else if (pct > 85) {
-    phrase = `Bac bien chargé — surveiller O₂ et ammoniaque. Plus de place pour de nouveaux poissons.`;
-  } else if (pct < 30) {
-    phrase = `Population trop faible : production de nutriments insuffisante pour les plantes. Ajouter ${nMin - totalPoissons} poisson${nMin - totalPoissons > 1 ? 's' : ''} minimum.`;
-  } else {
-    phrase = `Équilibre correct. Capacité restante : ${marge} poisson${marge > 1 ? 's' : ''} supplémentaire${marge > 1 ? 's' : ''}.`;
-  }
-
-  // Barre de progression
-  const barPct  = Math.min(pct, 120);
-  const barColor = pct > 100 ? '#f87171' : pct > 85 ? '#fbbf24' : '#2dd4bf';
-
-  el.innerHTML = `
-    <div style="width:100%">
-      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
-        <span style="font-family:'Fraunces',serif;font-size:1.6rem;font-weight:300;color:${couleur};line-height:1">
-          ${totalPoissons} <span style="font-size:.85rem;color:var(--text-muted)">poisson${totalPoissons>1?'s':''}</span>
-        </span>
-        <span style="font-size:.85rem;font-weight:500;color:${couleur}">${pct}%</span>
-      </div>
-      <div style="height:6px;background:var(--border2);border-radius:3px;overflow:hidden;margin-bottom:10px">
-        <div style="height:100%;width:${barPct}%;background:${barColor};border-radius:3px;transition:width .4s ease"></div>
-      </div>
-      <div style="font-size:.75rem;color:var(--text-dim);line-height:1.5">${phrase}</div>
-    </div>`;
+  if (!totalPoissons) phrase=`Aucun poisson — le bassin peut accueillir ${nMin}–${nMax} poissons pour une aquaponie fonctionnelle.`;
+  else if (pct>110) phrase=`⚠️ Surpopulation : risque d'hypoxie. Réduire de ${totalPoissons-nMax} poisson${totalPoissons-nMax>1?'s':''}.`;
+  else if (pct>85) phrase=`Bac bien chargé — surveiller O₂ et ammoniaque. Plus de place pour de nouveaux poissons.`;
+  else if (pct<30) phrase=`Population trop faible : production de nutriments insuffisante. Ajouter ${nMin-totalPoissons} poisson${nMin-totalPoissons>1?'s':''} minimum.`;
+  else phrase=`Équilibre correct. Capacité restante : ${marge} poisson${marge>1?'s':''} supplémentaire${marge>1?'s':''}.`;
+  const barPct=Math.min(pct,120);
+  const barColor=pct>100?'#f87171':pct>85?'#fbbf24':'#2dd4bf';
+  el.innerHTML=`<div style="width:100%">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+      <span style="font-family:'Fraunces',serif;font-size:1.6rem;font-weight:300;color:${couleur};line-height:1">${totalPoissons} <span style="font-size:.85rem;color:var(--text-muted)">poisson${totalPoissons>1?'s':''}</span></span>
+      <span style="font-size:.85rem;font-weight:500;color:${couleur}">${pct}%</span>
+    </div>
+    <div style="height:6px;background:var(--border2);border-radius:3px;overflow:hidden;margin-bottom:10px">
+      <div style="height:100%;width:${barPct}%;background:${barColor};border-radius:3px;transition:width .4s ease"></div>
+    </div>
+    <div style="font-size:.75rem;color:var(--text-dim);line-height:1.5">${phrase}</div>
+  </div>`;
 }
 
 // ── POISSONS ──────────────────────────────────────────────────
 function renderPoissons() {
-  // Total
   const totalNb = poissons.reduce((s,p)=>s+p.nb, 0);
   let dispStr = '';
-  if (!totalNb) { dispStr = '<span style="color:var(--text-muted)">0 poisson</span>'; }
-  else { dispStr = poissons.map(p => `${p.nb} <span>${p.variete}</span>`).join(' · '); }
+  if (!totalNb) dispStr = '<span style="color:var(--text-muted)">0 poisson</span>';
+  else dispStr = poissons.map(p => `${p.nb} <span>${p.variete}</span>`).join(' · ');
   document.getElementById('poissonsTotalDisplay').innerHTML = dispStr || '0 poisson';
   updateFourchette();
-
-  // Décès : UNIQUEMENT les variétés présentes dans le bassin avec nb > 0
-  const decSel  = document.getElementById('dec-variete');
+  const decSel = document.getElementById('dec-variete');
   const prevVal = decSel.value;
   const presentes = poissons.filter(p => p.nb > 0);
   decSel.innerHTML = '<option value="">— Sélectionner</option>' +
     presentes.map(p => `<option value="${escHtml(p.variete)}">${p.variete} (${p.nb} présent${p.nb>1?'s':''})</option>`).join('');
-  // Restaurer la sélection si encore valide
   if (prevVal && presentes.some(p => p.variete === prevVal)) decSel.value = prevVal;
-
   renderEventLog();
 }
 
@@ -814,10 +1189,6 @@ function renderEventLog() {
     </div>`;
   }).join('');
 }
-
-document.getElementById('arr-variete').addEventListener('change', function() {
-  document.getElementById('arr-autre-wrap').style.display = this.value === 'Autre' ? 'flex' : 'none';
-});
 
 function ajouterPoissons() {
   const nb  = parseInt(document.getElementById('arr-nb').value);
@@ -857,38 +1228,33 @@ function declarerDeces() {
   showToast('-'+nb+' '+variete+' enregistré(s)');
 }
 
-// ── CONSEILS POISSONS IA ──────────────────────────────────────
+// ── CONSEILS POISSONS ─────────────────────────────────────────
 async function genererConseilsPoissons() {
   const btn  = document.getElementById('fishConseilsBtn');
   const icon = document.getElementById('fishBtnIcon');
   const body = document.getElementById('fishConseilsBody');
   btn.style.pointerEvents='none'; icon.textContent='⟳';
   body.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:12px;color:var(--text-muted);font-size:.75rem"><div class="loading-ring"></div>Génération des conseils…</div>';
-
-  const lieu      = localStorage.getItem('jardin_lieu_meteo_v1') || 'Sud de la France';
-  const totalL    = totalEau();
-  const month     = new Date().getMonth()+1;
-  const season    = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
-  const today     = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
-  const popDesc   = poissons.map(p => p.nb+' '+p.variete+(p.tailleMoy?' (~'+p.tailleMoy+'cm)':'')).join(', ') || 'non renseignée';
+  const lieu    = localStorage.getItem('jardin_lieu_meteo_v1') || 'Sud de la France';
+  const totalL  = totalEau();
+  const month   = new Date().getMonth()+1;
+  const season  = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
+  const today   = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  const popDesc = poissons.map(p => p.nb+' '+p.variete+(p.tailleMoy?' (~'+p.tailleMoy+'cm)':'')).join(', ') || 'non renseignée';
   const waterTemp = lastEau.temperature || 'non mesurée';
   const ph        = lastEau.ph || 'non mesuré';
   const o2        = lastEau.oxygene || 'non mesuré';
   const eauDesc   = `Temp eau : ${waterTemp}°C, pH : ${ph}, O₂ dissous : ${o2} mg/L`;
-
-  const sysPrompt = `Tu es un expert en aquaponie, pisciculture et élevage de poissons ornementaux et de consommation. Tu donnes des conseils pratiques et personnalisés.
+  const sysPrompt = `Tu es un expert en aquaponie, pisciculture et élevage de poissons. Tu donnes des conseils pratiques et personnalisés.
 Contexte : Lieu : ${lieu}, date : ${today} (${season}), volume bassin : ${totalL}L, population : ${popDesc}. Paramètres eau : ${eauDesc}.`;
-
-  const question = `Génère des conseils personnalisés pour mes poissons aujourd'hui. 
-Adapte-toi à la saison (${season}) et au lieu (${lieu}) pour :
-1. État général de la population et risques spécifiques à cette période de l'année et à la météo locale
-2. Alimentation : fréquence, quantité, type d'aliment adapté à la saison et température de l'eau
-3. Surveillance sanitaire : maladies saisonnières à surveiller, signes à observer, mesures préventives
-4. Oxygénation et circulation : besoins selon la température actuelle
-${popDesc.toLowerCase().includes('truite') || popDesc.toLowerCase().includes('perche') ? `5. PÊCHE ET RÉCOLTE : en tenant compte de la saison, température de l'eau (${waterTemp}°C), stade de croissance estimé — indiquer si c'est le bon moment pour pêcher et consommer, ou combien de temps attendre` : '5. Croissance et développement : estimation de la croissance selon la saison'}
-6. Entretien du bassin lié aux poissons : nettoyage, renouvellement partiel d'eau si nécessaire
-Réponds en HTML avec des balises h3 pour chaque section, en français, détaillé et actionnable.`;
-
+  const question = `Génère des conseils personnalisés pour mes poissons aujourd'hui.
+1. État général et risques saisonniers
+2. Alimentation : fréquence, quantité, type adapté à la saison et température eau
+3. Surveillance sanitaire : maladies saisonnières, signes à observer, mesures préventives
+4. Oxygénation et circulation selon la température actuelle
+${popDesc.toLowerCase().includes('truite')||popDesc.toLowerCase().includes('perche')?`5. PÊCHE ET RÉCOLTE : bon moment ou combien de temps attendre ?`:'5. Croissance et développement : estimation selon la saison'}
+6. Entretien du bassin : nettoyage, renouvellement partiel si nécessaire
+Réponds en HTML avec des balises h3, en français, détaillé et actionnable.`;
   try {
     const r = await fetch('/api/conseils',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sysPrompt,question})});
     const data = JSON.parse(await r.text());
@@ -920,10 +1286,17 @@ function showToast(msg) {
 }
 
 // ── INIT ──────────────────────────────────────────────────────
+document.getElementById('arr-variete').addEventListener('change', function() {
+  document.getElementById('arr-autre-wrap').style.display = this.value === 'Autre' ? 'flex' : 'none';
+});
+
 renderBassins();
 renderParamsGrid();
 loadAutoValues();
 renderPoissons();
+updateMetriques();
+renderBacBrief();
+refreshCharts();
 
 const lastSaved = eauHist.slice(-1)[0];
 if (lastSaved) document.getElementById('lastSaveInfo').textContent = 'Dernier relevé : '+fmtDate(lastSaved.ts);
