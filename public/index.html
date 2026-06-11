@@ -32,19 +32,22 @@ header{position:sticky;top:0;z-index:100;background:rgba(10,18,11,.92);backdrop-
 main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 
 /* ── NAV PRINCIPAL ── */
-.nav-tabs{display:flex;gap:3px;margin-bottom:8px;background:var(--surface);padding:3px;border-radius:10px;border:1px solid var(--border)}
+.nav-tabs{display:flex;gap:3px;margin-bottom:8px;background:var(--bg3);padding:3px;border-radius:10px;border:1px solid var(--border)}
 .tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
-.tab.active{background:var(--bg3);color:var(--accent);border:1px solid var(--border)}
+.tab:hover:not(.active){color:var(--accent)}
+.tab.active{background:rgba(20,32,22,.95);color:var(--accent);border:1px solid rgba(163,230,53,.3)}
 
 /* ── NAV SECONDAIRE ── */
-.nav-sub{display:flex;gap:3px;margin-bottom:16px;background:rgba(10,18,11,.6);padding:3px;border-radius:8px;border:1px solid var(--border)}
+.nav-sub{display:flex;gap:3px;margin-bottom:16px;background:rgba(10,18,11,.7);padding:3px;border-radius:8px;border:1px solid var(--border)}
 .tab-sub{flex:1;padding:7px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s}
-.tab-sub.active{background:var(--bg3);color:var(--green);border:1px solid var(--border)}
+.tab-sub:hover:not(.active){color:var(--green)}
+.tab-sub.active{background:rgba(20,32,22,.95);color:var(--green);border:1px solid rgba(74,222,128,.3)}
 
 /* ── NAV TERTIAIRE (domotique) ── */
-.nav-tert{display:flex;gap:3px;margin-bottom:16px;background:rgba(10,18,11,.4);padding:3px;border-radius:7px;border:1px solid rgba(42,64,48,.6)}
+.nav-tert{display:flex;gap:3px;margin-bottom:16px;background:rgba(10,18,11,.5);padding:3px;border-radius:7px;border:1px solid rgba(42,64,48,.6)}
 .tab-tert{flex:1;padding:6px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:5px;transition:all .2s}
-.tab-tert.active{background:rgba(20,32,22,.8);color:var(--text-dim);border:1px solid rgba(42,64,48,.8)}
+.tab-tert:hover:not(.active){color:var(--text-dim)}
+.tab-tert.active{background:rgba(20,32,22,.9);color:var(--text-dim);border:1px solid rgba(42,64,48,.8)}
 
 .section{display:none}.section.active{display:block}
 .subsection{display:none}.subsection.active{display:block}
@@ -1761,8 +1764,3 @@ setInterval(async()=>{
 </script>
 </body>
 </html>
-
-
-
-
-
