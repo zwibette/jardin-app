@@ -31,23 +31,23 @@ header{position:sticky;top:0;z-index:100;background:rgba(10,18,11,.92);backdrop-
 @keyframes spin{to{transform:rotate(360deg)}}
 main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
 
-/* ── NAV PRINCIPAL ── */
-.nav-tabs{display:flex;gap:3px;margin-bottom:8px;background:var(--bg3);padding:3px;border-radius:10px;border:1px solid var(--border)}
-.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
-.tab:hover:not(.active){color:var(--accent)}
-.tab.active{background:rgba(20,32,22,.95);color:var(--accent);border:1px solid rgba(163,230,53,.3)}
+/* ── NAV PRINCIPAL — palette teal #20847d ── */
+.nav-tabs{display:flex;gap:3px;margin-bottom:8px;background:#0d2826;padding:3px;border-radius:10px;border:1px solid #1a4040}
+.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:#3a7a76;font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
+.tab:hover:not(.active){color:#2dd4c8}
+.tab.active{background:#1a4a47;color:#2dd4c8;border:1px solid rgba(45,212,200,.35)}
 
 /* ── NAV SECONDAIRE ── */
-.nav-sub{display:flex;gap:3px;margin-bottom:16px;background:rgba(10,18,11,.7);padding:3px;border-radius:8px;border:1px solid var(--border)}
-.tab-sub{flex:1;padding:7px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s}
-.tab-sub:hover:not(.active){color:var(--green)}
-.tab-sub.active{background:rgba(20,32,22,.95);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+.nav-sub{display:flex;gap:3px;margin-bottom:16px;background:#091f1e;padding:3px;border-radius:8px;border:1px solid #1a4040}
+.tab-sub{flex:1;padding:7px 4px;border:none;background:transparent;color:#3a7a76;font-family:'DM Mono',monospace;font-size:.63rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s}
+.tab-sub:hover:not(.active){color:#2dd4c8}
+.tab-sub.active{background:#27635e;color:#2dd4c8;border:1px solid rgba(45,212,200,.3)}
 
 /* ── NAV TERTIAIRE (domotique) ── */
-.nav-tert{display:flex;gap:3px;margin-bottom:16px;background:rgba(10,18,11,.5);padding:3px;border-radius:7px;border:1px solid rgba(42,64,48,.6)}
-.tab-tert{flex:1;padding:6px 4px;border:none;background:transparent;color:var(--text-muted);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:5px;transition:all .2s}
+.nav-tert{display:flex;gap:3px;margin-bottom:16px;background:rgba(9,31,30,.7);padding:3px;border-radius:7px;border:1px solid rgba(26,64,64,.7)}
+.tab-tert{flex:1;padding:6px 4px;border:none;background:transparent;color:#3a7a76;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:5px;transition:all .2s}
 .tab-tert:hover:not(.active){color:var(--text-dim)}
-.tab-tert.active{background:rgba(20,32,22,.9);color:var(--text-dim);border:1px solid rgba(42,64,48,.8)}
+.tab-tert.active{background:#1a4a47;color:var(--text-dim);border:1px solid rgba(26,64,64,.9)}
 
 .section{display:none}.section.active{display:block}
 .subsection{display:none}.subsection.active{display:block}
