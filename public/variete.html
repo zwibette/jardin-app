@@ -247,7 +247,7 @@ td{padding:10px 12px;color:var(--text-dim)}
 <header>
   <div class="header-top">
     <a href="/recoltes.html" class="back-btn">← Récoltes</a>
-    <a href="/calendrier.html" class="back-btn" style="background:rgba(163,230,53,.12);border-color:rgba(163,230,53,.3);color:var(--accent,#a3e635)">📅 Calendrier</a>
+    <a href="/recoltes.html" class="back-btn" style="background:rgba(163,230,53,.12);border-color:rgba(163,230,53,.3);color:var(--accent,#a3e635)">📅 Planifier</a>
   </div>
   <div class="header-title" id="headerTitle">—</div>
   <div class="header-famille" id="headerFamille">—</div>
@@ -496,7 +496,7 @@ function syncStadesToCalendrier() {
 }
 function refreshPhenoBlock() {
   const calEntry = getCultureEntry(_currentVegetal, _currentLieu);
-  const famille  = FAMILLES[_currentVegetal]||calEntry?.famille||'';
+  const famille  = calEntry?.famille || FAMILLES[_currentVegetal] || '';
   const el = document.getElementById('phenoContent');
   if (el) el.innerHTML = renderStades()+buildPhenoSlider(calEntry, _currentStades, famille);
 }
@@ -714,11 +714,12 @@ if (!vegetal) {
 } else {
   const allRecoltes = loadRecoltes();
   const recoltes    = allRecoltes.filter(r=>r.vegetal===vegetal).sort((a,b)=>b.date.localeCompare(a.date));
-  const famille     = FAMILLES[vegetal]||recoltes[0]?.famille||'';
   const lieuxRec    = recoltes.map(r=>r.lieu);
   const lieuMaj     = lieuxRec.length ? lieuxRec.sort((a,b)=>lieuxRec.filter(v=>v===b).length-lieuxRec.filter(v=>v===a).length)[0] : null;
   _currentLieu      = lieuMaj || getCultureEntry(vegetal)?.lieu || '';
   const calEntry    = getCultureEntry(vegetal, _currentLieu);
+  // Famille : priorité au calendrier, puis dictionnaire statique, puis récolte
+  const famille     = calEntry?.famille || FAMILLES[vegetal] || recoltes[0]?.famille || '';
 
   document.getElementById('headerTitle').textContent   = vegetal;
   document.getElementById('headerFamille').textContent  = famille;
@@ -1085,7 +1086,7 @@ async function lancerAnalyse() {
   </div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
 
   const calEntry  = getCultureEntry(vegetal, _currentLieu);
-  const famille   = FAMILLES[vegetal]||calEntry?.famille||'';
+  const famille   = calEntry?.famille || FAMILLES[vegetal] || '';
   const pheno     = calcPheno(calEntry, _currentStades, famille);
   const allRec    = loadRecoltes();
   const recVar    = allRec.filter(r=>r.vegetal===vegetal).sort((a,b)=>a.date.localeCompare(b.date));
@@ -1214,7 +1215,7 @@ async function analyserPhoto() {
   </div>`;
 
   const calEntry = getCultureEntry(vegetal, _currentLieu);
-  const famille  = FAMILLES[vegetal]||calEntry?.famille||'';
+  const famille  = calEntry?.famille || FAMILLES[vegetal] || '';
   const month    = new Date().getMonth()+1;
   const season   = month>=3&&month<=5?'printemps':month>=6&&month<=8?'été':month>=9&&month<=11?'automne':'hiver';
 
