@@ -887,9 +887,30 @@ function onParamChange(id, val) {
   renderBacBrief();
 }
 
-function loadAutoValues() {
-  // Source 1 : données MyFood (pH eau + temp eau depuis capteurs Sigfox)
-  const myfood = (() => { try { return JSON.parse(localStorage.getItem('bassin_myfood_latest')||'null'); } catch(e){return null;} })();
+async function fetchAndStoreMyFood() {
+  try {
+    const r = await fetch('/api/myfood');
+    const d = await r.json();
+    if (d.success && (d.ph !== null || d.waterTemp !== null)) {
+      const payload = { ph: d.ph, waterTemp: d.waterTemp, ts: Date.now() };
+      localStorage.setItem('bassin_myfood_latest', JSON.stringify(payload));
+      return payload;
+    }
+  } catch(e) { console.warn('MyFood fetch:', e.message); }
+  return null;
+}
+
+async function loadAutoValues() {
+  // Source 1 : données MyFood — fetcher en priorité, fallback localStorage
+  let myfood = null;
+  const cached = (() => { try { return JSON.parse(localStorage.getItem('bassin_myfood_latest')||'null'); } catch(e){return null;} })();
+  const cacheAge = cached?.ts ? Date.now() - cached.ts : Infinity;
+  if (cacheAge > 30 * 60 * 1000) {
+    // Cache > 30min : refetch
+    myfood = await fetchAndStoreMyFood() || cached;
+  } else {
+    myfood = cached;
+  }
   if (myfood) {
     const MAX_AGE_MS = 12 * 60 * 60 * 1000;
     const age = myfood.ts ? Date.now() - myfood.ts : Infinity;
@@ -1333,17 +1354,19 @@ document.getElementById('arr-variete').addEventListener('change', function() {
 
 renderBassins();
 renderParamsGrid();
-loadAutoValues();
 renderPoissons();
 updateMetriques();
 renderBacBrief();
 refreshCharts();
+// Charger les valeurs MyFood au démarrage (async)
+loadAutoValues();
 
 const lastSaved = eauHist.slice(-1)[0];
 if (lastSaved) document.getElementById('lastSaveInfo').textContent = 'Dernier relevé : '+fmtDate(lastSaved.ts);
 
 // Injection périodique des capteurs dans les graphiques (toutes les 30 min)
-setInterval(() => {
+setInterval(async () => {
+  await fetchAndStoreMyFood();
   loadAutoValues();
 }, 30 * 60 * 1000);
 </script>
