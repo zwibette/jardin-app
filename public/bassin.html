@@ -349,6 +349,9 @@ select.event-input{-webkit-appearance:none}
       <div class="stitle">💧 Qualité de mon eau <span>saisie manuelle + capteurs</span></div>
       <div class="params-grid" id="paramsGrid"></div>
       <div class="analyze-bar">
+        <button class="analyze-btn" id="saveBtn" onclick="enregistrerEau()" style="background:var(--teal);color:#050e0f">
+          <span id="saveIcon">💾</span> Enregistrer
+        </button>
         <button class="analyze-btn" id="analyzeBtn" onclick="lancerAnalyseEau()">
           <span id="analyzeIcon">✦</span> Analyser avec l'IA
         </button>
@@ -885,32 +888,60 @@ function onParamChange(id, val) {
 }
 
 function loadAutoValues() {
+  // Source 1 : données MyFood (pH eau + temp eau depuis capteurs Sigfox)
   const myfood = (() => { try { return JSON.parse(localStorage.getItem('bassin_myfood_latest')||'null'); } catch(e){return null;} })();
-  if (!myfood) return;
-  const MAX_AGE_MS = 12 * 60 * 60 * 1000;
-  const age = myfood.ts ? Date.now() - myfood.ts : Infinity;
-  if (age > MAX_AGE_MS) return;
-  const mapping = { ph: myfood.ph, temperature: myfood.waterTemp };
-  const tsLabel = myfood.ts ? new Date(myfood.ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
-  Object.entries(mapping).forEach(([id, val]) => {
-    if (val === null || val === undefined) return;
-    const inp = document.getElementById('pi-'+id);
-    if (!inp) return;
-    const manualKey = 'bassin_manual_'+id;
-    const manualTs  = parseInt(localStorage.getItem(manualKey) || '0');
-    if (manualTs > (myfood.ts || 0)) return;
-    inp.value = val;
-    inp.classList.add('auto');
-    onParamChange(id, val);
-    const badgeId = 'myfood-badge-'+id;
-    let badge = document.getElementById(badgeId);
-    if (!badge) {
-      badge = document.createElement('div');
-      badge.id = badgeId;
-      badge.style.cssText = 'font-size:.58rem;color:var(--accent);letter-spacing:.05em;margin-top:2px;opacity:.8';
-      inp.parentNode.appendChild(badge);
+  if (myfood) {
+    const MAX_AGE_MS = 12 * 60 * 60 * 1000;
+    const age = myfood.ts ? Date.now() - myfood.ts : Infinity;
+    if (age <= MAX_AGE_MS) {
+      const mapping = { ph: myfood.ph, temperature: myfood.waterTemp };
+      const tsLabel = myfood.ts ? new Date(myfood.ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+      Object.entries(mapping).forEach(([id, val]) => {
+        if (val === null || val === undefined) return;
+        const inp = document.getElementById('pi-'+id);
+        if (!inp) return;
+        const manualKey = 'bassin_manual_'+id;
+        const manualTs  = parseInt(localStorage.getItem(manualKey) || '0');
+        if (manualTs > (myfood.ts || 0)) return;
+        inp.value = val;
+        inp.classList.add('auto');
+        onParamChange(id, val);
+        const badgeId = 'myfood-badge-'+id;
+        let badge = document.getElementById(badgeId);
+        if (!badge) {
+          badge = document.createElement('div');
+          badge.id = badgeId;
+          badge.style.cssText = 'font-size:.58rem;color:var(--accent);letter-spacing:.05em;margin-top:2px;opacity:.8';
+          inp.parentNode.appendChild(badge);
+        }
+        badge.textContent = '📡 Capteur' + (tsLabel ? ' · ' + tsLabel : '');
+      });
+
+      // Injecter dans l'historique graphiques si point suffisamment récent
+      const GRAPH_INTERVAL_MS = 30 * 60 * 1000; // 30 min
+      const lastPt = phTempHist.length ? new Date(phTempHist[phTempHist.length-1].ts).getTime() : 0;
+      if ((myfood.ts || 0) > lastPt + GRAPH_INTERVAL_MS) {
+        const ph   = myfood.ph       ?? null;
+        const temp = myfood.waterTemp ?? null;
+        if (ph !== null || temp !== null) {
+          addPhTempPoint(ph, temp);
+          refreshCharts();
+        }
+      }
     }
-    badge.textContent = '📡 Serre' + (tsLabel ? ' · ' + tsLabel : '');
+  }
+
+  // Source 2 : valeurs déjà affichées dans les encadrés (lastEau)
+  // Si aucune valeur manuelle récente, pré-remplir depuis lastEau
+  ['ph', 'temperature'].forEach(id => {
+    const inp = document.getElementById('pi-'+id);
+    if (!inp || inp.value !== '') return;
+    const v = lastEau[id];
+    if (v !== null && v !== undefined && v !== '') {
+      inp.value = v;
+      inp.classList.add('auto');
+      onParamChange(id, v);
+    }
   });
 }
 
@@ -918,7 +949,30 @@ function markManualInput(id) {
   try { localStorage.setItem('bassin_manual_'+id, Date.now().toString()); } catch(e) {}
 }
 
-// ── ANALYSE EAU ──────────────────────────────────────────────
+function enregistrerEau() {
+  const params = {};
+  PARAMS_EAU.forEach(p => {
+    const v = document.getElementById('pi-'+p.id)?.value;
+    if (v !== '' && v !== null && v !== undefined && !isNaN(parseFloat(v))) params[p.id] = parseFloat(v);
+  });
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const entry = { ts: new Date().toISOString(), date: todayKey, params: { ...params } };
+  const existingIdx = eauHist.findIndex(e => e.date === todayKey);
+  if (existingIdx !== -1) eauHist[existingIdx] = entry;
+  else eauHist.push(entry);
+  save(KEY_EAU_HIST, eauHist);
+  // Alimenter l'historique graphiques ph/temp
+  if (params.ph != null || params.temperature != null) {
+    addPhTempPoint(params.ph ?? null, params.temperature ?? null);
+    refreshCharts();
+  }
+  updateMetriques();
+  renderBacBrief();
+  document.getElementById('lastSaveInfo').textContent = 'Sauvegardé le '+fmtDate(entry.ts);
+  showToast('✓ Relevé enregistré');
+}
+
+
 async function lancerAnalyseEau() {
   const btn   = document.getElementById('analyzeBtn');
   const icon  = document.getElementById('analyzeIcon');
@@ -929,25 +983,12 @@ async function lancerAnalyseEau() {
   const params = {};
   PARAMS_EAU.forEach(p => {
     const v = document.getElementById('pi-'+p.id)?.value;
-    if (v !== '' && v !== null && v !== undefined) params[p.id] = parseFloat(v);
+    if (v !== '' && v !== null && v !== undefined && !isNaN(parseFloat(v))) params[p.id] = parseFloat(v);
   });
 
-  // Sauvegarder dans l'historique
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const entry = { ts: new Date().toISOString(), date: todayKey, params: { ...params } };
-  const existingIdx = eauHist.findIndex(e => e.date === todayKey);
-  if (existingIdx !== -1) eauHist[existingIdx] = entry;
-  else eauHist.push(entry);
-  save(KEY_EAU_HIST, eauHist);
-  document.getElementById('lastSaveInfo').textContent = 'Sauvegardé le '+fmtDate(entry.ts);
-
-  // Alimenter l'historique graphiques ph/temp
-  if (params.ph != null || params.temperature != null) {
-    addPhTempPoint(params.ph ?? null, params.temperature ?? null);
-    refreshCharts();
-  }
-  updateMetriques();
-  renderBacBrief();
+  // Sauvegarder (réutilise enregistrerEau)
+  enregistrerEau();
+  const entry = eauHist[eauHist.length - 1];
 
   const lieu    = localStorage.getItem('jardin_lieu_meteo_v1') || 'Sud de la France';
   const totalL  = totalEau();
@@ -1300,6 +1341,11 @@ refreshCharts();
 
 const lastSaved = eauHist.slice(-1)[0];
 if (lastSaved) document.getElementById('lastSaveInfo').textContent = 'Dernier relevé : '+fmtDate(lastSaved.ts);
+
+// Injection périodique des capteurs dans les graphiques (toutes les 30 min)
+setInterval(() => {
+  loadAutoValues();
+}, 30 * 60 * 1000);
 </script>
 </body>
 </html>
