@@ -1676,11 +1676,80 @@ async function askConseils(questionOverride) {
   }
   loading.style.display='none'; content.style.display='block';
 }
+  
+// ── Scheduler programmes ──────────────────────────────────────
+const _progRunning = {}; // id → { offTimer, lastRepeat }
 
+function timeToMinutes(timeStr) {
+  if (!timeStr) return null;
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 + m;
+}
+
+async function runProgrammes() {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const todayDay = now.getDay(); // 0=dim … 6=sam
+
+  const progs = loadProgrammes();
+  for (const p of progs) {
+    if (!p.actif) continue;
+    if (!p.days.includes(todayDay)) continue;
+
+    const startMin = timeToMinutes(p.time);
+    if (startMin === null) continue;
+
+    const endMin = p.endtime ? timeToMinutes(p.endtime) : null;
+
+    // Hors fenêtre horaire
+    if (nowMin < startMin) continue;
+    if (endMin !== null && nowMin > endMin) continue;
+
+    // Vérifier conditions capteurs
+    if (!checkConditions(p.conditions)) continue;
+
+    // Répétition : ne pas re-déclencher si pas encore le moment
+    const state = _progRunning[p.id] || {};
+    if (p.repeatEvery > 0) {
+      const lastRun = state.lastRepeat || 0;
+      if (nowMin - lastRun < p.repeatEvery && lastRun !== 0) continue;
+    } else {
+      // Action unique : ne pas re-déclencher si déjà fait ce cycle
+      if (state.lastRepeat === nowMin) continue;
+    }
+
+    // Déclencher
+    const dev = DEVICE_MAP[p.device];
+    if (!dev) continue;
+    const val = p.action === 'on';
+    try {
+      await controlDevice(dev.id, dev.code, val);
+      _progRunning[p.id] = { ..._progRunning[p.id], lastRepeat: nowMin };
+
+      // Extinction automatique après durée
+      if (val && p.duration > 0) {
+        if (state.offTimer) clearTimeout(state.offTimer);
+        const ms = p.durationUnit === 'sec' ? p.duration * 1000 : p.duration * 60 * 1000;
+        const offTimer = setTimeout(async () => {
+          await controlDevice(dev.id, dev.code, false);
+          updateCommandStates();
+        }, ms);
+        _progRunning[p.id].offTimer = offTimer;
+      }
+
+      updateCommandStates();
+    } catch(e) {
+      console.warn('Programme', p.id, 'erreur:', e.message);
+    }
+  }
+}
 // ── Init ──────────────────────────────────────────────────────
 renderProgrammes();
 initWebcam();
 refreshAll();
+  // Lancer le scheduler toutes les minutes
+runProgrammes();
+setInterval(runProgrammes, 60 * 1000);
 setInterval(refreshAll, 5*60*1000);
 setInterval(async()=>{
   const sensor=getSerreTHSensor();
@@ -1692,3 +1761,8 @@ setInterval(async()=>{
 </script>
 </body>
 </html>
+
+
+
+
+
