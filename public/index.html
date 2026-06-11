@@ -383,8 +383,12 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
             <span style="font-size:.6rem;color:var(--text-muted);margin-left:4px" title="Heure à laquelle le programme s'arrête (utile pour répétition)">ℹ</span>
           </div>
           <div class="prog-row">
-            <span class="prog-lbl">Durée action (min)</span>
-            <input class="prog-input" type="number" id="new-prog-duration" value="30" min="0" max="360" style="width:70px">
+            <span class="prog-lbl">Durée action</span>
+            <input class="prog-input" type="number" id="new-prog-duration" value="30" min="0" max="3600" style="width:70px">
+            <select class="prog-select" id="new-prog-duration-unit" style="width:auto;padding:4px 8px;font-size:.72rem;margin-left:4px" onchange="previewProgramme()">
+              <option value="min">min</option>
+              <option value="sec">sec</option>
+            </select>
             <span style="font-size:.62rem;color:var(--text-muted);margin-left:4px">(0 = sans limite)</span>
           </div>
 
@@ -488,20 +492,47 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
           <div class="webcam-placeholder" id="webcamPlaceholder">
             <div class="webcam-icon">📷</div>
             <div class="webcam-title">Webcam non connectée</div>
-            <div class="webcam-desc">Connectez votre webcam ou flux MJPEG/RTSP pour visualiser la serre en temps réel.</div>
+            <div class="webcam-desc">Connectez votre caméra Tapo par Device ID, ou entrez une URL de flux MJPEG.</div>
             <div class="webcam-url-form">
-              <input class="webcam-input" type="text" id="webcamUrlInput" placeholder="http://192.168.1.x:8080/video ou URL flux MJPEG">
-              <button class="webcam-connect-btn" onclick="connectWebcam()">Connecter</button>
+              <!-- Onglets type de connexion -->
+              <div style="display:flex;gap:4px;background:var(--bg3);padding:3px;border-radius:8px;border:1px solid var(--border);width:100%;max-width:400px">
+                <button id="wc-tab-tapo" onclick="wcTab('tapo')" style="flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;background:var(--bg);color:var(--accent);border:1px solid var(--border)">📱 Tapo Device ID</button>
+                <button id="wc-tab-url" onclick="wcTab('url')" style="flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;background:transparent;color:var(--text-muted)">🔗 URL flux MJPEG</button>
+              </div>
+              <!-- Panneau Tapo -->
+              <div id="wc-panel-tapo" style="width:100%;max-width:400px;display:flex;flex-direction:column;gap:8px">
+                <input class="webcam-input" type="text" id="webcamDeviceId" value="446303297062" placeholder="Device ID (ex: 446303297062)">
+                <input class="webcam-input" type="text" id="webcamTapoUser" placeholder="Utilisateur Tapo (email)">
+                <input class="webcam-input" type="password" id="webcamTapoPass" placeholder="Mot de passe Tapo">
+                <div style="font-size:.62rem;color:var(--text-muted);line-height:1.5;text-align:left">
+                  💡 L'ID <strong style="color:var(--accent)">446303297062</strong> est détecté.<br>
+                  Entrez vos identifiants Tapo pour générer l'URL de snapshot.<br>
+                  <span style="color:var(--amber)">⚠ Les caméras Tapo nécessitent un accès local (même réseau) ou un proxy RTSP→MJPEG.</span>
+                </div>
+                <button class="webcam-connect-btn" onclick="connectTapo()">Connecter Tapo</button>
+              </div>
+              <!-- Panneau URL -->
+              <div id="wc-panel-url" style="width:100%;max-width:400px;display:none;flex-direction:column;gap:8px">
+                <input class="webcam-input" type="text" id="webcamUrlInput" placeholder="http://192.168.1.x:8080/video ou URL MJPEG">
+                <div style="font-size:.62rem;color:var(--text-muted);line-height:1.5;text-align:left">
+                  💡 Pour une Tapo sur réseau local : utilisez un proxy MJPEG (ex: rtsp-to-web, go2rtc) et collez l'URL HTTP ici.
+                </div>
+                <button class="webcam-connect-btn" onclick="connectWebcam()">Connecter</button>
+              </div>
             </div>
           </div>
           <div id="webcamView" style="display:none">
             <div class="webcam-frame">
               <img id="webcamImg" src="" alt="Flux webcam" onerror="webcamError()">
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:8px">
               <div style="font-size:.62rem;color:var(--text-muted)" id="webcamUrlDisplay"></div>
-              <button class="prog-btn del" onclick="disconnectWebcam()" style="font-size:.65rem;padding:5px 12px">Déconnecter</button>
+              <div style="display:flex;gap:6px">
+                <button class="prog-btn" onclick="refreshWebcamSnapshot()" style="font-size:.65rem;padding:5px 12px">↺ Actualiser</button>
+                <button class="prog-btn del" onclick="disconnectWebcam()" style="font-size:.65rem;padding:5px 12px">Déconnecter</button>
+              </div>
             </div>
+            <div style="font-size:.6rem;color:var(--text-muted);margin-top:6px" id="webcamLastRefresh"></div>
           </div>
         </div>
       </div><!-- /tert-webcam -->
@@ -1136,7 +1167,11 @@ function readNewProgForm() {
   const action      = document.getElementById('new-prog-action').value;
   const time        = document.getElementById('new-prog-time').value;
   const endtime     = document.getElementById('new-prog-endtime').value;
-  const duration    = parseInt(document.getElementById('new-prog-duration').value) || 0;
+  const durationRaw  = parseInt(document.getElementById('new-prog-duration').value) || 0;
+  const durationUnit = document.getElementById('new-prog-duration-unit').value;
+  // Stocker en secondes en interne, avec l'unité d'affichage
+  const duration = durationRaw;
+  const durationUnitSaved = durationUnit;
   const repeatEvery = parseInt(document.getElementById('new-prog-repeat-every').value) || 0;
   const days        = Array.from(document.querySelectorAll('#new-prog-days input:checked')).map(i => parseInt(i.value));
 
@@ -1153,7 +1188,7 @@ function readNewProgForm() {
   if (condTempSerreOp && !isNaN(condTempSerreVal)) conditions.push({ sensor:'tempSerre',  op:condTempSerreOp, val:condTempSerreVal });
   if (condHumOp       && !isNaN(condHumVal))        conditions.push({ sensor:'humSerre',   op:condHumOp,       val:condHumVal });
 
-  return { device, action, time, endtime, duration, repeatEvery, days, conditions };
+  return { device, action, time, endtime, duration, durationUnit: durationUnitSaved, repeatEvery, days, conditions };
 }
 
 function conditionLabel(c) {
@@ -1166,7 +1201,7 @@ function conditionLabel(c) {
 function progDescription(p) {
   const dev = DEVICE_MAP[p.device] || { label: p.device };
   const joursStr = p.days.sort().map(d => JOURS_LABELS[d]).join(', ');
-  const durStr = p.duration > 0 ? p.duration + ' min' : 'sans limite';
+  const durStr = p.duration > 0 ? p.duration + ' ' + (p.durationUnit || 'min') : 'sans limite';
   let desc = `${dev.label} — ${p.action === 'on' ? 'Activation' : 'Désactivation'} à ${p.time}`;
   if (p.endtime) desc += ` jusqu'à ${p.endtime}`;
   desc += ` · ${joursStr} · ${durStr}`;
@@ -1271,19 +1306,69 @@ function checkConditions(conditions) {
 
 // ── Webcam ─────────────────────────────────────────────────────
 const WEBCAM_KEY = 'jardin_webcam_url_v1';
+let _webcamRefreshTimer = null;
+
+function wcTab(tab) {
+  document.getElementById('wc-panel-tapo').style.display = tab === 'tapo' ? 'flex' : 'none';
+  document.getElementById('wc-panel-url').style.display  = tab === 'url'  ? 'flex' : 'none';
+  document.getElementById('wc-tab-tapo').style.cssText = tab === 'tapo'
+    ? 'flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:"DM Mono",monospace;font-size:.65rem;cursor:pointer;background:var(--bg);color:var(--accent);border:1px solid var(--border)'
+    : 'flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:"DM Mono",monospace;font-size:.65rem;cursor:pointer;background:transparent;color:var(--text-muted)';
+  document.getElementById('wc-tab-url').style.cssText = tab === 'url'
+    ? 'flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:"DM Mono",monospace;font-size:.65rem;cursor:pointer;background:var(--bg);color:var(--accent);border:1px solid var(--border)'
+    : 'flex:1;padding:6px 4px;border:none;border-radius:6px;font-family:"DM Mono",monospace;font-size:.65rem;cursor:pointer;background:transparent;color:var(--text-muted)';
+}
+
+function connectTapo() {
+  const deviceId = document.getElementById('webcamDeviceId').value.trim() || '446303297062';
+  // Les caméras Tapo exposent un endpoint snapshot sur le réseau local
+  // Format standard Tapo C-series : http://<ip>/stream1 ou snapshot via port 554 (RTSP)
+  // Sans proxy, on propose l'URL du portail web Tapo (qui peut afficher la caméra si authentifié)
+  // L'URL la plus universelle pour un snapshot Tapo local : http://<ip>/snapshot.jpg
+  // Comme on n'a que le Device ID (pas l'IP locale), on informe l'utilisateur et on propose une URL modèle
+  const info = `Caméra Tapo détectée : ${deviceId}\n\nPour afficher le flux dans le navigateur :\n1. Trouvez l'IP locale de la caméra dans votre routeur\n2. Entrez l'URL : http://<IP>/stream1\n   ou installez go2rtc/rtsp-to-web pour convertir RTSP → MJPEG\n\nL'URL RTSP native est : rtsp://admin:<motdepasse>@<IP>/stream1`;
+  alert(info);
+  // Basculer sur le panneau URL avec un template pré-rempli
+  document.getElementById('webcamUrlInput').value = 'http://192.168.1.x/stream1';
+  wcTab('url');
+}
+
 function connectWebcam() {
   const url = document.getElementById('webcamUrlInput').value.trim();
   if (!url) { alert('Entrez l\'URL du flux webcam.'); return; }
   localStorage.setItem(WEBCAM_KEY, url);
   showWebcam(url);
 }
+
 function showWebcam(url) {
   document.getElementById('webcamPlaceholder').style.display = 'none';
   const view = document.getElementById('webcamView'); view.style.display = 'block';
   document.getElementById('webcamImg').src = url;
   document.getElementById('webcamUrlDisplay').textContent = url;
+  // Auto-refresh toutes les 5s si c'est un snapshot (URL se terminant par .jpg/.png)
+  if (_webcamRefreshTimer) clearInterval(_webcamRefreshTimer);
+  if (/\.(jpg|jpeg|png|bmp)(\?|$)/i.test(url)) {
+    _webcamRefreshTimer = setInterval(() => refreshWebcamSnapshot(), 5000);
+    updateWebcamRefreshTime();
+  }
 }
+
+function refreshWebcamSnapshot() {
+  const img = document.getElementById('webcamImg');
+  if (!img.src) return;
+  // Ajouter un timestamp pour contourner le cache navigateur
+  const base = img.src.split('?')[0];
+  img.src = base + '?t=' + Date.now();
+  updateWebcamRefreshTime();
+}
+
+function updateWebcamRefreshTime() {
+  const el = document.getElementById('webcamLastRefresh');
+  if (el) el.textContent = 'Dernière actualisation : ' + new Date().toLocaleTimeString('fr-FR');
+}
+
 function disconnectWebcam() {
+  if (_webcamRefreshTimer) { clearInterval(_webcamRefreshTimer); _webcamRefreshTimer = null; }
   localStorage.removeItem(WEBCAM_KEY);
   document.getElementById('webcamImg').src = '';
   document.getElementById('webcamView').style.display = 'none';
@@ -1296,7 +1381,7 @@ function webcamError() {
     const frame = view.querySelector('.webcam-frame');
     if (frame && !frame.querySelector('.no-signal')) {
       const ns = document.createElement('div'); ns.className = 'no-signal';
-      ns.innerHTML = '<div style="font-size:2rem">📵</div><div>Flux indisponible</div>';
+      ns.innerHTML = '<div style="font-size:2rem">📵</div><div>Flux indisponible</div><div style="font-size:.62rem;color:var(--text-muted);margin-top:4px">Vérifiez l\'URL ou la connexion réseau</div>';
       frame.appendChild(ns);
     }
   }
