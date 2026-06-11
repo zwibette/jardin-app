@@ -1247,26 +1247,185 @@ function renderProgrammes() {
     el.innerHTML = '<div class="prog-empty">Aucun programme créé. Utilisez le formulaire ci-dessous ou une idée suggérée.</div>';
     return;
   }
+
+  const JOURS_NOMS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const DEVICE_OPTS = [
+    { value:'rhone-2',       label:'Arrosage bas-Rhône (Canal 2)' },
+    { value:'brumisation-1', label:'Brumisation (Canal 1)' },
+    { value:'lumiere-2',     label:'Lumière serre (Canal 2)' },
+    { value:'remous-4',      label:'Bain à remous (Canal 4)' },
+  ];
+
   el.innerHTML = progs.map(p => {
+    const id = p.id;
     const condBadges = (p.conditions||[]).map(c =>
       `<span class="cond-badge">🔧 ${conditionLabel(c)}</span>`
     ).join('');
     const repeatBadge = p.repeatEvery > 0 ? `<span class="cond-badge">🔁 /${p.repeatEvery}min</span>` : '';
     const endBadge = p.endtime ? `<span class="cond-badge">⏹ fin ${p.endtime}</span>` : '';
-    return `<div class="prog-card" style="${p.actif?'border-color:rgba(74,222,128,.25)':'opacity:.6'}">
-      <div class="prog-header">
-        <div>
-          <div class="prog-title">${progDescription(p)}</div>
-          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${repeatBadge}${endBadge}${condBadges}</div>
+
+    // Pré-remplissage du formulaire d'édition
+    const devOpts = DEVICE_OPTS.map(d =>
+      `<option value="${d.value}"${p.device===d.value?' selected':''}>${d.label}</option>`
+    ).join('');
+
+    const durationUnit = p.durationUnit || 'min';
+
+    const daysCheckboxes = [1,2,3,4,5,6,0].map((d,i) => {
+      const checked = (p.days||[]).includes(d) ? 'checked' : '';
+      const lbl = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][i];
+      return `<label style="display:flex;align-items:center;gap:3px;font-size:.65rem;color:var(--text-dim);cursor:pointer"><input type="checkbox" value="${d}" ${checked} style="accent-color:var(--green)">${lbl}</label>`;
+    }).join('');
+
+    const condTempEauOp  = p.conditions?.find(c=>c.sensor==='tempEau')?.op  || '';
+    const condTempEauVal = p.conditions?.find(c=>c.sensor==='tempEau')?.val  || '';
+    const condTempSerOp  = p.conditions?.find(c=>c.sensor==='tempSerre')?.op || '';
+    const condTempSerVal = p.conditions?.find(c=>c.sensor==='tempSerre')?.val|| '';
+    const condHumOp      = p.conditions?.find(c=>c.sensor==='humSerre')?.op  || '';
+    const condHumVal     = p.conditions?.find(c=>c.sensor==='humSerre')?.val || '';
+
+    const selOp = (val) => ['','gt','lt'].map(v =>
+      `<option value="${v}"${v===val?' selected':''}>${v===''?'— aucune':v==='gt'?'> (sup.)':'< (inf.)'}</option>`
+    ).join('');
+
+    return `
+    <div class="prog-card" id="prog-card-${id}" style="${p.actif?'border-color:rgba(74,222,128,.25)':'opacity:.6'}">
+      <!-- Vue résumé -->
+      <div id="prog-view-${id}">
+        <div class="prog-header">
+          <div style="flex:1;min-width:0">
+            <div class="prog-title">${progDescription(p)}</div>
+            <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${repeatBadge}${endBadge}${condBadges}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+            <span class="prog-badge ${p.actif?'actif':'inactif'}">${p.actif?'Actif':'Inactif'}</span>
+            <button class="prog-btn" onclick="toggleProgramme('${id}')" style="font-size:.62rem;padding:4px 10px">${p.actif?'Pause':'Activer'}</button>
+            <button class="prog-btn" onclick="openEditProg('${id}')" style="font-size:.62rem;padding:4px 10px;background:rgba(163,230,53,.08);border-color:rgba(163,230,53,.3);color:var(--accent)">✏ Modifier</button>
+            <button class="prog-btn del" onclick="deleteProgramme('${id}')" style="font-size:.62rem;padding:4px 10px">Suppr.</button>
+          </div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
-          <span class="prog-badge ${p.actif?'actif':'inactif'}">${p.actif?'Actif':'Inactif'}</span>
-          <button class="prog-btn" onclick="toggleProgramme('${p.id}')" style="font-size:.62rem;padding:4px 10px">${p.actif?'Pause':'Activer'}</button>
-          <button class="prog-btn del" onclick="deleteProgramme('${p.id}')" style="font-size:.62rem;padding:4px 10px">Suppr.</button>
+      </div>
+
+      <!-- Formulaire d'édition inline (caché par défaut) -->
+      <div id="prog-edit-${id}" style="display:none;border-top:1px dashed rgba(163,230,53,.2);margin-top:12px;padding-top:14px">
+        <div style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;font-weight:500">✏ Modifier le programme</div>
+
+        <div class="prog-row">
+          <span class="prog-lbl">Appareil</span>
+          <select class="prog-select" id="ep-device-${id}" style="flex:1">${devOpts}</select>
+        </div>
+        <div class="prog-row">
+          <span class="prog-lbl">Action</span>
+          <select class="prog-select" id="ep-action-${id}">
+            <option value="on"${p.action==='on'?' selected':''}>Activer</option>
+            <option value="off"${p.action==='off'?' selected':''}>Désactiver</option>
+          </select>
+        </div>
+
+        <div class="prog-section-sep">⏱ Horaires</div>
+        <div class="prog-row">
+          <span class="prog-lbl">Heure de début</span>
+          <input class="prog-input" type="time" id="ep-time-${id}" value="${p.time||''}" style="flex:1">
+        </div>
+        <div class="prog-row">
+          <span class="prog-lbl">Heure de fin</span>
+          <input class="prog-input" type="time" id="ep-endtime-${id}" value="${p.endtime||''}" placeholder="Optionnel" style="flex:1">
+        </div>
+        <div class="prog-row">
+          <span class="prog-lbl">Durée action</span>
+          <input class="prog-input" type="number" id="ep-duration-${id}" value="${p.duration||0}" min="0" max="3600" style="width:70px">
+          <select class="prog-select" id="ep-duration-unit-${id}" style="width:auto;padding:4px 8px;font-size:.72rem;margin-left:4px">
+            <option value="min"${durationUnit==='min'?' selected':''}>min</option>
+            <option value="sec"${durationUnit==='sec'?' selected':''}>sec</option>
+          </select>
+          <span style="font-size:.62rem;color:var(--text-muted);margin-left:4px">(0 = sans limite)</span>
+        </div>
+
+        <div class="prog-section-sep">🔁 Répétition</div>
+        <div class="prog-row">
+          <span class="prog-lbl">Répéter toutes les</span>
+          <input class="prog-input" type="number" id="ep-repeat-${id}" value="${p.repeatEvery||0}" min="0" max="1440" style="width:70px">
+          <span style="font-size:.62rem;color:var(--text-muted);margin-left:4px">minutes</span>
+        </div>
+
+        <div class="prog-section-sep">📅 Jours actifs</div>
+        <div class="prog-row">
+          <span class="prog-lbl">Jours</span>
+          <div id="ep-days-${id}" style="display:flex;gap:4px;flex-wrap:wrap">${daysCheckboxes}</div>
+        </div>
+
+        <div class="prog-section-sep">🔧 Conditions (optionnel)</div>
+        <div class="prog-row">
+          <span class="prog-lbl">Temp. eau</span>
+          <select class="prog-select" id="ep-cond-tempeau-op-${id}" style="width:90px">${selOp(condTempEauOp)}</select>
+          <input class="prog-input" type="number" id="ep-cond-tempeau-val-${id}" value="${condTempEauVal}" placeholder="°C" step="0.5" style="width:70px">
+          <span style="font-size:.62rem;color:var(--text-muted)">°C</span>
+        </div>
+        <div class="prog-row">
+          <span class="prog-lbl">Temp. serre</span>
+          <select class="prog-select" id="ep-cond-tempserre-op-${id}" style="width:90px">${selOp(condTempSerOp)}</select>
+          <input class="prog-input" type="number" id="ep-cond-tempserre-val-${id}" value="${condTempSerVal}" placeholder="°C" step="0.5" style="width:70px">
+          <span style="font-size:.62rem;color:var(--text-muted)">°C</span>
+        </div>
+        <div class="prog-row">
+          <span class="prog-lbl">Humidité serre</span>
+          <select class="prog-select" id="ep-cond-hum-op-${id}" style="width:90px">${selOp(condHumOp)}</select>
+          <input class="prog-input" type="number" id="ep-cond-hum-val-${id}" value="${condHumVal}" placeholder="%" step="1" style="width:70px">
+          <span style="font-size:.62rem;color:var(--text-muted)">%</span>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="prog-btn" onclick="saveEditProg('${id}')" style="flex:1;min-width:120px">💾 Enregistrer</button>
+          <button class="prog-btn" onclick="cancelEditProg('${id}')" style="background:transparent;border-color:var(--border);color:var(--text-muted)">Annuler</button>
         </div>
       </div>
     </div>`;
   }).join('');
+}
+
+function openEditProg(id) {
+  document.getElementById('prog-view-' + id).style.display = 'none';
+  document.getElementById('prog-edit-' + id).style.display = 'block';
+  // Scroll vers le formulaire
+  document.getElementById('prog-card-' + id).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function cancelEditProg(id) {
+  document.getElementById('prog-edit-' + id).style.display = 'none';
+  document.getElementById('prog-view-' + id).style.display = 'block';
+}
+
+function saveEditProg(id) {
+  const progs = loadProgrammes();
+  const idx = progs.findIndex(p => p.id === id);
+  if (idx === -1) return;
+
+  const device        = document.getElementById(`ep-device-${id}`).value;
+  const action        = document.getElementById(`ep-action-${id}`).value;
+  const time          = document.getElementById(`ep-time-${id}`).value;
+  const endtime       = document.getElementById(`ep-endtime-${id}`).value;
+  const duration      = parseInt(document.getElementById(`ep-duration-${id}`).value) || 0;
+  const durationUnit  = document.getElementById(`ep-duration-unit-${id}`).value;
+  const repeatEvery   = parseInt(document.getElementById(`ep-repeat-${id}`).value) || 0;
+  const days          = Array.from(document.querySelectorAll(`#ep-days-${id} input:checked`)).map(i => parseInt(i.value));
+
+  const condTempEauOp    = document.getElementById(`ep-cond-tempeau-op-${id}`).value;
+  const condTempEauVal   = parseFloat(document.getElementById(`ep-cond-tempeau-val-${id}`).value);
+  const condTempSerreOp  = document.getElementById(`ep-cond-tempserre-op-${id}`).value;
+  const condTempSerreVal = parseFloat(document.getElementById(`ep-cond-tempserre-val-${id}`).value);
+  const condHumOp        = document.getElementById(`ep-cond-hum-op-${id}`).value;
+  const condHumVal       = parseFloat(document.getElementById(`ep-cond-hum-val-${id}`).value);
+
+  const conditions = [];
+  if (condTempEauOp   && !isNaN(condTempEauVal))   conditions.push({ sensor:'tempEau',   op:condTempEauOp,   val:condTempEauVal });
+  if (condTempSerreOp && !isNaN(condTempSerreVal)) conditions.push({ sensor:'tempSerre', op:condTempSerreOp, val:condTempSerreVal });
+  if (condHumOp       && !isNaN(condHumVal))        conditions.push({ sensor:'humSerre',  op:condHumOp,       val:condHumVal });
+
+  if (!time || !days.length) { alert('Remplis l\'heure et sélectionne au moins un jour.'); return; }
+
+  progs[idx] = { ...progs[idx], device, action, time, endtime, duration, durationUnit, repeatEvery, days, conditions };
+  saveProgrammes(progs);
+  renderProgrammes();
 }
 
 function applyIdee(id) {
