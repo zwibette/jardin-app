@@ -682,7 +682,7 @@ td:first-child { color: var(--text); font-weight: 500; }
         <div class="stat-card"><span class="stat-val" id="s2">—</span><span class="stat-lbl">Serre (kg)</span></div>
         <div class="stat-card"><span class="stat-val" id="s3">—</span><span class="stat-lbl">Bacs (kg)</span></div>
         <div class="stat-card"><span class="stat-val" id="s4">—</span><span class="stat-lbl">Jardin (kg)</span></div>
-        <div class="stat-card"><span class="stat-val" id="s5">—</span><span class="stat-lbl">Plants cultivés</span></div>
+        <div class="stat-card"><span class="stat-val" id="s5">—</span><span class="stat-lbl">Plants en culture</span></div>
         <div class="stat-card"><span class="stat-val" id="s6">—</span><span class="stat-lbl">Variétés dans mon jardin</span></div>
       </div>
 
@@ -1126,9 +1126,10 @@ setInterval(syncToSheets, 24 * 60 * 60 * 1000);
 let sortField = 'date', sortAsc = false;
 
 // ── AUTOCOMPLETE ──────────────────────────────────────────────
+// Source unique : les cultures du calendrier (onglet Planifier)
 function getVegetauxConnus() {
   const cal = getCalCache();
-  return [...new Set([...cal.map(c => c.culture), ...Object.keys(FAMILLES), ...recoltes.map(r => r.vegetal)])].sort((a,b) => a.localeCompare(b,'fr'));
+  return [...new Set(cal.map(c => c.culture))].sort((a, b) => a.localeCompare(b, 'fr'));
 }
 
 function getCalEntryPourVegetal(vegetal) {
@@ -1255,38 +1256,14 @@ function renderStats() {
   document.getElementById('s3').textContent = (s.bacs/1000).toFixed(2);
   document.getElementById('s4').textContent = (s.jardin/1000).toFixed(2);
 
-  // s5 : total de pieds plantés pour les variétés récoltées cette saison
+  // s5 : total de plants des cultures non terminées (recolteFin >= aujourd'hui)
+  // s6 : nombre de cultures non terminées
   const cal = getCalCache();
-  const vegsFiltered = new Set(getRecoltesFiltered().map(r => r.vegetal));
-  const norm = str => str.toLowerCase().replace(/[éèêëàâîïôùûüç]/g, c => ({é:'e',è:'e',ê:'e',ë:'e',à:'a',â:'a',î:'i',ï:'i',ô:'o',ù:'u',û:'u',ü:'u',ç:'c'}[c]||c)).replace(/[^a-z0-9 ]/g,' ').trim();
-  let totalPlants = 0;
-  vegsFiltered.forEach(veg => {
-    const nv = norm(veg);
-    const entries = cal.filter(c => norm(c.culture) === nv || (norm(c.culture).length > 6 && (norm(c.culture).startsWith(nv.substring(0,6)) || nv.startsWith(norm(c.culture).substring(0,6)))));
-    entries.forEach(e => { if (e.nbPlants) totalPlants += e.nbPlants; });
-  });
+  const today = new Date().toISOString().slice(0, 10);
+  const culturesActives = cal.filter(c => c.recolteFin && c.recolteFin >= today);
+  const totalPlants = culturesActives.reduce((sum, c) => sum + (c.nbPlants || 0), 0);
   document.getElementById('s5').textContent = totalPlants || '—';
-
-  // s6 : nombre de variétés différentes cultivées sur la saison (depuis le calendrier)
-  // On compte toutes les cultures du calendrier dont la saison correspond
-  const saisonNow = currentSaison;
-  let vegsCalSaison;
-  if (saisonNow === 'toutes') {
-    vegsCalSaison = new Set(cal.map(c => c.culture));
-  } else {
-    // Inclure les cultures du calendrier dont la période de récolte chevauche la saison active
-    vegsCalSaison = new Set();
-    cal.forEach(c => {
-      const datePlant = c.plantation || c.semis;
-      const s = getSaisonFromDate(datePlant || c.recolteDebut || c.semis);
-      if (s && s.id === saisonNow) vegsCalSaison.add(c.culture);
-      // Aussi inclure si une récolte filtrée correspond
-      if (vegsFiltered.has(c.culture)) vegsCalSaison.add(c.culture);
-    });
-    // Ajouter toutes les variétés effectivement récoltées cette saison
-    vegsFiltered.forEach(v => vegsCalSaison.add(v));
-  }
-  document.getElementById('s6').textContent = vegsCalSaison.size || s.varietes;
+  document.getElementById('s6').textContent = culturesActives.length || '—';
 
   // Hidden header stats (kept for compatibility)
   document.getElementById('hTotalKg').textContent = (s.total/1000).toFixed(1);
