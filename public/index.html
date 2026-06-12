@@ -288,7 +288,6 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
         </div>
         <div class="chart-wrap">
           <canvas id="chartTemp"></canvas>
-          <div id="overlayTemp" class="chart-overlay" style="display:none"><div class="loading-ring"></div></div>
         </div>
       </div>
 
@@ -308,7 +307,6 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
         </div>
         <div class="chart-wrap">
           <canvas id="chartHum"></canvas>
-          <div id="overlayHum" class="chart-overlay" style="display:none"><div class="loading-ring"></div></div>
         </div>
       </div>
 
@@ -899,14 +897,12 @@ let currentRangeTemp = '24h', currentRangeHum = '24h';
 let isLoadingTemp = false, isLoadingHum = false;
 
 function setRangeTemp(range, btn) {
-  if (isLoadingTemp) return;
   currentRangeTemp = range;
   btn.closest('.range-selector').querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   loadAndRenderTemp(range);
 }
 function setRangeHum(range, btn) {
-  if (isLoadingHum) return;
   currentRangeHum = range;
   btn.closest('.range-selector').querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -926,42 +922,46 @@ async function fetchHistoryData(range) {
 async function loadAndRenderTemp(range) {
   if (isLoadingTemp) return;
   isLoadingTemp = true;
-  document.getElementById('overlayTemp').style.display = 'flex';
   const infoEl = document.getElementById('chartTempInfo');
   infoEl.className = 'history-info history-loading'; infoEl.textContent = 'Chargement…';
-  let history = [];
+  let history = [], source = '';
   try {
-    const data = await fetchHistoryData(range);
-    if (data.data && data.data.length > 0) { history = data.data; infoEl.className = 'history-info'; infoEl.textContent = history.length+' pts'; }
-    else { history = filterLocal(loadLocal(), range); infoEl.className = 'history-info'; infoEl.textContent = history.length+' pts (local)'; }
+    const res = await fetch('/api/sheets?action=get_history_serre&range=' + range);
+    const data = await res.json();
+    if (data.success && data.data?.length) {
+      history = data.data; source = 'Sheets';
+    } else {
+      history = filterLocal(loadLocal(), range); source = 'local';
+    }
   } catch(e) {
-    history = filterLocal(loadLocal(), range);
-    infoEl.className = history.length ? 'history-info' : 'history-info history-err';
-    infoEl.textContent = history.length ? history.length+' pts (local)' : 'Erreur';
+    history = filterLocal(loadLocal(), range); source = 'local';
   }
+  infoEl.className = 'history-info';
+  infoEl.textContent = history.length ? history.length + ' pts · ' + source : 'Aucune donnée';
   renderChartTemp(history, range);
-  document.getElementById('overlayTemp').style.display = 'none';
   isLoadingTemp = false;
 }
 
 async function loadAndRenderHum(range) {
   if (isLoadingHum) return;
   isLoadingHum = true;
-  document.getElementById('overlayHum').style.display = 'flex';
   const infoEl = document.getElementById('chartHumInfo');
   infoEl.className = 'history-info history-loading'; infoEl.textContent = 'Chargement…';
-  let history = [];
+  let history = [], source = '';
   try {
-    const data = await fetchHistoryData(range);
-    if (data.data && data.data.length > 0) { history = data.data; infoEl.className = 'history-info'; infoEl.textContent = history.length+' pts'; }
-    else { history = filterLocal(loadLocal(), range); infoEl.className = 'history-info'; infoEl.textContent = history.length+' pts (local)'; }
+    const res = await fetch('/api/sheets?action=get_history_serre&range=' + range);
+    const data = await res.json();
+    if (data.success && data.data?.length) {
+      history = data.data; source = 'Sheets';
+    } else {
+      history = filterLocal(loadLocal(), range); source = 'local';
+    }
   } catch(e) {
-    history = filterLocal(loadLocal(), range);
-    infoEl.className = history.length ? 'history-info' : 'history-info history-err';
-    infoEl.textContent = history.length ? history.length+' pts (local)' : 'Erreur';
+    history = filterLocal(loadLocal(), range); source = 'local';
   }
+  infoEl.className = 'history-info';
+  infoEl.textContent = history.length ? history.length + ' pts · ' + source : 'Aucune donnée';
   renderChartHum(history, range);
-  document.getElementById('overlayHum').style.display = 'none';
   isLoadingHum = false;
 }
 
@@ -1580,7 +1580,7 @@ async function refreshAll() {
     if (sensor) {
       const temp=getStat(sensor,'va_temperature'), hum=getStat(sensor,'va_humidity');
       const now=Date.now();
-      if (temp!==null&&hum!==null&&(now-lastHistoryRecord)>=30*60*1000) { addLocalPoint(temp,hum); pushToSheets(temp,hum); lastHistoryRecord=now; }
+      if (temp!==null&&hum!==null&&(now-lastHistoryRecord)>=30*60*1000) { addLocalPoint(temp,hum); lastHistoryRecord=now; }
     }
   } catch(e) { console.error('Tuya:',e); }
   renderAlerts(); renderSerreMetrics(); updateCommandStates(); renderDevices();
@@ -1799,7 +1799,7 @@ setInterval(async()=>{
   const sensor=getSerreTHSensor();
   if (sensor) {
     const temp=getStat(sensor,'va_temperature'), hum=getStat(sensor,'va_humidity');
-    if (temp!==null&&hum!==null) { addLocalPoint(temp,hum); pushToSheets(temp,hum); loadAndRenderTemp(currentRangeTemp); loadAndRenderHum(currentRangeHum); }
+    if (temp!==null&&hum!==null) { addLocalPoint(temp,hum); loadAndRenderTemp(currentRangeTemp); loadAndRenderHum(currentRangeHum); }
   }
 }, 30*60*1000);
 </script>
