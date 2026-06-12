@@ -361,6 +361,7 @@ main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
         <div class="stitle">Programmes <span>Automatisation</span></div>
 
         <div id="progList"></div>
+        <pre id="prog-debug-log" style="display:none;margin-top:12px;background:#091f1e;border:1px solid #1a4040;border-radius:8px;padding:12px;font-size:.65rem;color:#7ab8b4;line-height:1.6;white-space:pre-wrap;word-break:break-word"></pre>
 
         <!-- Nouveau programme enrichi -->
         <div class="prog-card" style="border-color:rgba(163,230,53,.2)">
@@ -1708,44 +1709,60 @@ function timeToMinutes(timeStr) {
 async function runProgrammes() {
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
-  const todayDay = now.getDay(); // 0=dim … 6=sam
+  const todayDay = now.getDay();
 
   const progs = loadProgrammes();
+  const debugLines = [`[${now.toLocaleTimeString('fr-FR')}] runProgrammes — ${progs.length} programme(s)`];
+
   for (const p of progs) {
-    if (!p.actif) continue;
-    if (!p.days.includes(todayDay)) continue;
+    const label = p.id?.slice(0,8) || '?';
+
+    if (!p.actif)                        { debugLines.push(`  ⏸ ${label} — inactif`); continue; }
+    if (!p.days.includes(todayDay))      { debugLines.push(`  📅 ${label} — pas aujourd'hui (jour=${todayDay})`); continue; }
 
     const startMin = timeToMinutes(p.time);
-    if (startMin === null) continue;
+    if (startMin === null)               { debugLines.push(`  ⚠ ${label} — heure invalide`); continue; }
 
     const endMin = p.endtime ? timeToMinutes(p.endtime) : null;
+    if (nowMin < startMin)               { debugLines.push(`  🕐 ${label} — pas encore (now=${nowMin}, start=${startMin})`); continue; }
+    if (endMin !== null && nowMin > endMin) { debugLines.push(`  🕐 ${label} — terminé (now=${nowMin}, end=${endMin})`); continue; }
 
-    // Hors fenêtre horaire
-    if (nowMin < startMin) continue;
-    if (endMin !== null && nowMin > endMin) continue;
+    // Conditions capteurs — log détaillé
+    const tempSerre = getCurrentTempSerre();
+    const humSerre  = getCurrentHumSerre();
+    debugLines.push(`  📡 ${label} — capteurs: temp=${tempSerre}, hum=${humSerre}`);
+    if (p.conditions?.length) {
+      let condOk = true;
+      for (const c of p.conditions) {
+        const cur = c.sensor==='tempSerre' ? tempSerre : c.sensor==='humSerre' ? humSerre : getCurrentTempEau();
+        const thr = parseFloat(c.val);
+        const pass = cur != null && !isNaN(thr) && (c.op==='gt' ? cur > thr : cur < thr);
+        debugLines.push(`    ↳ cond: ${c.sensor} ${c.op} ${thr} | valeur=${cur} | ${pass ? '✅' : '❌'}`);
+        if (cur == null || isNaN(thr) || !pass) condOk = false;
+      }
+      if (!condOk) { debugLines.push(`  ❌ ${label} — conditions non remplies`); continue; }
+    }
 
-    // Vérifier conditions capteurs
-    if (!checkConditions(p.conditions)) continue;
-
-    // Répétition : ne pas re-déclencher si pas encore le moment
     const state = _progRunning[p.id] || {};
     if (p.repeatEvery > 0) {
       const lastRun = state.lastRepeat || 0;
-      if (nowMin - lastRun < p.repeatEvery && lastRun !== 0) continue;
+      const sinceLastRun = nowMin - lastRun;
+      if (sinceLastRun < p.repeatEvery && lastRun !== 0) {
+        debugLines.push(`  🔁 ${label} — attente répétition (${sinceLastRun}/${p.repeatEvery} min)`);
+        continue;
+      }
     } else {
-      // Action unique : ne pas re-déclencher si déjà fait ce cycle
-      if (state.lastRepeat === nowMin) continue;
+      if (state.lastRepeat === nowMin) { debugLines.push(`  ✓ ${label} — déjà déclenché cette minute`); continue; }
     }
 
-    // Déclencher
     const dev = DEVICE_MAP[p.device];
-    if (!dev) continue;
+    if (!dev) { debugLines.push(`  ⚠ ${label} — device inconnu: ${p.device}`); continue; }
+
     const val = p.action === 'on';
+    debugLines.push(`  🚀 ${label} — DÉCLENCHEMENT ${dev.label} → ${val ? 'ON' : 'OFF'}`);
     try {
       await controlDevice(dev.id, dev.code, val);
       _progRunning[p.id] = { ..._progRunning[p.id], lastRepeat: nowMin };
-
-      // Extinction automatique après durée
       if (val && p.duration > 0) {
         if (state.offTimer) clearTimeout(state.offTimer);
         const ms = p.durationUnit === 'sec' ? p.duration * 1000 : p.duration * 60 * 1000;
@@ -1755,11 +1772,19 @@ async function runProgrammes() {
         }, ms);
         _progRunning[p.id].offTimer = offTimer;
       }
-
       updateCommandStates();
     } catch(e) {
+      debugLines.push(`  💥 ${label} — erreur: ${e.message}`);
       console.warn('Programme', p.id, 'erreur:', e.message);
     }
+  }
+
+  // Affichage dans la console + panneau debug UI
+  console.log(debugLines.join('\n'));
+  const dbEl = document.getElementById('prog-debug-log');
+  if (dbEl) {
+    dbEl.textContent = debugLines.join('\n');
+    dbEl.style.display = 'block';
   }
 }
 // ── Init ──────────────────────────────────────────────────────
