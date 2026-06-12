@@ -1021,10 +1021,12 @@ function getCat(d) {
 
 // ── Lectures capteurs en temps réel ──────────────────────────
 function getCurrentTempSerre() {
+  if (_lastSensorValues.temp !== null) return _lastSensorValues.temp;
   const sensor = getSerreTHSensor();
   return sensor ? getStat(sensor, 'va_temperature') : null;
 }
 function getCurrentHumSerre() {
+  if (_lastSensorValues.hum !== null) return _lastSensorValues.hum;
   const sensor = getSerreTHSensor();
   return sensor ? getStat(sensor, 'va_humidity') : null;
 }
@@ -1569,6 +1571,9 @@ function initWebcam() { const saved = localStorage.getItem(WEBCAM_KEY); if (save
 
 // ── Refresh principal ─────────────────────────────────────────
 let lastHistoryRecord = 0;
+// Cache des dernières valeurs capteurs — partagé avec le scheduler
+const _lastSensorValues = { temp: null, hum: null, ts: 0 };
+
 async function refreshAll() {
   const btn=document.getElementById('refreshBtn');
   btn.classList.add('spinning');
@@ -1579,6 +1584,7 @@ async function refreshAll() {
     const sensor=getSerreTHSensor();
     if (sensor) {
       const temp=getStat(sensor,'va_temperature'), hum=getStat(sensor,'va_humidity');
+      if (temp!==null) { _lastSensorValues.temp=temp; _lastSensorValues.hum=hum; _lastSensorValues.ts=Date.now(); }
       const now=Date.now();
       if (temp!==null&&hum!==null&&(now-lastHistoryRecord)>=30*60*1000) { addLocalPoint(temp,hum); lastHistoryRecord=now; }
     }
@@ -1707,6 +1713,10 @@ function timeToMinutes(timeStr) {
 }
 
 async function runProgrammes() {
+  // Si le cache capteurs est vide (1er appel au démarrage), attendre refreshAll
+  if (_lastSensorValues.ts === 0) {
+    await refreshAll();
+  }
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
   const todayDay = now.getDay();
