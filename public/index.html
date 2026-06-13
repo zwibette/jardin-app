@@ -997,9 +997,25 @@ async function fetchDevices() {
   if (!d.success) throw new Error(d.error || 'Erreur Tuya');
   devices = d.devices;
 }
-async function controlDevice(deviceId, code, value) {
-  const r = await fetch('/api/tuya', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'control', deviceId, code, value }) });
-  return r.json();
+async function controlDevice(deviceId, code, value, _retry = true) {
+  const r = await fetch('/api/tuya', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'control', deviceId, code, value })
+  });
+  const data = await r.json();
+  // Tuya retourne success:false si token expiré ou device offline
+  if (!data.success && _retry) {
+    // Attendre 2s et réessayer une fois (token se régénère côté api/tuya.js)
+    await new Promise(res => setTimeout(res, 2000));
+    return controlDevice(deviceId, code, value, false);
+  }
+  // Mettre à jour status_list local pour cohérence immédiate
+  const dev = devices.find(d => d.id === deviceId);
+  if (dev?.status_list) {
+    const s = dev.status_list.find(x => x.code === code);
+    if (s) s.value = value;
+  }
+  return data;
 }
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -1116,10 +1132,10 @@ function updateCommandStates() {
   }
 }
 
-async function cmdRhone(val) { document.getElementById('toggle-rhone').disabled=true; await controlDevice(DEVICE_WATER_TIMER_ID,'switch_2',val); const d=getDeviceById(DEVICE_WATER_TIMER_ID); if(d?.status_list){const s=d.status_list.find(x=>x.code==='switch_2');if(s)s.value=val;} updateCommandStates(); document.getElementById('toggle-rhone').disabled=false; }
-async function cmdBrumisation(val) { document.getElementById('toggle-brumisation').disabled=true; await controlDevice(DEVICE_WATER_TIMER_ID,'switch_1',val); const d=getDeviceById(DEVICE_WATER_TIMER_ID); if(d?.status_list){const s=d.status_list.find(x=>x.code==='switch_1');if(s)s.value=val;} updateCommandStates(); document.getElementById('toggle-brumisation').disabled=false; }
-async function cmdLumiere(val) { document.getElementById('toggle-lumiere').disabled=true; await controlDevice(DEVICE_PROG_LED_ID,'switch_2',val); const d=getDeviceById(DEVICE_PROG_LED_ID); if(d?.status_list){const s=d.status_list.find(x=>x.code==='switch_2');if(s)s.value=val;} updateCommandStates(); document.getElementById('toggle-lumiere').disabled=false; }
-async function cmdRemous(val) { document.getElementById('toggle-remous').disabled=true; await controlDevice(DEVICE_PROG_LED_ID,'switch_4',val); const d=getDeviceById(DEVICE_PROG_LED_ID); if(d?.status_list){const s=d.status_list.find(x=>x.code==='switch_4');if(s)s.value=val;} updateCommandStates(); document.getElementById('toggle-remous').disabled=false; }
+async function cmdRhone(val)      { document.getElementById('toggle-rhone').disabled=true;      await controlDevice(DEVICE_WATER_TIMER_ID,'switch_2',val); updateCommandStates(); document.getElementById('toggle-rhone').disabled=false; }
+async function cmdBrumisation(val){ document.getElementById('toggle-brumisation').disabled=true; await controlDevice(DEVICE_WATER_TIMER_ID,'switch_1',val); updateCommandStates(); document.getElementById('toggle-brumisation').disabled=false; }
+async function cmdLumiere(val)    { document.getElementById('toggle-lumiere').disabled=true;    await controlDevice(DEVICE_PROG_LED_ID,'switch_2',val);    updateCommandStates(); document.getElementById('toggle-lumiere').disabled=false; }
+async function cmdRemous(val)     { document.getElementById('toggle-remous').disabled=true;     await controlDevice(DEVICE_PROG_LED_ID,'switch_4',val);    updateCommandStates(); document.getElementById('toggle-remous').disabled=false; }
 
 // ── Appareils ─────────────────────────────────────────────────
 function renderDevCard(d) {
