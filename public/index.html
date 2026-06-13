@@ -1719,24 +1719,26 @@ async function askConseils(questionOverride) {
 }
   
 // ── Scheduler programmes ──────────────────────────────────────
-const _progRunning = {}; // id → { offTimer, lastRepeat }
+// _progRunning[id] = { lastRunTs: timestamp ms, offTimer }
+const _progRunning = {};
 
 function timeToMinutes(timeStr) {
   if (!timeStr) return null;
   const [h, m] = timeStr.split(':').map(Number);
+  if (isNaN(h) || isNaN(m)) return null;
   return h * 60 + m;
 }
 
 async function runProgrammes() {
-  // Si le cache capteurs est vide (1er appel au démarrage), attendre refreshAll
-  if (_lastSensorValues.ts === 0) {
-    await refreshAll();
-  }
+  // Cache capteurs vide au 1er appel : ne pas bloquer, les conditions
+  // seront réévaluées à la prochaine minute si les valeurs arrivent entre-temps
+  if (_lastSensorValues.ts === 0) return;
 
-  const now = new Date();
+  const now    = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
+  const nowTs  = now.getTime();
   const todayDay = now.getDay();
-  const progs = loadProgrammes();
+  const progs  = loadProgrammes();
 
   for (const p of progs) {
     if (!p.actif) continue;
@@ -1750,28 +1752,43 @@ async function runProgrammes() {
 
     if (!checkConditions(p.conditions)) continue;
 
-    const state = _progRunning[p.id] || {};
-    if (p.repeatEvery > 0) {
-      const lastRun = state.lastRepeat || 0;
-      if (nowMin - lastRun < p.repeatEvery && lastRun !== 0) continue;
+    // Répétition : mesurée en millisecondes réels
+    const state      = _progRunning[p.id] || {};
+    const lastRunTs  = state.lastRunTs || 0;
+    const repeatMs   = (p.repeatEvery || 0) * 60 * 1000;
+
+    if (repeatMs > 0) {
+      // Répétition active : respecter l'intervalle en temps réel
+      if (lastRunTs > 0 && nowTs - lastRunTs < repeatMs) continue;
     } else {
-      if (state.lastRepeat === nowMin) continue;
+      // Déclenchement unique dans la fenêtre : une seule fois par fenêtre
+      if (lastRunTs > 0 && timeToMinutes(p.time) === Math.floor(lastRunTs / 60000) % 1440) continue;
+      // Vérification plus simple : déjà déclenché dans cette fenêtre horaire
+      if (lastRunTs > 0) {
+        const lastMin = Math.floor(lastRunTs / 60000) % (24 * 60);
+        if (lastMin >= startMin && (endMin === null || lastMin <= endMin)) continue;
+      }
     }
 
     const dev = DEVICE_MAP[p.device];
-    if (!dev) continue;
+    if (!dev) { console.warn('Programme', p.id, ': device inconnu', p.device); continue; }
+
     const val = p.action === 'on';
     try {
-      await controlDevice(dev.id, dev.code, val);
-      _progRunning[p.id] = { ..._progRunning[p.id], lastRepeat: nowMin };
+      const result = await controlDevice(dev.id, dev.code, val);
+      if (!result?.success) {
+        console.warn('Programme', p.id, ': commande échouée', result);
+        continue; // ne pas enregistrer lastRunTs si la commande a échoué
+      }
+      _progRunning[p.id] = { ..._progRunning[p.id], lastRunTs: nowTs };
+
       if (val && p.duration > 0) {
         if (state.offTimer) clearTimeout(state.offTimer);
         const ms = p.durationUnit === 'sec' ? p.duration * 1000 : p.duration * 60 * 1000;
-        const offTimer = setTimeout(async () => {
+        _progRunning[p.id].offTimer = setTimeout(async () => {
           await controlDevice(dev.id, dev.code, false);
           updateCommandStates();
         }, ms);
-        _progRunning[p.id].offTimer = offTimer;
       }
       updateCommandStates();
     } catch(e) {
@@ -1782,18 +1799,19 @@ async function runProgrammes() {
 // ── Init ──────────────────────────────────────────────────────
 renderProgrammes();
 initWebcam();
-refreshAll();
-  // Lancer le scheduler toutes les minutes
-runProgrammes();
-setInterval(runProgrammes, 60 * 1000);
-setInterval(refreshAll, 5*60*1000);
-setInterval(async()=>{
-  const sensor=getSerreTHSensor();
+// refreshAll en premier, puis démarrer le scheduler une fois les capteurs chargés
+refreshAll().then(() => {
+  runProgrammes();
+  setInterval(runProgrammes, 60 * 1000);
+});
+setInterval(refreshAll, 5 * 60 * 1000);
+setInterval(async () => {
+  const sensor = getSerreTHSensor();
   if (sensor) {
-    const temp=getStat(sensor,'va_temperature'), hum=getStat(sensor,'va_humidity');
-    if (temp!==null&&hum!==null) { addLocalPoint(temp,hum); loadAndRenderTemp(currentRangeTemp); loadAndRenderHum(currentRangeHum); }
+    const temp = getStat(sensor, 'va_temperature'), hum = getStat(sensor, 'va_humidity');
+    if (temp !== null && hum !== null) { addLocalPoint(temp, hum); loadAndRenderTemp(currentRangeTemp); loadAndRenderHum(currentRangeHum); }
   }
-}, 30*60*1000);
+}, 30 * 60 * 1000);
 </script>
 </body>
 </html>
