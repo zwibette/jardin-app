@@ -874,7 +874,7 @@ function filterLocal(history, range) {
 function fmtTick(point, range) {
   const d = new Date(point._slotMs || point.t);
   const jours = ['dim','lun','mar','mer','jeu','ven','sam'];
-  if (range === '24h') return d.getHours().toString().padStart(2,'0') + 'h';
+  if (range === '24h') return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
   if (range === '3d' || range === '7d') return jours[d.getDay()] + ' ' + d.getHours() + 'h';
   if (range === '30d') return d.getDate().toString();
   return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
@@ -1076,12 +1076,12 @@ function renderSerreMetrics() {
 
 // ── Graphiques ────────────────────────────────────────────────
 function chartOpts(color, unit, range) {
-  const maxTicks = range === '30d' ? 10 : range === '7d' || range === '3d' ? 10 : 8;
+  const maxTicks = range === '30d' ? 10 : range === '7d' || range === '3d' ? 10 : 12;
   return {
     responsive:true, maintainAspectRatio:false, animation:false,
     plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#102422', borderColor:'#1a3d3a', borderWidth:1, titleColor:'#7ab8b4', bodyColor:'#d0eeec', callbacks:{label:ctx=>ctx.parsed.y?.toFixed(1)+unit} } },
     scales:{
-      x:{ticks:{color:'#2d6b66',font:{size:9},maxTicksLimit:maxTicks,maxRotation:30},grid:{color:'rgba(26,61,58,.4)'}},
+      x:{ticks:{color:'#2d6b66',font:{size:9},maxTicksLimit:maxTicks,maxRotation:30,autoSkip:true,autoSkipPadding:8},grid:{color:'rgba(26,61,58,.4)'}},
       y:{ticks:{color:'#2d6b66',font:{size:9},callback:v=>v?.toFixed(1)+unit},grid:{color:'rgba(26,61,58,.4)'}}
     }
   };
