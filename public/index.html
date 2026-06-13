@@ -832,7 +832,7 @@ function getTargetSlots(range) {
   const now = Date.now(), slots = [];
   if (range === '24h') {
     const s = new Date(); s.setHours(0,0,0,0); s.setDate(s.getDate()-1);
-    for (let t = s.getTime(); t <= now; t += 3600000) slots.push(t);
+    for (let t = s.getTime(); t <= now; t += 1800000) slots.push(t);
   } else if (range === '3d') {
     const s = new Date(now-3*86400000); s.setHours(0,0,0,0);
     for (let d = new Date(s); d.getTime() <= now; d.setDate(d.getDate()+1))
