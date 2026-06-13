@@ -637,6 +637,35 @@ function addPhTempPoint(ph, temp) {
   while (h.length > 2000) h.shift();
   save(KEY_PHTEMP_HIST, h);
   phTempHist = h;
+  // Persister dans Sheets pour les relevés hors appli
+  pushBassinToSheets(ph, temp);
+}
+
+// ── SYNC SHEETS BASSIN ────────────────────────────────────────
+async function pushBassinToSheets(ph, temp) {
+  try {
+    await fetch('/api/sheets?action=append_bassin_history' +
+      (ph   != null ? '&ph='   + ph   : '') +
+      (temp != null ? '&temp=' + temp : ''));
+  } catch(e) { /* silencieux */ }
+}
+
+async function loadBassinFromSheets() {
+  try {
+    const r = await fetch('/api/sheets?action=get_bassin_history&range=30d');
+    const d = await r.json();
+    if (!d.success || !d.data?.length) return;
+    // Merger avec localStorage (dédoublonner par ts à la minute près)
+    const local = load(KEY_PHTEMP_HIST, []);
+    const localKeys = new Set(local.map(p => p.ts.slice(0,16)));
+    const toAdd = d.data.filter(p => !localKeys.has((p.ts||'').slice(0,16)));
+    if (!toAdd.length) return;
+    const merged = [...local, ...toAdd].sort((a,b) => a.ts.localeCompare(b.ts));
+    while (merged.length > 2000) merged.shift();
+    save(KEY_PHTEMP_HIST, merged);
+    phTempHist = merged;
+    refreshCharts();
+  } catch(e) { /* API non disponible */ }
 }
 
 function filterPhTempHist(range) {
@@ -651,7 +680,11 @@ function filterPhTempHist(range) {
 function fmtTickBac(ts, range) {
   const d = new Date(ts);
   const jours = ['dim','lun','mar','mer','jeu','ven','sam'];
-  if (range === '24h') return d.getHours().toString().padStart(2,'0') + 'h';
+  if (range === '24h') {
+    const hh = d.getHours().toString().padStart(2,'0');
+    const mm = d.getMinutes().toString().padStart(2,'0');
+    return hh + 'h' + (mm !== '00' ? mm : '');
+  }
   if (range === '3d' || range === '7d') return jours[d.getDay()] + ' ' + d.getHours() + 'h';
   return d.getDate() + '/' + (d.getMonth()+1);
 }
@@ -1360,6 +1393,8 @@ renderBacBrief();
 refreshCharts();
 // Charger les valeurs MyFood au démarrage (async)
 loadAutoValues();
+// Recharger l'historique bassin depuis Sheets (relevés hors appli)
+loadBassinFromSheets();
 
 const lastSaved = eauHist.slice(-1)[0];
 if (lastSaved) document.getElementById('lastSaveInfo').textContent = 'Dernier relevé : '+fmtDate(lastSaved.ts);
