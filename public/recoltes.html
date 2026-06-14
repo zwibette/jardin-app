@@ -921,6 +921,35 @@ let _calCache = null;
 function getCalCache() { if (!_calCache) _calCache = loadCalendrier(); return _calCache; }
 function invalidateCalCache() { _calCache = null; }
 
+// ── Regroupement des cultures planifiées par variété (multi-lieux) ──
+function getCulturesGroupees() {
+  const cal = getCalCache();
+  const norm = s => s.toLowerCase()
+    .replace(/[éèêë]/g,'e').replace(/[àâ]/g,'a').replace(/[îï]/g,'i')
+    .replace(/[ô]/g,'o').replace(/[ùûü]/g,'u').replace(/[ç]/g,'c').trim();
+  const map = new Map();
+  cal.forEach(c => {
+    const key = norm(c.culture);
+    if (!map.has(key)) {
+      map.set(key, { ...c, nbPlants: c.nbPlants || 0 });
+    } else {
+      const existing = map.get(key);
+      if (c.nbPlants) existing.nbPlants += c.nbPlants;
+      if (c.estPerpetuelle) existing.estPerpetuelle = true;
+      if (c.recolteFin && (!existing.recolteFin || c.recolteFin > existing.recolteFin)) existing.recolteFin = c.recolteFin;
+    }
+  });
+  return [...map.values()];
+}
+
+// Une culture est "terminée" si elle n'est pas perpétuelle et que sa récolte prévue est passée
+function isCultureTerminee(c) {
+  if (c.estPerpetuelle) return false;
+  if (!c.recolteFin) return false;
+  const today = new Date().toISOString().slice(0,10);
+  return c.recolteFin < today;
+}
+
 // ── SAISONS ───────────────────────────────────────────────────
 const _saisonAujourdhui = getSaisonFromDate(new Date().toISOString().slice(0,10));
 let currentSaison = _saisonAujourdhui ? _saisonAujourdhui.id : 'toutes';
@@ -1141,6 +1170,12 @@ function getCalEntryPourVegetal(vegetal) {
       || null;
 }
 
+// Famille de référence = celle des cultures planifiées (calendrier), avec repli sur FAMILLES puis 'AUTRE'
+function getFamilleVegetal(vegetal) {
+  const calEntry = getCalEntryPourVegetal(vegetal);
+  return calEntry?.famille || FAMILLES[vegetal] || 'AUTRE';
+}
+
 function showSuggestions(val) {
   const el = document.getElementById('suggestions');
   if (!val || val.length < 2) { el.style.display='none'; return; }
@@ -1256,11 +1291,9 @@ function renderStats() {
   document.getElementById('s3').textContent = (s.bacs/1000).toFixed(2);
   document.getElementById('s4').textContent = (s.jardin/1000).toFixed(2);
 
-  // s5 : total de plants des cultures non terminées (recolteFin >= aujourd'hui)
-  // s6 : nombre de cultures non terminées
-  const cal = getCalCache();
-  const today = new Date().toISOString().slice(0, 10);
-  const culturesActives = cal.filter(c => c.recolteFin && c.recolteFin >= today);
+  // s5 : total de plants des cultures non terminées (groupées par variété)
+  // s6 : nombre de variétés non terminées
+  const culturesActives = getCulturesGroupees().filter(c => !isCultureTerminee(c));
   const totalPlants = culturesActives.reduce((sum, c) => sum + (c.nbPlants || 0), 0);
   document.getElementById('s5').textContent = totalPlants || '—';
   document.getElementById('s6').textContent = culturesActives.length || '—';
@@ -1279,7 +1312,7 @@ const PALETTE = ['#3d7a4f','#7ab990','#c47c2b','#3a6ea5','#b84040','#8a6a3a','#6
 
 function renderChartFamille() {
   const byFam = {};
-  getRecoltesFiltered().forEach(r => { byFam[r.famille]=(byFam[r.famille]||0)+r.poids; });
+  getRecoltesFiltered().forEach(r => { const f = getFamilleVegetal(r.vegetal); byFam[f]=(byFam[f]||0)+r.poids; });
   const sorted = Object.entries(byFam).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
   destroyChart('chartFamille');
   chartInstances['chartFamille'] = new Chart(document.getElementById('chartFamille').getContext('2d'), {
@@ -1420,7 +1453,7 @@ function renderTable() {
   const filterFam  = document.getElementById('filterFam').value;
   let data = [...getRecoltesFiltered()];
   if (filterLieu) data = data.filter(r=>r.lieu===filterLieu);
-  if (filterFam)  data = data.filter(r=>r.famille===filterFam);
+  if (filterFam)  data = data.filter(r=>getFamilleVegetal(r.vegetal)===filterFam);
   data.sort((a,b)=>{
     let va=a[sortField], vb=b[sortField];
     if (sortField==='poids'){va=+va;vb=+vb;} if (sortField==='note'){va=va||0;vb=vb||0;}
@@ -1438,7 +1471,7 @@ function renderTable() {
     <tr class="row-detail" id="detail-${r.id}">
       <td colspan="5">
         <div class="detail-inner" id="view-${r.id}">
-          <div class="detail-item"><div class="detail-key">Famille</div><div class="detail-val">${r.famille||'—'}</div></div>
+          <div class="detail-item"><div class="detail-key">Famille</div><div class="detail-val">${getFamilleVegetal(r.vegetal)||'—'}</div></div>
           <div class="detail-item"><div class="detail-key">Poids</div><div class="detail-val">${r.poids} g</div></div>
           <div class="detail-item"><div class="detail-key">Lieu</div><div class="detail-val">${r.lieu}</div></div>
           <div class="detail-item"><div class="detail-key">Date</div><div class="detail-val">${fmtDate(r.date)}</div></div>
@@ -1485,7 +1518,7 @@ function renderTable() {
 function toggleDetail(id) { document.getElementById('detail-'+id).classList.toggle('open'); }
 
 function populateFamFilter() {
-  const fams = [...new Set(getRecoltesFiltered().map(r=>r.famille).filter(Boolean))].sort();
+  const fams = [...new Set(getRecoltesFiltered().map(r=>getFamilleVegetal(r.vegetal)).filter(Boolean))].sort();
   const sel = document.getElementById('filterFam');
   const current = sel.value;
   sel.innerHTML = '<option value="">Toutes familles</option>' + fams.map(f=>`<option value="${f}">${f}</option>`).join('');
