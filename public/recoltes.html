@@ -81,16 +81,23 @@ header{position:sticky;top:0;z-index:100;background:rgba(10,18,11,.92);backdrop-
 .saison-select option { background: #0a120b; color: var(--text); }
 
 /* ── NAV PRINCIPALE — hiérarchie lumineuse : fond page < nav < onglet actif ── */
-.nav-tabs{display:flex;gap:3px;margin-bottom:0;background:#122018;padding:3px;border-radius:10px;border:1px solid #1e3828}
+.nav-tabs{display:flex;gap:3px;margin-bottom:0;background:#122018;padding:3px;border-radius:10px 10px 0 0;border:1px solid #1e3828;border-bottom:none}
 .tab{flex:1;padding:9px 4px;border:none;background:transparent;color:#3a6b4a;font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s}
 .tab:hover:not(.active){color:var(--accent)}
 .tab.active{background:#1e4030;color:var(--accent);border:1px solid rgba(163,230,53,.35)}
+.nav-block{margin-bottom:16px}
 
 /* ── NAV SECONDAIRE ── */
-.nav-secondary{margin-top:6px;margin-bottom:16px;display:flex;gap:3px;background:#0c1810;padding:3px;border-radius:10px;border:1px solid #1e3828}
-.nav-sec-tab{flex:1;padding:7px 4px;border:none;background:transparent;color:#3a6b4a;font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:7px;transition:all .2s;white-space:nowrap}
+.nav-secondary{margin-top:0;margin-bottom:0;display:flex;gap:3px;background:#0c1810;padding:3px;border-radius:0 0 10px 10px;border:1px solid #1e3828;border-top:none}
+.nav-sec-tab{flex:1;padding:7px 4px;border:none;background:transparent;color:#3a6b4a;font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s;white-space:nowrap}
 .nav-sec-tab:hover:not(.active){color:var(--green)}
 .nav-sec-tab.active{background:#1e4030;color:var(--green);border:1px solid rgba(74,222,128,.3)}
+
+/* ── NAV TERTIAIRE (sous-onglets planification) ── */
+.nav-tertiary{margin-top:0;margin-bottom:16px;display:flex;gap:3px;background:#081209;padding:3px;border-radius:0 0 8px 8px;border:1px solid #162a20;border-top:none}
+.nav-tert-tab{flex:1;padding:5px 4px;border:none;background:transparent;color:#2d5a3d;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:5px;transition:all .2s;white-space:nowrap}
+.nav-tert-tab:hover:not(.active){color:var(--green)}
+.nav-tert-tab.active{background:#162a20;color:var(--green);border:1px solid rgba(74,222,128,.2)}
 
 /* ── CONTENU PRINCIPAL — identique à index.html ── */
 main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
@@ -654,22 +661,22 @@ td:first-child { color: var(--text); font-weight: 500; }
 
 <main>
 
-  <!-- NAV PRINCIPALE — identique à index.html nav-tabs -->
-  <div class="nav-tabs">
-    <button class="tab" onclick="window.location.href='/'">Serre</button>
-    <button class="tab" onclick="window.location.href='/bassin.html'">Bassin</button>
-    <button class="tab active">Cultures</button>
-  </div>
-
-  <!-- NAV SECONDAIRE — même charte que nav-tabs -->
-  <div class="nav-secondary">
-    <button class="nav-sec-tab active" onclick="showSecTab('recoltes', this)">🌿 Récoltes</button>
-    <button class="nav-sec-tab" onclick="showSecTab('calendrier', this)">📅 Calendrier</button>
-    <button class="nav-sec-tab" onclick="showSecTab('planifier', this)">✚ Planification</button>
+  <!-- BLOC NAV : principal + secondaire soudés visuellement -->
+  <div class="nav-block">
+    <div class="nav-tabs">
+      <button class="tab" onclick="window.location.href='/'">Serre</button>
+      <button class="tab" onclick="window.location.href='/bassin.html'">Bassin</button>
+      <button class="tab active">Cultures</button>
+    </div>
+    <div class="nav-secondary" id="nav-secondary-main">
+      <button class="nav-sec-tab active" id="nsec-recoltes"   onclick="showSecTab('recoltes',   this)">🌿 Récoltes</button>
+      <button class="nav-sec-tab"        id="nsec-calendrier" onclick="showSecTab('calendrier', this)">📅 Calendrier</button>
+      <button class="nav-sec-tab"        id="nsec-planifier"  onclick="showSecTab('planifier',  this)">Planification</button>
+    </div>
   </div>
 
   <!-- SYNC BADGE -->
-  <div style="text-align:right;margin-bottom:8px;margin-top:4px">
+  <div style="text-align:right;margin-bottom:6px;margin-top:4px">
     <span id="syncBadge" style="font-size:.62rem;color:var(--green);letter-spacing:.08em;opacity:0;transition:opacity .5s;font-family:'DM Mono',monospace"></span>
   </div>
 
@@ -837,14 +844,14 @@ td:first-child { color: var(--text); font-weight: 500; }
     </div>
   </div>
 
+  <!-- Sous-nav tertiaire Planification — affiché/masqué avec le tab -->
+  <div class="nav-tertiary" id="plan-subnav" style="display:none">
+    <button class="nav-tert-tab active" id="plan-sub-planifier" onclick="showPlanSubTab('planifier',this)">✚ Planifier</button>
+    <button class="nav-tert-tab" id="plan-sub-graines" onclick="showPlanSubTab('graines',this)">🌱 Mes Graines</button>
+  </div>
+
   <!-- ══ ONGLET PLANIFICATION ══ -->
   <div id="tab-planifier" style="display:none">
-
-    <!-- Sous-nav Planification -->
-    <div class="nav-secondary" id="plan-subnav" style="margin-top:0;margin-bottom:16px">
-      <button class="nav-sec-tab active" id="plan-sub-planifier" onclick="showPlanSubTab('planifier',this)">✚ Planifier</button>
-      <button class="nav-sec-tab" id="plan-sub-graines" onclick="showPlanSubTab('graines',this)">🌱 Mes Graines</button>
-    </div>
 
     <!-- ── SOUS-ONGLET : PLANIFIER ── -->
     <div id="plan-tab-planifier">
@@ -1177,24 +1184,40 @@ td:first-child { color: var(--text); font-weight: 500; }
 <script>
 // ── NAV SECONDAIRE ────────────────────────────────────────────
 function showSecTab(name, btn) {
-  document.querySelectorAll('.nav-secondary:first-of-type .nav-sec-tab').forEach(t => t.classList.remove('active'));
+  // Désactiver uniquement les onglets de la nav secondaire principale
+  ['nsec-recoltes','nsec-calendrier','nsec-planifier'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
   btn.classList.add('active');
   document.getElementById('tab-recoltes').style.display   = name === 'recoltes'   ? 'block' : 'none';
   document.getElementById('tab-calendrier').style.display = name === 'calendrier' ? 'block' : 'none';
   document.getElementById('tab-planifier').style.display  = name === 'planifier'  ? 'block' : 'none';
+  // Tertiaire : affiché seulement sur Planification, réinitialisé sur Planifier
+  const tertNav = document.getElementById('plan-subnav');
+  if (tertNav) tertNav.style.display = name === 'planifier' ? 'flex' : 'none';
+  if (name === 'planifier') {
+    // Toujours revenir sur l'onglet Planifier par défaut
+    showPlanSubTab('planifier', document.getElementById('plan-sub-planifier'));
+    calInit();
+  }
   if (name === 'recoltes')   renderAll();
   if (name === 'calendrier') renderCalendrier();
-  if (name === 'planifier')  { calInit(); gsInit(); }
 }
 
-// ── SOUS-ONGLETS PLANIFICATION ─────────────────────────────────
+// ── SOUS-ONGLETS PLANIFICATION (tertiaire) ─────────────────────
 function showPlanSubTab(name, btn) {
-  document.querySelectorAll('#plan-subnav .nav-sec-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('plan-tab-planifier').style.display = name === 'planifier' ? 'block' : 'none';
-  document.getElementById('plan-tab-graines').style.display   = name === 'graines'   ? 'block' : 'none';
-  if (name === 'planifier') calInit();
-  if (name === 'graines')   gsInit();
+  // Désactiver uniquement les onglets du sous-nav tertiaire (par ID, jamais global)
+  ['plan-sub-planifier','plan-sub-graines'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  if (btn) btn.classList.add('active');
+  const elP = document.getElementById('plan-tab-planifier');
+  const elG = document.getElementById('plan-tab-graines');
+  if (elP) elP.style.display = name === 'planifier' ? 'block' : 'none';
+  if (elG) elG.style.display = name === 'graines'   ? 'block' : 'none';
+  if (name === 'graines') gsInit();
 }
 
 // ══════════════════════════════════════════════════════════════
