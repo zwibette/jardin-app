@@ -583,6 +583,58 @@ td:first-child { color: var(--text); font-weight: 500; }
 .cal-stat-val{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;display:block;line-height:1}
 .cal-stat-lbl{font-size:.6rem;opacity:.7;letter-spacing:.08em;text-transform:uppercase}
 
+/* ── GRAINES MODULE ── */
+.gs-lot-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;position:relative;overflow:hidden;transition:border-color .2s}
+.gs-lot-card:hover{border-color:var(--border2)}
+.gs-lot-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px;border-radius:12px 0 0 12px}
+.gs-lot-card.score-excellent::before{background:var(--green)}
+.gs-lot-card.score-bon::before{background:var(--accent)}
+.gs-lot-card.score-moyen::before{background:var(--amber)}
+.gs-lot-card.score-alerte::before{background:var(--red)}
+.gs-lot-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.gs-lot-title{font-size:.95rem;font-weight:500;color:var(--text)}
+.gs-lot-sub{font-size:.7rem;color:var(--text-muted);margin-top:2px}
+.gs-score-badge{flex-shrink:0;text-align:center;background:var(--bg2);border-radius:8px;padding:6px 10px;border:1px solid var(--border2)}
+.gs-score-val{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:300;display:block;line-height:1}
+.gs-score-lbl{font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+.gs-lot-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.gs-meta-item{font-size:.68rem;color:var(--text-dim);display:flex;align-items:center;gap:4px}
+.gs-taux-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.gs-taux-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.gs-lot-actions{display:flex;gap:6px;flex-wrap:wrap}
+.gs-btn{border:none;border-radius:6px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.04em;cursor:pointer;transition:all .2s}
+.gs-btn-primary{background:var(--green-mid);color:#0a120b}
+.gs-btn-primary:hover{background:var(--green)}
+.gs-btn-secondary{background:var(--surface);border:1px solid var(--border2);color:var(--text-muted)}
+.gs-btn-secondary:hover{color:var(--text);border-color:var(--green)}
+.gs-btn-danger{background:var(--surface);border:1px solid rgba(248,113,113,.4);color:var(--red)}
+.gs-btn-danger:hover{background:var(--red-light)}
+.gs-semis-row{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.gs-semis-taux{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:300;flex-shrink:0;width:52px;text-align:center}
+.gs-semis-info{flex:1;min-width:120px}
+.gs-semis-title{font-size:.82rem;font-weight:500;color:var(--text)}
+.gs-semis-meta{font-size:.65rem;color:var(--text-muted);margin-top:2px}
+.gs-alerte-banner{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:12px 16px;margin-bottom:10px}
+.gs-alerte-amber{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:12px 16px;margin-bottom:10px}
+.gs-alerte-title{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:6px}
+.gs-pred-box{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:16px;margin-top:4px}
+.gs-pred-main{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:300;color:var(--green);margin-bottom:6px}
+.gs-pred-detail{font-size:.75rem;color:var(--text-dim);line-height:1.6}
+.gs-confidence{display:inline-flex;align-items:center;gap:4px;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:10px;font-family:'DM Mono',monospace}
+.gs-conf-high{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+.gs-conf-med{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.3)}
+.gs-conf-low{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+.gs-espece-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.gs-espece-title{font-size:.85rem;font-weight:500;color:var(--text);margin-bottom:4px}
+.gs-espece-taux{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:300;color:var(--green);line-height:1}
+.gs-rec-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.gs-rec-icon{font-size:1.4rem;flex-shrink:0}
+.gs-rec-body{flex:1}
+.gs-rec-title{font-size:.82rem;font-weight:500;color:var(--text)}
+.gs-rec-sub{font-size:.68rem;color:var(--text-muted);margin-top:2px}
+.gs-edit-panel{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border2)}
+.gs-edit-panel.open{display:block}
+.gs-edit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -613,7 +665,7 @@ td:first-child { color: var(--text); font-weight: 500; }
   <div class="nav-secondary">
     <button class="nav-sec-tab active" onclick="showSecTab('recoltes', this)">🌿 Récoltes</button>
     <button class="nav-sec-tab" onclick="showSecTab('calendrier', this)">📅 Calendrier</button>
-    <button class="nav-sec-tab" onclick="showSecTab('planifier', this)">✚ Planifier</button>
+    <button class="nav-sec-tab" onclick="showSecTab('planifier', this)">✚ Planification</button>
   </div>
 
   <!-- SYNC BADGE -->
@@ -785,91 +837,338 @@ td:first-child { color: var(--text); font-weight: 500; }
     </div>
   </div>
 
-  <!-- ══ ONGLET PLANIFIER ══ -->
+  <!-- ══ ONGLET PLANIFICATION ══ -->
   <div id="tab-planifier" style="display:none">
 
-    <!-- Mini stats barre -->
-    <div class="cal-stats-bar">
-      <div class="cal-stat"><span class="cal-stat-val" id="calNbCultures">—</span><span class="cal-stat-lbl">cultures planifiées</span></div>
-      <div class="cal-stat"><span class="cal-stat-val" id="calEnCours">—</span><span class="cal-stat-lbl">en cours</span></div>
-      <div class="cal-stat"><span class="cal-stat-val" id="calRecoltees">—</span><span class="cal-stat-lbl">récoltées</span></div>
-      <div class="cal-stat"><span class="cal-stat-val" id="calAVenir">—</span><span class="cal-stat-lbl">à venir</span></div>
+    <!-- Sous-nav Planification -->
+    <div class="nav-secondary" id="plan-subnav" style="margin-top:0;margin-bottom:16px">
+      <button class="nav-sec-tab active" id="plan-sub-planifier" onclick="showPlanSubTab('planifier',this)">✚ Planifier</button>
+      <button class="nav-sec-tab" id="plan-sub-graines" onclick="showPlanSubTab('graines',this)">🌱 Mes Graines</button>
     </div>
 
-    <!-- Formulaire ajout -->
-    <div class="section" style="margin-bottom:24px">
-      <div class="stitle" style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:400;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">Planifier une culture</div>
-      <div class="cal-saisie-card">
-        <div class="cal-saisie-grid">
-          <div class="cal-field cal-field-full">
-            <label class="cal-field-label">Culture</label>
-            <input type="text" id="cal-inp-culture" placeholder="ex: Tomate cerise, Courgette…" autocomplete="off">
-          </div>
-          <div class="cal-field">
-            <label class="cal-field-label">Lieu</label>
-            <select id="cal-inp-lieu">
-              <option value="serre">🏠 Serre</option>
-              <option value="bacs">🪴 Bacs</option>
-              <option value="jardin">🌳 Jardin</option>
-            </select>
-          </div>
-          <div class="cal-field">
-            <label class="cal-field-label">Date de semis</label>
-            <input type="date" id="cal-inp-semis" onchange="calAutoCalcDates()">
-          </div>
-          <div class="cal-field">
-            <label class="cal-field-label">Date de plantation</label>
-            <input type="date" id="cal-inp-plantation" placeholder="Optionnel">
-          </div>
-          <div class="cal-field">
-            <label class="cal-field-label">Début récolte prévue <span style="color:var(--accent);font-size:.55rem">auto</span></label>
-            <input type="date" id="cal-inp-recolte-debut" placeholder="calculé auto">
-          </div>
-          <div class="cal-field">
-            <label class="cal-field-label">Fin récolte prévue <span style="color:var(--accent);font-size:.55rem">auto</span></label>
-            <input type="date" id="cal-inp-recolte-fin" placeholder="calculé auto">
-          </div>
-          <div class="cal-field">
-            <label class="cal-field-label">Nombre de plants</label>
-            <input type="number" id="cal-inp-nbplants" placeholder="ex: 6" min="1" step="1">
-          </div>
-          <div class="cal-field">
-            <label class="cal-field-label">Famille</label>
-            <select id="cal-inp-famille" onchange="calAutoCalcDates()">
-              <option value="">— Sélectionner</option>
-              <option>SALADES</option><option>BLETTES</option><option>ÉPINARDS</option>
-              <option>CHOUX</option><option>LÉGUMES RACINES</option><option>TOMATES</option>
-              <option>AUBERGINES</option><option>POIVRONS & PIMENTS</option>
-              <option>COURGETTES & COURGES</option><option>CONCOMBRES</option>
-              <option>MELONS</option><option>LÉGUMES GOUSSE</option>
-              <option>LÉGUMES FRUIT</option><option>AROMATIQUES</option>
-              <option>FRAISES</option><option>ARTICHAUT</option><option>AUTRE</option>
-            </select>
-          </div>
-          <div class="cal-field">
-            <label class="cal-field-label">Type de culture</label>
-            <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;cursor:pointer" onclick="document.getElementById('cal-inp-perpetuelle').click()">
-              <input type="checkbox" id="cal-inp-perpetuelle" onclick="event.stopPropagation()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
-              <label for="cal-inp-perpetuelle" style="font-size:.82rem;color:var(--text-dim);cursor:pointer">Culture perpétuelle ♾️</label>
+    <!-- ── SOUS-ONGLET : PLANIFIER ── -->
+    <div id="plan-tab-planifier">
+      <!-- Mini stats barre -->
+      <div class="cal-stats-bar">
+        <div class="cal-stat"><span class="cal-stat-val" id="calNbCultures">—</span><span class="cal-stat-lbl">cultures planifiées</span></div>
+        <div class="cal-stat"><span class="cal-stat-val" id="calEnCours">—</span><span class="cal-stat-lbl">en cours</span></div>
+        <div class="cal-stat"><span class="cal-stat-val" id="calRecoltees">—</span><span class="cal-stat-lbl">récoltées</span></div>
+        <div class="cal-stat"><span class="cal-stat-val" id="calAVenir">—</span><span class="cal-stat-lbl">à venir</span></div>
+      </div>
+
+      <!-- Formulaire ajout -->
+      <div class="section" style="margin-bottom:24px">
+        <div class="stitle" style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:400;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">Planifier une culture</div>
+        <div class="cal-saisie-card">
+          <div class="cal-saisie-grid">
+            <div class="cal-field cal-field-full">
+              <label class="cal-field-label">Culture</label>
+              <input type="text" id="cal-inp-culture" placeholder="ex: Tomate cerise, Courgette…" autocomplete="off">
+            </div>
+            <div class="cal-field">
+              <label class="cal-field-label">Lieu</label>
+              <select id="cal-inp-lieu">
+                <option value="serre">🏠 Serre</option>
+                <option value="bacs">🪴 Bacs</option>
+                <option value="jardin">🌳 Jardin</option>
+              </select>
+            </div>
+            <div class="cal-field">
+              <label class="cal-field-label">Date de semis</label>
+              <input type="date" id="cal-inp-semis" onchange="calAutoCalcDates()">
+            </div>
+            <div class="cal-field">
+              <label class="cal-field-label">Date de plantation</label>
+              <input type="date" id="cal-inp-plantation" placeholder="Optionnel">
+            </div>
+            <div class="cal-field">
+              <label class="cal-field-label">Début récolte prévue <span style="color:var(--accent);font-size:.55rem">auto</span></label>
+              <input type="date" id="cal-inp-recolte-debut" placeholder="calculé auto">
+            </div>
+            <div class="cal-field">
+              <label class="cal-field-label">Fin récolte prévue <span style="color:var(--accent);font-size:.55rem">auto</span></label>
+              <input type="date" id="cal-inp-recolte-fin" placeholder="calculé auto">
+            </div>
+            <div class="cal-field">
+              <label class="cal-field-label">Nombre de plants</label>
+              <input type="number" id="cal-inp-nbplants" placeholder="ex: 6" min="1" step="1">
+            </div>
+            <div class="cal-field">
+              <label class="cal-field-label">Famille</label>
+              <select id="cal-inp-famille" onchange="calAutoCalcDates()">
+                <option value="">— Sélectionner</option>
+                <option>SALADES</option><option>BLETTES</option><option>ÉPINARDS</option>
+                <option>CHOUX</option><option>LÉGUMES RACINES</option><option>TOMATES</option>
+                <option>AUBERGINES</option><option>POIVRONS & PIMENTS</option>
+                <option>COURGETTES & COURGES</option><option>CONCOMBRES</option>
+                <option>MELONS</option><option>LÉGUMES GOUSSE</option>
+                <option>LÉGUMES FRUIT</option><option>AROMATIQUES</option>
+                <option>FRAISES</option><option>ARTICHAUT</option><option>AUTRE</option>
+              </select>
+            </div>
+            <div class="cal-field">
+              <label class="cal-field-label">Type de culture</label>
+              <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;cursor:pointer" onclick="document.getElementById('cal-inp-perpetuelle').click()">
+                <input type="checkbox" id="cal-inp-perpetuelle" onclick="event.stopPropagation()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+                <label for="cal-inp-perpetuelle" style="font-size:.82rem;color:var(--text-dim);cursor:pointer">Culture perpétuelle ♾️</label>
+              </div>
+            </div>
+            <div class="cal-field">
+              <label class="cal-field-label">Notes</label>
+              <input type="text" id="cal-inp-notes" placeholder="variété, observations…">
             </div>
           </div>
-          <div class="cal-field">
-            <label class="cal-field-label">Notes</label>
-            <input type="text" id="cal-inp-notes" placeholder="variété, observations…">
-          </div>
+          <div id="cal-dates-hint" style="display:none;font-size:.65rem;color:var(--accent);margin-bottom:8px;padding:6px 10px;background:rgba(163,230,53,.06);border-radius:6px;border:1px solid rgba(163,230,53,.2)"></div>
+          <button class="cal-add-btn" onclick="calAddCulture()">Ajouter au calendrier</button>
         </div>
-        <div id="cal-dates-hint" style="display:none;font-size:.65rem;color:var(--accent);margin-bottom:8px;padding:6px 10px;background:rgba(163,230,53,.06);border-radius:6px;border:1px solid rgba(163,230,53,.2)"></div>
-        <button class="cal-add-btn" onclick="calAddCulture()">Ajouter au calendrier</button>
+      </div>
+
+      <!-- Liste cultures planifiées -->
+      <div class="section">
+        <div class="stitle" style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:400;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">Cultures planifiées</div>
+        <div id="listeCultures"></div>
       </div>
     </div>
 
-    <!-- Liste cultures planifiées -->
-    <div class="section">
-      <div class="stitle" style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:400;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px">Cultures planifiées</div>
-      <div id="listeCultures"></div>
-    </div>
+    <!-- ── SOUS-ONGLET : MES GRAINES ── -->
+    <div id="plan-tab-graines" style="display:none">
 
-  </div>
+      <!-- Dashboard alertes -->
+      <div id="gs-alertes" style="margin-bottom:16px"></div>
+
+      <!-- Stats globales -->
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card"><span class="stat-val" id="gs-nb-lots">—</span><span class="stat-lbl">Lots actifs</span></div>
+        <div class="stat-card"><span class="stat-val" id="gs-taux-moy">—</span><span class="stat-lbl">Taux germination moy.</span></div>
+        <div class="stat-card"><span class="stat-val" id="gs-lots-alerte">—</span><span class="stat-lbl">Lots en alerte</span></div>
+        <div class="stat-card"><span class="stat-val" id="gs-semis-total">—</span><span class="stat-lbl">Semis enregistrés</span></div>
+      </div>
+
+      <!-- Onglets internes graines -->
+      <div class="tab-nav" style="margin-bottom:16px">
+        <button class="tnav active" onclick="gsShowTab('lots',this)">📦 Lots</button>
+        <button class="tnav" onclick="gsShowTab('semis',this)">🌱 Semis</button>
+        <button class="tnav" onclick="gsShowTab('analyse',this)">📊 Analyse</button>
+        <button class="tnav" onclick="gsShowTab('prediction',this)">🔮 Prédiction</button>
+      </div>
+
+      <!-- ─── TAB : LOTS ─── -->
+      <div class="tab-section active" id="gs-tab-lots">
+        <div class="section">
+          <div class="stitle">✚ Nouveau lot de semences</div>
+          <div class="cal-saisie-card">
+            <div class="cal-saisie-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+              <div class="cal-field" style="grid-column:1/-1">
+                <label class="cal-field-label">Espèce</label>
+                <input type="text" id="gs-inp-espece" placeholder="ex: Tomate, Concombre, Salade…" autocomplete="off">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Variété</label>
+                <input type="text" id="gs-inp-variete" placeholder="ex: Rose de Berne">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Fournisseur / Origine</label>
+                <input type="text" id="gs-inp-fournisseur" placeholder="ex: Kokopelli, maison…">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Date d'achat / récolte</label>
+                <input type="date" id="gs-inp-date-achat">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Date de péremption théorique</label>
+                <input type="date" id="gs-inp-date-peremption">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Quantité initiale (graines)</label>
+                <input type="number" id="gs-inp-qte-init" placeholder="ex: 50" min="1" step="1">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Quantité restante</label>
+                <input type="number" id="gs-inp-qte-reste" placeholder="ex: 50" min="0" step="1">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Taux germination fabricant (%)</label>
+                <input type="number" id="gs-inp-taux-fab" placeholder="ex: 85" min="0" max="100" step="1">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Conditions de stockage</label>
+                <select id="gs-inp-stockage">
+                  <option value="">— Non renseigné</option>
+                  <option value="ideal">❄️ Idéal (frais, sec, obscur)</option>
+                  <option value="bon">✅ Bon (frais, sec)</option>
+                  <option value="moyen">⚠️ Moyen (température variable)</option>
+                  <option value="mauvais">⛔ Défavorable (chaud/humide)</option>
+                </select>
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Origine</label>
+                <select id="gs-inp-origine">
+                  <option value="commercial">🏪 Commercial</option>
+                  <option value="maison">🏡 Autoproduction</option>
+                  <option value="echange">🤝 Échange</option>
+                </select>
+              </div>
+              <div class="cal-field" style="grid-column:1/-1">
+                <label class="cal-field-label">Notes</label>
+                <input type="text" id="gs-inp-notes-lot" placeholder="observations, conditions particulières…">
+              </div>
+            </div>
+            <button class="cal-add-btn" onclick="gsAddLot()">Ajouter ce lot</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="stitle">📦 Mes lots de semences</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+            <select id="gs-filter-espece" onchange="gsRenderLots()" style="font-family:'DM Mono',monospace;font-size:.68rem;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text)">
+              <option value="">Toutes espèces</option>
+            </select>
+            <select id="gs-filter-statut" onchange="gsRenderLots()" style="font-family:'DM Mono',monospace;font-size:.68rem;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text)">
+              <option value="">Tous statuts</option>
+              <option value="excellent">Excellent (≥80)</option>
+              <option value="bon">Bon (60–79)</option>
+              <option value="moyen">Moyen (40–59)</option>
+              <option value="alerte">Alerte (&lt;40)</option>
+            </select>
+          </div>
+          <div id="gs-liste-lots"><div class="empty">Aucun lot enregistré.</div></div>
+        </div>
+      </div>
+
+      <!-- ─── TAB : SEMIS ─── -->
+      <div class="tab-section" id="gs-tab-semis">
+        <div class="section">
+          <div class="stitle">✚ Enregistrer un semis</div>
+          <div class="cal-saisie-card">
+            <div class="cal-saisie-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+              <div class="cal-field" style="grid-column:1/-1">
+                <label class="cal-field-label">Lot de semences</label>
+                <select id="gs-semis-lot">
+                  <option value="">— Sélectionner un lot</option>
+                </select>
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Date de semis</label>
+                <input type="date" id="gs-semis-date">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Graines semées</label>
+                <input type="number" id="gs-semis-nb-graines" placeholder="ex: 20" min="1" step="1">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Levées réussies</label>
+                <input type="number" id="gs-semis-nb-levees" placeholder="ex: 16" min="0" step="1">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Délai germination (jours)</label>
+                <input type="number" id="gs-semis-delai" placeholder="ex: 7" min="1" step="1">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Méthode</label>
+                <select id="gs-semis-methode">
+                  <option value="godets">🪴 Godets</option>
+                  <option value="serre">🏠 Serre directe</option>
+                  <option value="pleine-terre">🌳 Pleine terre</option>
+                  <option value="plateaux">📦 Plateaux alvéolés</option>
+                  <option value="papier">🧻 Germination papier</option>
+                </select>
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Température approx. (°C)</label>
+                <input type="number" id="gs-semis-temp" placeholder="ex: 20" min="0" max="40" step="1">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Homogénéité levée</label>
+                <select id="gs-semis-homogeneite">
+                  <option value="">— Non renseigné</option>
+                  <option value="tres-homogene">✅ Très homogène</option>
+                  <option value="homogene">🟢 Homogène</option>
+                  <option value="variable">🟡 Variable</option>
+                  <option value="heterogene">🔴 Hétérogène</option>
+                </select>
+              </div>
+              <div class="cal-field" style="grid-column:1/-1">
+                <label class="cal-field-label">Observations</label>
+                <input type="text" id="gs-semis-obs" placeholder="levée lente, belle vigueur, fonte de semis…">
+              </div>
+            </div>
+            <button class="cal-add-btn" onclick="gsAddSemis()">Enregistrer ce semis</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="stitle">📋 Historique des semis</div>
+          <div id="gs-liste-semis"><div class="empty">Aucun semis enregistré.</div></div>
+        </div>
+      </div>
+
+      <!-- ─── TAB : ANALYSE ─── -->
+      <div class="tab-section" id="gs-tab-analyse">
+        <div class="section">
+          <div class="stitle">📊 Taux de germination par espèce</div>
+          <div id="gs-analyse-especes"></div>
+        </div>
+        <div class="section">
+          <div class="stitle">📈 Évolution viabilité dans le temps</div>
+          <div id="gs-analyse-viabilite">
+            <div style="margin-bottom:10px">
+              <select id="gs-viab-select" onchange="gsRenderViabilite()" style="font-family:'DM Mono',monospace;font-size:.68rem;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text)">
+                <option value="">— Choisir un lot</option>
+              </select>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Taux de germination observé au fil du temps</div>
+              <div class="chart-wrap tall"><canvas id="gs-chart-viabilite"></canvas></div>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="stitle">🏭 Performance fournisseurs</div>
+          <div id="gs-analyse-fournisseurs"></div>
+        </div>
+        <div class="section">
+          <div class="stitle">🏆 Score qualité des lots</div>
+          <div id="gs-scores-lots"></div>
+        </div>
+      </div>
+
+      <!-- ─── TAB : PRÉDICTION ─── -->
+      <div class="tab-section" id="gs-tab-prediction">
+        <div class="section">
+          <div class="stitle">🔮 Calculateur de semis</div>
+          <div class="cal-saisie-card">
+            <div class="cal-saisie-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+              <div class="cal-field" style="grid-column:1/-1">
+                <label class="cal-field-label">Lot à utiliser</label>
+                <select id="gs-pred-lot" onchange="gsPredUpdate()">
+                  <option value="">— Sélectionner un lot</option>
+                </select>
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Nombre de plants souhaités</label>
+                <input type="number" id="gs-pred-plants" placeholder="ex: 12" min="1" step="1" oninput="gsPredUpdate()">
+              </div>
+              <div class="cal-field">
+                <label class="cal-field-label">Tolérance manque (plants)</label>
+                <input type="number" id="gs-pred-tolerance" placeholder="ex: 2" min="0" step="1" value="1" oninput="gsPredUpdate()">
+              </div>
+            </div>
+            <div id="gs-pred-result" style="margin-top:14px"></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="stitle">⚠️ Lots à traiter en priorité</div>
+          <div id="gs-pred-priorites"></div>
+        </div>
+        <div class="section">
+          <div class="stitle">📅 Recommandations par lot</div>
+          <div id="gs-pred-recommandations"></div>
+        </div>
+      </div>
+
+    </div><!-- /plan-tab-graines -->
+
+  </div><!-- /tab-planifier -->
 
 </main>
 
@@ -878,14 +1177,749 @@ td:first-child { color: var(--text); font-weight: 500; }
 <script>
 // ── NAV SECONDAIRE ────────────────────────────────────────────
 function showSecTab(name, btn) {
-  document.querySelectorAll('.nav-sec-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-secondary:first-of-type .nav-sec-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-recoltes').style.display   = name === 'recoltes'   ? 'block' : 'none';
   document.getElementById('tab-calendrier').style.display = name === 'calendrier' ? 'block' : 'none';
   document.getElementById('tab-planifier').style.display  = name === 'planifier'  ? 'block' : 'none';
   if (name === 'recoltes')   renderAll();
   if (name === 'calendrier') renderCalendrier();
-  if (name === 'planifier')  calInit();
+  if (name === 'planifier')  { calInit(); gsInit(); }
+}
+
+// ── SOUS-ONGLETS PLANIFICATION ─────────────────────────────────
+function showPlanSubTab(name, btn) {
+  document.querySelectorAll('#plan-subnav .nav-sec-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('plan-tab-planifier').style.display = name === 'planifier' ? 'block' : 'none';
+  document.getElementById('plan-tab-graines').style.display   = name === 'graines'   ? 'block' : 'none';
+  if (name === 'planifier') calInit();
+  if (name === 'graines')   gsInit();
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── MODULE GESTION SCIENTIFIQUE DES SEMENCES ─────────────────
+// ══════════════════════════════════════════════════════════════
+
+// ── STOCKAGE ─────────────────────────────────────────────────
+function gsLoadLots()  { try { return JSON.parse(localStorage.getItem('gs_lots')  || '[]'); } catch(e){ return []; } }
+function gsLoadSemis() { try { return JSON.parse(localStorage.getItem('gs_semis') || '[]'); } catch(e){ return []; } }
+function gsSaveLots(d)  { localStorage.setItem('gs_lots',  JSON.stringify(d)); }
+function gsSaveSemis(d) { localStorage.setItem('gs_semis', JSON.stringify(d)); }
+function gsId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ── ALGORITHMES ───────────────────────────────────────────────
+
+// Score qualité d'un lot (0–100)
+function gsScore(lot, semisLot) {
+  const now = Date.now();
+  let score = 100;
+  let facteurs = [];
+
+  // 1. Taux de germination réel moyen (40 pts)
+  const tauxMoy = gsTauxMoyen(semisLot);
+  const nbSemis = semisLot.length;
+  if (nbSemis > 0) {
+    const pts = Math.round(tauxMoy / 100 * 40);
+    score = score - 40 + pts;
+    facteurs.push({ label: 'Germination réelle', val: `${Math.round(tauxMoy)}%`, pts });
+  } else if (lot.tauxFab) {
+    // Pas de données réelles : on fait confiance au fabricant avec pénalité incertitude
+    const pts = Math.round(lot.tauxFab / 100 * 32); // -20% confiance
+    score = score - 40 + pts;
+    facteurs.push({ label: 'Germination fabricant (estimé)', val: `${lot.tauxFab}%`, pts });
+  } else {
+    score -= 20; // inconnu
+    facteurs.push({ label: 'Germination', val: 'inconnue', pts: 20 });
+  }
+
+  // 2. Ancienneté / péremption (25 pts)
+  if (lot.dateAchat) {
+    const ageAns = (now - new Date(lot.dateAchat).getTime()) / (365.25*24*3600*1000);
+    if (lot.datePeremption) {
+      const daysLeft = (new Date(lot.datePeremption).getTime() - now) / (24*3600*1000);
+      if (daysLeft < 0) { score -= 25; facteurs.push({ label: 'Périmé', val: 'oui', pts: 0 }); }
+      else if (daysLeft < 90) { score -= 15; facteurs.push({ label: 'Péremption proche', val: `${Math.round(daysLeft)}j`, pts: 10 }); }
+      else if (daysLeft < 365) { score -= 8; facteurs.push({ label: 'Péremption dans l\'an', val: `${Math.round(daysLeft/30)}mois`, pts: 17 }); }
+      else { facteurs.push({ label: 'Fraîcheur', val: 'bonne', pts: 25 }); }
+    } else {
+      // Viabilité théorique selon âge (1–5 ans selon espèce)
+      const vieTheo = gsVieTheo(lot.espece);
+      const ratio = ageAns / vieTheo;
+      if (ratio > 1) { score -= 20; }
+      else if (ratio > .7) { score -= 10; }
+      else if (ratio > .4) { score -= 4; }
+    }
+  }
+
+  // 3. Homogénéité des levées (15 pts)
+  if (nbSemis > 0) {
+    const homog = semisLot.filter(s => s.homogeneite).map(s => s.homogeneite);
+    if (homog.length > 0) {
+      const scores_h = { 'tres-homogene': 15, 'homogene': 11, 'variable': 6, 'heterogene': 0 };
+      const moy_h = homog.reduce((a,h) => a + (scores_h[h]||0), 0) / homog.length;
+      score = score - 15 + Math.round(moy_h);
+    }
+  }
+
+  // 4. Conditions de stockage (10 pts)
+  const stockPts = { 'ideal': 10, 'bon': 7, 'moyen': 3, 'mauvais': 0, '': 5 };
+  const spt = stockPts[lot.stockage || ''] ?? 5;
+  score = score - 10 + spt;
+
+  // 5. Confiance (pénalité si peu de données)
+  const confidence = gsConfidence(nbSemis);
+
+  return { score: Math.max(0, Math.min(100, Math.round(score))), facteurs, confidence, tauxMoy, nbSemis };
+}
+
+// Taux de germination moyen d'un ensemble de semis
+function gsTauxMoyen(semisLot) {
+  if (!semisLot.length) return null;
+  const valid = semisLot.filter(s => s.nbGraines > 0 && s.nbLevees != null);
+  if (!valid.length) return null;
+  // Taux pondéré par nombre de graines
+  const tot = valid.reduce((a,s) => a + s.nbGraines, 0);
+  const reuss = valid.reduce((a,s) => a + s.nbLevees, 0);
+  return tot ? (reuss / tot * 100) : null;
+}
+
+// Durée de vie théorique par espèce (années)
+function gsVieTheo(espece) {
+  if (!espece) return 3;
+  const e = espece.toLowerCase();
+  if (e.includes('oignon') || e.includes('poireau') || e.includes('allium')) return 2;
+  if (e.includes('salade') || e.includes('laitue') || e.includes('mâche')) return 3;
+  if (e.includes('tomate') || e.includes('piment') || e.includes('poivron') || e.includes('aubergine')) return 4;
+  if (e.includes('concombre') || e.includes('courgette') || e.includes('melon') || e.includes('courge')) return 5;
+  if (e.includes('haricot') || e.includes('pois') || e.includes('fève')) return 3;
+  if (e.includes('carotte') || e.includes('panais')) return 2;
+  if (e.includes('bette') || e.includes('épinard') || e.includes('blette')) return 4;
+  if (e.includes('chou') || e.includes('brocoli') || e.includes('radis')) return 4;
+  return 3;
+}
+
+// Niveau de confiance selon nombre de semis enregistrés
+function gsConfidence(nbSemis) {
+  if (nbSemis === 0) return { level: 'low', label: 'Pas de données', color: 'low' };
+  if (nbSemis === 1) return { level: 'low', label: 'Donnée unique', color: 'low' };
+  if (nbSemis < 4) return { level: 'med', label: 'Données limitées', color: 'med' };
+  return { level: 'high', label: 'Données fiables', color: 'high' };
+}
+
+// Prédiction : combien de graines semer pour X plants
+function gsPredire(lot, semisLot, plantsVoulus, tolerance) {
+  const taux = gsTauxMoyen(semisLot);
+  const conf = gsConfidence(semisLot.length);
+  let tauxUtilise, source;
+
+  if (taux !== null) {
+    tauxUtilise = taux / 100;
+    source = 'données réelles';
+  } else if (lot.tauxFab) {
+    // Fabricant, avec marge de sécurité selon âge
+    const ageAns = lot.dateAchat ? (Date.now() - new Date(lot.dateAchat).getTime()) / (365.25*24*3600*1000) : 0;
+    const vieTheo = gsVieTheo(lot.espece);
+    const degradation = Math.max(0, 1 - (ageAns / vieTheo) * 0.6);
+    tauxUtilise = (lot.tauxFab / 100) * degradation;
+    source = `fabricant ajusté (âge ${Math.round(ageAns*10)/10} an${ageAns>1?'s':''})`;
+  } else {
+    tauxUtilise = 0.6; // taux conservateur par défaut
+    source = 'estimation par défaut (60%)';
+  }
+
+  if (tauxUtilise <= 0) return null;
+  const tol = tolerance || 0;
+  const plantsMin = plantsVoulus - tol;
+  const grainesRecom = Math.ceil(plantsMin / tauxUtilise);
+  const grainesSecu = Math.ceil((plantsVoulus + 1) / tauxUtilise);
+  const probSucces = 1 - Math.pow(1 - tauxUtilise, grainesRecom);
+
+  return { grainesRecom, grainesSecu, tauxUtilise, source, probSucces, conf };
+}
+
+// Recommandation automatique
+function gsRecommandation(score, daysLeft, tauxMoy) {
+  if (score >= 80 && (daysLeft === null || daysLeft > 180)) return { icon: '✅', label: 'Utiliser normalement', classe: 'score-excellent', couleur: 'var(--green)' };
+  if (score >= 60) return { icon: '⬆️', label: 'Utiliser avec léger sursemis (+20%)', classe: 'score-bon', couleur: 'var(--accent)' };
+  if (score >= 40) return { icon: '⚠️', label: 'Utiliser en priorité — sursemis conseillé', classe: 'score-moyen', couleur: 'var(--amber)' };
+  if (score >= 20) return { icon: '🔴', label: 'À remplacer — sursemis important ou test germination', classe: 'score-alerte', couleur: 'var(--red)' };
+  return { icon: '🗑️', label: 'Éliminer — non viable', classe: 'score-alerte', couleur: 'var(--red)' };
+}
+
+// ── RENDU PRINCIPAL ──────────────────────────────────────────
+
+function gsInit() {
+  gsUpdateStats();
+  gsRenderLots();
+  gsRenderSemis();
+  gsRenderAlertes();
+  gsRenderAnalyse();
+  gsRenderPredRecommandations();
+  gsPopulateLotSelects();
+  const semisDate = document.getElementById('gs-semis-date');
+  if (semisDate && !semisDate.value) semisDate.valueAsDate = new Date();
+}
+
+function gsUpdateStats() {
+  const lots = gsLoadLots();
+  const semis = gsLoadSemis();
+  const tauxList = lots.map(l => {
+    const sl = semis.filter(s => s.lotId === l.id);
+    return gsTauxMoyen(sl);
+  }).filter(t => t !== null);
+  const moy = tauxList.length ? tauxList.reduce((a,b)=>a+b,0)/tauxList.length : null;
+  const alertes = lots.filter(l => {
+    const sl = semis.filter(s => s.lotId === l.id);
+    const { score } = gsScore(l, sl);
+    return score < 50;
+  }).length;
+
+  document.getElementById('gs-nb-lots').textContent = lots.length || '—';
+  document.getElementById('gs-taux-moy').textContent = moy !== null ? Math.round(moy) + '%' : '—';
+  document.getElementById('gs-lots-alerte').textContent = alertes || '—';
+  document.getElementById('gs-semis-total').textContent = semis.length || '—';
+}
+
+function gsPopulateLotSelects() {
+  const lots = gsLoadLots();
+  ['gs-semis-lot','gs-pred-lot','gs-viab-select'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = `<option value="">— Sélectionner un lot</option>` +
+      lots.map(l => `<option value="${l.id}" ${l.id===cur?'selected':''}>${l.espece} ${l.variete ? '— '+l.variete : ''} (${l.fournisseur||'?'})</option>`).join('');
+  });
+  const filterEl = document.getElementById('gs-filter-espece');
+  if (filterEl) {
+    const especes = [...new Set(lots.map(l => l.espece).filter(Boolean))].sort();
+    const cur = filterEl.value;
+    filterEl.innerHTML = `<option value="">Toutes espèces</option>` + especes.map(e => `<option value="${e}" ${e===cur?'selected':''}>${e}</option>`).join('');
+  }
+}
+
+function gsRenderAlertes() {
+  const el = document.getElementById('gs-alertes');
+  if (!el) return;
+  const lots = gsLoadLots();
+  const semis = gsLoadSemis();
+  const now = Date.now();
+  const critiques = [], warnings = [];
+
+  lots.forEach(l => {
+    const sl = semis.filter(s => s.lotId === l.id);
+    const { score } = gsScore(l, sl);
+    const nom = `${l.espece}${l.variete?' — '+l.variete:''}`;
+    if (l.datePeremption) {
+      const d = (new Date(l.datePeremption).getTime() - now) / (24*3600*1000);
+      if (d < 0) critiques.push(`🗑️ <b>${nom}</b> : périmé depuis ${Math.abs(Math.round(d))} jours`);
+      else if (d < 90) warnings.push(`⏳ <b>${nom}</b> : péremption dans ${Math.round(d)} jours`);
+    }
+    if (score < 30) critiques.push(`⛔ <b>${nom}</b> : score critique (${score}/100)`);
+    else if (score < 50) warnings.push(`⚠️ <b>${nom}</b> : score faible (${score}/100) — à utiliser en priorité`);
+  });
+
+  let html = '';
+  if (critiques.length) html += `<div class="gs-alerte-banner"><div class="gs-alerte-title" style="color:var(--red)">⛔ Alertes critiques</div>${critiques.map(a=>`<div style="font-size:.78rem;color:var(--text-dim);margin-bottom:3px">${a}</div>`).join('')}</div>`;
+  if (warnings.length) html += `<div class="gs-alerte-amber"><div class="gs-alerte-title" style="color:var(--amber)">⚠️ Attention</div>${warnings.map(a=>`<div style="font-size:.78rem;color:var(--text-dim);margin-bottom:3px">${a}</div>`).join('')}</div>`;
+  el.innerHTML = html;
+}
+
+function gsRenderLots() {
+  const el = document.getElementById('gs-liste-lots');
+  if (!el) return;
+  const lots = gsLoadLots();
+  const semis = gsLoadSemis();
+  const filtEspece = (document.getElementById('gs-filter-espece')||{}).value || '';
+  const filtStatut = (document.getElementById('gs-filter-statut')||{}).value || '';
+  const now = Date.now();
+
+  let filtered = lots.filter(l => {
+    if (filtEspece && l.espece !== filtEspece) return false;
+    if (filtStatut) {
+      const sl = semis.filter(s => s.lotId === l.id);
+      const { score } = gsScore(l, sl);
+      if (filtStatut === 'excellent' && score < 80) return false;
+      if (filtStatut === 'bon' && (score < 60 || score >= 80)) return false;
+      if (filtStatut === 'moyen' && (score < 40 || score >= 60)) return false;
+      if (filtStatut === 'alerte' && score >= 40) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) { el.innerHTML = '<div class="empty">Aucun lot correspondant.</div>'; return; }
+
+  // Trier par score décroissant
+  filtered.sort((a,b) => {
+    const sa = gsScore(a, semis.filter(s=>s.lotId===a.id)).score;
+    const sb = gsScore(b, semis.filter(s=>s.lotId===b.id)).score;
+    return sb - sa;
+  });
+
+  el.innerHTML = filtered.map(lot => {
+    const sl = semis.filter(s => s.lotId === lot.id);
+    const { score, confidence, tauxMoy } = gsScore(lot, sl);
+    const rec = gsRecommandation(score, lot.datePeremption ? (new Date(lot.datePeremption)-now)/(24*3600*1000) : null, tauxMoy);
+    const scoreClass = score>=80?'excellent':score>=60?'bon':score>=40?'moyen':'alerte';
+    const taux = tauxMoy !== null ? Math.round(tauxMoy) : (lot.tauxFab || null);
+    const tauxColor = taux===null?'var(--text-muted)':taux>=70?'var(--green)':taux>=50?'var(--amber)':'var(--red)';
+    const daysLeft = lot.datePeremption ? Math.round((new Date(lot.datePeremption)-now)/(24*3600*1000)) : null;
+    const peremLabel = daysLeft===null ? 'Non renseignée' : daysLeft < 0 ? `⛔ Périmé (${Math.abs(daysLeft)}j)` : daysLeft < 90 ? `⚠️ ${daysLeft}j restants` : `${Math.round(daysLeft/30)}mois`;
+
+    return `<div class="gs-lot-card score-${scoreClass}" id="lot-${lot.id}">
+      <div class="gs-lot-header">
+        <div>
+          <div class="gs-lot-title">🌱 ${lot.espece}${lot.variete?' — <em style="font-style:italic;color:var(--text-dim)">' + lot.variete + '</em>' : ''}</div>
+          <div class="gs-lot-sub">${lot.fournisseur||'Origine inconnue'} · ${lot.origine==='maison'?'🏡 Autoproduction':lot.origine==='echange'?'🤝 Échange':'🏪 Commercial'}</div>
+        </div>
+        <div class="gs-score-badge">
+          <span class="gs-score-val" style="color:${rec.couleur}">${score}</span>
+          <span class="gs-score-lbl">/ 100</span>
+        </div>
+      </div>
+      <div class="gs-lot-meta">
+        ${lot.dateAchat ? `<span class="gs-meta-item">📅 Acheté: ${new Date(lot.dateAchat).toLocaleDateString('fr-FR')}</span>` : ''}
+        <span class="gs-meta-item">📦 Péremption: ${peremLabel}</span>
+        <span class="gs-meta-item">🫙 Restant: ${lot.qteReste!=null?lot.qteReste+' graines':'?'}</span>
+        <span class="gs-meta-item">📋 ${sl.length} semis enregistré${sl.length>1?'s':''}</span>
+        ${lot.stockage ? `<span class="gs-meta-item">❄️ ${lot.stockage}</span>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="flex:1">
+          <div style="font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px">Taux germination ${tauxMoy!==null?'réel':'estimé'}</div>
+          <div class="gs-taux-bar"><div class="gs-taux-fill" style="width:${taux||0}%;background:${tauxColor}"></div></div>
+          <div style="font-size:.72rem;color:${tauxColor};font-family:'Fraunces',serif;font-size:1rem">${taux!==null?taux+'%':'inconnu'} <span style="font-size:.6rem;color:var(--text-muted)">${tauxMoy!==null?'(réel)':'(fabricant)'}</span></div>
+        </div>
+        <div style="text-align:right">
+          <span class="gs-confidence gs-conf-${confidence.color}">${confidence.label}</span>
+        </div>
+      </div>
+      <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:10px;padding:6px 10px;background:var(--bg2);border-radius:6px;border-left:3px solid ${rec.couleur}">
+        ${rec.icon} <b>${rec.label}</b>
+      </div>
+      <div class="gs-lot-actions">
+        <button class="gs-btn gs-btn-primary" onclick="gsShowEditLot('${lot.id}')">✏️ Modifier</button>
+        <button class="gs-btn gs-btn-secondary" onclick="gsQuickSemis('${lot.id}')">🌱 Semis rapide</button>
+        <button class="gs-btn gs-btn-danger" onclick="gsDeleteLot('${lot.id}')">🗑️</button>
+      </div>
+      <div class="gs-edit-panel" id="edit-lot-${lot.id}">
+        <div class="gs-edit-grid">
+          <div class="cal-field"><label class="cal-field-label">Espèce</label><input class="cal-edit-input" id="el-espece-${lot.id}" value="${lot.espece||''}"></div>
+          <div class="cal-field"><label class="cal-field-label">Variété</label><input class="cal-edit-input" id="el-variete-${lot.id}" value="${lot.variete||''}"></div>
+          <div class="cal-field"><label class="cal-field-label">Fournisseur</label><input class="cal-edit-input" id="el-fournisseur-${lot.id}" value="${lot.fournisseur||''}"></div>
+          <div class="cal-field"><label class="cal-field-label">Qté restante</label><input class="cal-edit-input" type="number" id="el-qtereste-${lot.id}" value="${lot.qteReste!=null?lot.qteReste:''}"></div>
+          <div class="cal-field"><label class="cal-field-label">Péremption</label><input class="cal-edit-input" type="date" id="el-peremption-${lot.id}" value="${lot.datePeremption||''}"></div>
+          <div class="cal-field"><label class="cal-field-label">Stockage</label>
+            <select class="cal-edit-input" id="el-stockage-${lot.id}">
+              <option value="" ${!lot.stockage?'selected':''}>—</option>
+              <option value="ideal" ${lot.stockage==='ideal'?'selected':''}>❄️ Idéal</option>
+              <option value="bon" ${lot.stockage==='bon'?'selected':''}>✅ Bon</option>
+              <option value="moyen" ${lot.stockage==='moyen'?'selected':''}>⚠️ Moyen</option>
+              <option value="mauvais" ${lot.stockage==='mauvais'?'selected':''}>⛔ Défavorable</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="cal-save-btn" onclick="gsSaveLotEdit('${lot.id}')">💾 Enregistrer</button>
+          <button class="cal-cancel-btn" onclick="gsHideEditLot('${lot.id}')">Annuler</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function gsRenderSemis() {
+  const el = document.getElementById('gs-liste-semis');
+  if (!el) return;
+  const lots = gsLoadLots();
+  const semis = gsLoadSemis();
+  if (!semis.length) { el.innerHTML = '<div class="empty">Aucun semis enregistré.</div>'; return; }
+
+  const sorted = [...semis].sort((a,b) => new Date(b.date) - new Date(a.date));
+  el.innerHTML = sorted.map(s => {
+    const lot = lots.find(l => l.id === s.lotId);
+    const taux = s.nbGraines > 0 ? Math.round(s.nbLevees / s.nbGraines * 100) : null;
+    const tauxColor = taux===null?'var(--text-muted)':taux>=70?'var(--green)':taux>=50?'var(--amber)':'var(--red)';
+    const methodeIcons = { godets:'🪴', serre:'🏠', 'pleine-terre':'🌳', plateaux:'📦', papier:'🧻' };
+    return `<div class="gs-semis-row">
+      <div class="gs-semis-taux" style="color:${tauxColor}">${taux!==null?taux+'%':'—'}</div>
+      <div class="gs-semis-info">
+        <div class="gs-semis-title">${lot ? lot.espece + (lot.variete?' — '+lot.variete:'') : 'Lot supprimé'}</div>
+        <div class="gs-semis-meta">
+          ${new Date(s.date).toLocaleDateString('fr-FR')} · 
+          ${methodeIcons[s.methode]||''} ${s.methode||'—'} · 
+          ${s.nbGraines} semées → ${s.nbLevees} levées
+          ${s.delai ? ` · ${s.delai}j de germination` : ''}
+          ${s.temp ? ` · ${s.temp}°C` : ''}
+          ${s.obs ? ` · <em>${s.obs}</em>` : ''}
+        </div>
+      </div>
+      <button class="gs-btn gs-btn-danger" onclick="gsDeleteSemis('${s.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function gsRenderAnalyse() {
+  gsRenderAnalyseEspeces();
+  gsRenderFournisseurs();
+  gsRenderScores();
+  gsPopulateLotSelects();
+}
+
+function gsRenderAnalyseEspeces() {
+  const el = document.getElementById('gs-analyse-especes');
+  if (!el) return;
+  const lots = gsLoadLots();
+  const semis = gsLoadSemis();
+  const especeMap = {};
+  lots.forEach(l => {
+    const sl = semis.filter(s => s.lotId === l.id);
+    const taux = gsTauxMoyen(sl);
+    const k = l.espece || 'Inconnue';
+    if (!especeMap[k]) especeMap[k] = { tauxList:[], nbSemis:0, nbLots:0 };
+    if (taux !== null) especeMap[k].tauxList.push(taux);
+    especeMap[k].nbSemis += sl.length;
+    especeMap[k].nbLots++;
+  });
+  const especes = Object.entries(especeMap).sort((a,b) => {
+    const ta = a[1].tauxList.length ? a[1].tauxList.reduce((x,y)=>x+y)/a[1].tauxList.length : 0;
+    const tb = b[1].tauxList.length ? b[1].tauxList.reduce((x,y)=>x+y)/b[1].tauxList.length : 0;
+    return tb - ta;
+  });
+  if (!especes.length) { el.innerHTML = '<div class="empty">Aucune donnée.</div>'; return; }
+  el.innerHTML = especes.map(([nom, d]) => {
+    const moy = d.tauxList.length ? Math.round(d.tauxList.reduce((a,b)=>a+b)/d.tauxList.length) : null;
+    const col = moy===null?'var(--text-muted)':moy>=70?'var(--green)':moy>=50?'var(--amber)':'var(--red)';
+    return `<div class="gs-espece-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div>
+          <div class="gs-espece-title">🌱 ${nom}</div>
+          <div style="font-size:.65rem;color:var(--text-muted)">${d.nbLots} lot${d.nbLots>1?'s':''} · ${d.nbSemis} semis</div>
+        </div>
+        <div class="gs-espece-taux" style="color:${col}">${moy!==null?moy+'%':'—'}</div>
+      </div>
+      <div class="gs-taux-bar"><div class="gs-taux-fill" style="width:${moy||0}%;background:${col}"></div></div>
+      <div style="font-size:.62rem;color:var(--text-muted);margin-top:4px">
+        ${d.tauxList.length ? `Min: ${Math.min(...d.tauxList)}% / Max: ${Math.max(...d.tauxList)}%` : 'Aucun semis avec résultat'}
+        ${d.tauxList.length === 0 ? ' <em>(données insuffisantes)</em>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function gsRenderFournisseurs() {
+  const el = document.getElementById('gs-analyse-fournisseurs');
+  if (!el) return;
+  const lots = gsLoadLots();
+  const semis = gsLoadSemis();
+  const fMap = {};
+  lots.forEach(l => {
+    const k = l.fournisseur || 'Inconnu';
+    const sl = semis.filter(s => s.lotId === l.id);
+    const taux = gsTauxMoyen(sl);
+    if (!fMap[k]) fMap[k] = { tauxList:[], nbLots:0 };
+    if (taux !== null) fMap[k].tauxList.push(taux);
+    fMap[k].nbLots++;
+  });
+  const fourn = Object.entries(fMap).sort((a,b) => {
+    const ta = a[1].tauxList.length ? a[1].tauxList.reduce((x,y)=>x+y)/a[1].tauxList.length : 0;
+    const tb = b[1].tauxList.length ? b[1].tauxList.reduce((x,y)=>x+y)/b[1].tauxList.length : 0;
+    return tb - ta;
+  });
+  if (!fourn.length) { el.innerHTML = '<div class="empty">Aucun fournisseur.</div>'; return; }
+  el.innerHTML = fourn.map(([nom,d],i) => {
+    const moy = d.tauxList.length ? Math.round(d.tauxList.reduce((a,b)=>a+b)/d.tauxList.length) : null;
+    const rankIcons = ['🥇','🥈','🥉'];
+    return `<div class="gs-rec-card">
+      <div class="gs-rec-icon">${rankIcons[i]||'▪️'}</div>
+      <div class="gs-rec-body">
+        <div class="gs-rec-title">${nom}</div>
+        <div class="gs-rec-sub">${d.nbLots} lot${d.nbLots>1?'s':''} · Taux moy: ${moy!==null?moy+'%':'non mesuré'}</div>
+      </div>
+      ${moy!==null?`<div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:${moy>=70?'var(--green)':moy>=50?'var(--amber)':'var(--red)'}">${moy}%</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function gsRenderScores() {
+  const el = document.getElementById('gs-scores-lots');
+  if (!el) return;
+  const lots = gsLoadLots();
+  const semis = gsLoadSemis();
+  if (!lots.length) { el.innerHTML = '<div class="empty">Aucun lot.</div>'; return; }
+  const scored = lots.map(l => {
+    const sl = semis.filter(s => s.lotId === l.id);
+    const r = gsScore(l, sl);
+    return { lot: l, ...r };
+  }).sort((a,b) => b.score - a.score);
+
+  el.innerHTML = scored.map(({ lot, score, confidence }) => {
+    const rec = gsRecommandation(score, null, null);
+    const col = score>=80?'var(--green)':score>=60?'var(--accent)':score>=40?'var(--amber)':'var(--red)';
+    return `<div class="gs-rec-card">
+      <div class="gs-rec-icon">${rec.icon}</div>
+      <div class="gs-rec-body">
+        <div class="gs-rec-title">${lot.espece}${lot.variete?' — '+lot.variete:''}</div>
+        <div class="gs-rec-sub">${lot.fournisseur||'?'} · ${confidence.label}</div>
+        <div style="font-size:.68rem;color:var(--text-dim);margin-top:2px">${rec.label}</div>
+      </div>
+      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:300;color:${col};text-align:right;flex-shrink:0">
+        ${score}<span style="font-size:.65rem;color:var(--text-muted)">/100</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function gsRenderViabilite() {
+  const lotId = (document.getElementById('gs-viab-select')||{}).value;
+  const canvas = document.getElementById('gs-chart-viabilite');
+  if (!canvas) return;
+  if (window._gsViabChart) { window._gsViabChart.destroy(); window._gsViabChart = null; }
+  if (!lotId) return;
+  const semis = gsLoadSemis().filter(s => s.lotId === lotId && s.nbGraines > 0);
+  if (!semis.length) {
+    canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+    return;
+  }
+  const sorted = [...semis].sort((a,b) => new Date(a.date)-new Date(b.date));
+  const labels = sorted.map(s => new Date(s.date).toLocaleDateString('fr-FR',{month:'short',year:'2-digit'}));
+  const data = sorted.map(s => Math.round(s.nbLevees/s.nbGraines*100));
+  window._gsViabChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Taux germination (%)',
+        data,
+        borderColor: '#4ade80',
+        backgroundColor: 'rgba(74,222,128,.1)',
+        borderWidth: 2,
+        pointBackgroundColor: '#4ade80',
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color:'#8fb898', font:{size:10} }, grid:{ color:'rgba(42,64,48,.4)' } },
+        y: { min:0, max:100, ticks:{ color:'#8fb898', font:{size:10} }, grid:{ color:'rgba(42,64,48,.4)' } }
+      }
+    }
+  });
+}
+
+function gsPredUpdate() {
+  const lotId = (document.getElementById('gs-pred-lot')||{}).value;
+  const plants = parseInt((document.getElementById('gs-pred-plants')||{}).value) || 0;
+  const tol = parseInt((document.getElementById('gs-pred-tolerance')||{}).value) || 0;
+  const el = document.getElementById('gs-pred-result');
+  if (!el) return;
+  if (!lotId || !plants) { el.innerHTML = ''; return; }
+  const lot = gsLoadLots().find(l => l.id === lotId);
+  if (!lot) return;
+  const semis = gsLoadSemis().filter(s => s.lotId === lotId);
+  const pred = gsPredire(lot, semis, plants, tol);
+  if (!pred) { el.innerHTML = '<div class="empty">Impossible de calculer (taux nul).</div>'; return; }
+  const probPct = Math.round(pred.probSucces * 100);
+  const probCol = probPct>=80?'var(--green)':probPct>=60?'var(--amber)':'var(--red)';
+  el.innerHTML = `<div class="gs-pred-box">
+    <div class="gs-pred-main">
+      Semer <strong>${pred.grainesRecom} graines</strong> pour obtenir ${plants} plants
+    </div>
+    <div class="gs-pred-detail">
+      · Taux estimé : <b>${Math.round(pred.tauxUtilise*100)}%</b> (${pred.source})<br>
+      · Probabilité de réussite : <b style="color:${probCol}">${probPct}%</b><br>
+      · En sécurité maximale : <b>${pred.grainesSecu} graines</b><br>
+      · Stock restant : ${lot.qteReste!=null?lot.qteReste+' graines disponibles':'non renseigné'}
+    </div>
+    <div style="margin-top:8px">
+      <span class="gs-confidence gs-conf-${pred.conf.color}">${pred.conf.label}</span>
+    </div>
+  </div>`;
+}
+
+function gsRenderPredRecommandations() {
+  const el = document.getElementById('gs-pred-recommandations');
+  const elPrio = document.getElementById('gs-pred-priorites');
+  if (!el || !elPrio) return;
+  const lots = gsLoadLots();
+  const semis = gsLoadSemis();
+  const now = Date.now();
+
+  const scored = lots.map(l => {
+    const sl = semis.filter(s => s.lotId === l.id);
+    const s = gsScore(l, sl);
+    const daysLeft = l.datePeremption ? (new Date(l.datePeremption)-now)/(24*3600*1000) : null;
+    return { lot:l, ...s, daysLeft };
+  }).sort((a,b) => a.score - b.score);
+
+  const priorites = scored.filter(s => s.score < 60 || (s.daysLeft !== null && s.daysLeft < 90));
+  elPrio.innerHTML = priorites.length ? priorites.map(({ lot, score, daysLeft }) => {
+    const reasons = [];
+    if (daysLeft !== null && daysLeft < 90) reasons.push(`péremption dans ${Math.max(0,Math.round(daysLeft))}j`);
+    if (score < 60) reasons.push(`score ${score}/100`);
+    return `<div class="gs-rec-card">
+      <div class="gs-rec-icon">⚡</div>
+      <div class="gs-rec-body">
+        <div class="gs-rec-title">${lot.espece}${lot.variete?' — '+lot.variete:''}</div>
+        <div class="gs-rec-sub">${reasons.join(' · ')}</div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty" style="padding:16px">✅ Aucun lot en urgence.</div>';
+
+  el.innerHTML = scored.map(({ lot, score, confidence }) => {
+    const rec = gsRecommandation(score, null, null);
+    return `<div class="gs-rec-card">
+      <div class="gs-rec-icon">${rec.icon}</div>
+      <div class="gs-rec-body">
+        <div class="gs-rec-title">${lot.espece}${lot.variete?' — '+lot.variete:''}</div>
+        <div class="gs-rec-sub">${rec.label} · Score ${score}/100 · ${confidence.label}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty">Aucun lot.</div>';
+}
+
+// ── ACTIONS ──────────────────────────────────────────────────
+
+function gsAddLot() {
+  const espece = (document.getElementById('gs-inp-espece')||{}).value?.trim();
+  if (!espece) { gsToast('Veuillez renseigner l\'espèce.'); return; }
+  const lots = gsLoadLots();
+  const lot = {
+    id: gsId(),
+    espece,
+    variete: (document.getElementById('gs-inp-variete')||{}).value?.trim() || '',
+    fournisseur: (document.getElementById('gs-inp-fournisseur')||{}).value?.trim() || '',
+    dateAchat: (document.getElementById('gs-inp-date-achat')||{}).value || '',
+    datePeremption: (document.getElementById('gs-inp-date-peremption')||{}).value || '',
+    qteInit: parseInt((document.getElementById('gs-inp-qte-init')||{}).value) || null,
+    qteReste: parseInt((document.getElementById('gs-inp-qte-reste')||{}).value) ?? null,
+    tauxFab: parseInt((document.getElementById('gs-inp-taux-fab')||{}).value) || null,
+    stockage: (document.getElementById('gs-inp-stockage')||{}).value || '',
+    origine: (document.getElementById('gs-inp-origine')||{}).value || 'commercial',
+    notes: (document.getElementById('gs-inp-notes-lot')||{}).value?.trim() || '',
+    createdAt: new Date().toISOString()
+  };
+  lots.push(lot);
+  gsSaveLots(lots);
+  // Reset
+  ['gs-inp-espece','gs-inp-variete','gs-inp-fournisseur','gs-inp-date-achat','gs-inp-date-peremption','gs-inp-qte-init','gs-inp-qte-reste','gs-inp-taux-fab','gs-inp-notes-lot'].forEach(id => { const e = document.getElementById(id); if(e) e.value=''; });
+  gsInit();
+  gsToast('Lot ajouté ✅');
+}
+
+function gsAddSemis() {
+  const lotId = (document.getElementById('gs-semis-lot')||{}).value;
+  const nbG = parseInt((document.getElementById('gs-semis-nb-graines')||{}).value);
+  const nbL = parseInt((document.getElementById('gs-semis-nb-levees')||{}).value);
+  if (!lotId) { gsToast('Sélectionner un lot.'); return; }
+  if (!nbG || nbG <= 0) { gsToast('Nombre de graines requis.'); return; }
+  if (nbL == null || isNaN(nbL)) { gsToast('Nombre de levées requis.'); return; }
+  if (nbL > nbG) { gsToast('Les levées ne peuvent pas dépasser les graines semées.'); return; }
+
+  const semis = gsLoadSemis();
+  const s = {
+    id: gsId(),
+    lotId,
+    date: (document.getElementById('gs-semis-date')||{}).value || new Date().toISOString().slice(0,10),
+    nbGraines: nbG,
+    nbLevees: nbL,
+    delai: parseInt((document.getElementById('gs-semis-delai')||{}).value) || null,
+    methode: (document.getElementById('gs-semis-methode')||{}).value || '',
+    temp: parseInt((document.getElementById('gs-semis-temp')||{}).value) || null,
+    homogeneite: (document.getElementById('gs-semis-homogeneite')||{}).value || '',
+    obs: (document.getElementById('gs-semis-obs')||{}).value?.trim() || '',
+    createdAt: new Date().toISOString()
+  };
+  semis.push(s);
+  gsSaveSemis(semis);
+
+  // Déduire du stock
+  const lots = gsLoadLots();
+  const lot = lots.find(l => l.id === lotId);
+  if (lot && lot.qteReste != null) {
+    lot.qteReste = Math.max(0, lot.qteReste - nbG);
+    gsSaveLots(lots);
+  }
+
+  ['gs-semis-nb-graines','gs-semis-nb-levees','gs-semis-delai','gs-semis-temp','gs-semis-obs'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  gsInit();
+  gsToast('Semis enregistré ✅');
+}
+
+function gsDeleteLot(id) {
+  if (!confirm('Supprimer ce lot et tous ses semis associés ?')) return;
+  gsSaveLots(gsLoadLots().filter(l => l.id !== id));
+  gsSaveSemis(gsLoadSemis().filter(s => s.lotId !== id));
+  gsInit();
+  gsToast('Lot supprimé');
+}
+
+function gsDeleteSemis(id) {
+  if (!confirm('Supprimer ce semis ?')) return;
+  gsSaveSemis(gsLoadSemis().filter(s => s.id !== id));
+  gsInit();
+  gsToast('Semis supprimé');
+}
+
+function gsShowEditLot(id) {
+  const panel = document.getElementById('edit-lot-'+id);
+  if (panel) panel.classList.toggle('open');
+}
+
+function gsHideEditLot(id) {
+  const panel = document.getElementById('edit-lot-'+id);
+  if (panel) panel.classList.remove('open');
+}
+
+function gsSaveLotEdit(id) {
+  const lots = gsLoadLots();
+  const lot = lots.find(l => l.id === id);
+  if (!lot) return;
+  lot.espece = document.getElementById('el-espece-'+id)?.value?.trim() || lot.espece;
+  lot.variete = document.getElementById('el-variete-'+id)?.value?.trim() || '';
+  lot.fournisseur = document.getElementById('el-fournisseur-'+id)?.value?.trim() || '';
+  const qr = document.getElementById('el-qtereste-'+id)?.value;
+  lot.qteReste = qr !== '' ? parseInt(qr) : null;
+  lot.datePeremption = document.getElementById('el-peremption-'+id)?.value || '';
+  lot.stockage = document.getElementById('el-stockage-'+id)?.value || '';
+  gsSaveLots(lots);
+  gsInit();
+  gsToast('Lot mis à jour ✅');
+}
+
+function gsQuickSemis(lotId) {
+  // Passer à l'onglet Semis et pré-sélectionner le lot
+  gsShowTab('semis', document.querySelector('.tnav:nth-child(2)'));
+  setTimeout(() => {
+    const sel = document.getElementById('gs-semis-lot');
+    if (sel) { sel.value = lotId; }
+  }, 100);
+}
+
+function gsShowTab(name, btn) {
+  document.querySelectorAll('#plan-tab-graines .tnav').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const map = { lots:0, semis:1, analyse:2, prediction:3 };
+    const btns = document.querySelectorAll('#plan-tab-graines .tnav');
+    if (btns[map[name]]) btns[map[name]].classList.add('active');
+  }
+  document.querySelectorAll('#plan-tab-graines .tab-section').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('gs-tab-'+name);
+  if (target) target.classList.add('active');
+  if (name === 'analyse') { gsRenderAnalyse(); gsRenderViabilite(); }
+  if (name === 'prediction') gsRenderPredRecommandations();
+}
+
+function gsToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 // ── DONNÉES ────────────────────────────────────────────────────
@@ -1526,8 +2560,8 @@ function populateFamFilter() {
 }
 
 function showAnalyse(name, btn) {
-  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tnav').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#tab-recoltes .tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('#tab-recoltes .tnav').forEach(t=>t.classList.remove('active'));
   document.getElementById('analyse-'+name).classList.add('active');
   btn.classList.add('active');
   if (name==='famille') renderChartFamille();
@@ -2109,5 +3143,24 @@ function calInit() {
 }
 // ══════════════════════════════════════════════════════════════
 </script>
+
+<script>
+// ── INITIALISATION DES LOTS DE GRAINES (import unique) ─────────
+(function() {
+  var IMPORT_KEY = 'gs_lots_imported_v1';
+  if (localStorage.getItem(IMPORT_KEY)) return; // déjà importé
+  var existing = [];
+  try { existing = JSON.parse(localStorage.getItem('gs_lots') || '[]'); } catch(e) {}
+  var imported = [{"id": "seed0001", "espece": "Courgette", "variete": "Zuboda", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0002", "espece": "Courgette", "variete": "Caravaggio F1", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0003", "espece": "Courgette", "variete": "Ronde de Nice", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0004", "espece": "Concombre", "variete": "Long de Chine", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0005", "espece": "Concombre", "variete": "Lemon", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0006", "espece": "Concombre", "variete": "Marketmore", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0007", "espece": "Concombre", "variete": "Diva", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0008", "espece": "Concombre", "variete": "Le Généreux", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0009", "espece": "Cornichon", "variete": "De Bourbonne", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0010", "espece": "Cornichon", "variete": "Diamant F1", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0011", "espece": "Cyclanthère", "variete": "", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0012", "espece": "Kiwano", "variete": "", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0013", "espece": "Melon", "variete": "Artémis F1", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0014", "espece": "Melon", "variete": "Gallia", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0015", "espece": "Melon", "variete": "Léopard Blanc", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0016", "espece": "Pastèque", "variete": "Mini Love F1", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0017", "espece": "Pastèque", "variete": "Sugar Baby", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0018", "espece": "Potimarron", "variete": "Bright Summer F1", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0019", "espece": "Potimarron", "variete": "Classic", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0020", "espece": "Potimarron", "variete": "Vert Hokkaido", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0021", "espece": "Citrouille", "variete": "Récup Halloween", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "maison", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0022", "espece": "Citrouille", "variete": "Magic Lantern", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0023", "espece": "Courge", "variete": "Delicata", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0024", "espece": "Butternut", "variete": "Récup", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "maison", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0025", "espece": "Chayotte", "variete": "", "famille": "Cucurbitacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0026", "espece": "Aubergine", "variete": "Slim Jim", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0027", "espece": "Aubergine", "variete": "Barbentane", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0028", "espece": "Poivron", "variete": "Marseillais Orange", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0029", "espece": "Poivron", "variete": "Ferenc Tender", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0030", "espece": "Poivron", "variete": "Padron", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0031", "espece": "Piment", "variete": "Georgia Flame", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0032", "espece": "Tomatillo", "variete": "Cisineros", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0033", "espece": "Tomate cerise", "variete": "Raisin Vert", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0034", "espece": "Tomate cerise", "variete": "Poire Jaune", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0035", "espece": "Tomate cerise", "variete": "Poire Rouge", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0036", "espece": "Tomate cerise", "variete": "Sakura", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0037", "espece": "Tomate cerise", "variete": "Sweet Baby", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0038", "espece": "Tomate cerise", "variete": "Mélange Kokopelli", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0039", "espece": "Tomate cocktail", "variete": "Pearly", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0040", "espece": "Tomate cocktail", "variete": "Poivron", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0041", "espece": "Tomate grosse", "variete": "Green Zebra", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0042", "espece": "Tomate grosse", "variete": "Chocolate Strip", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0043", "espece": "Tomate grosse", "variete": "Cœur de Bœuf", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0044", "espece": "Tomate grosse", "variete": "Joie de la Table", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0045", "espece": "Tomate grosse", "variete": "Rose de Berne", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0046", "espece": "Tomate grosse", "variete": "Ananas", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0047", "espece": "Tomate grosse", "variete": "Noire de Crimée", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0048", "espece": "Tomate grosse", "variete": "Andine Cornue", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0049", "espece": "Tomate grosse", "variete": "Black Zebra", "famille": "Solanacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0050", "espece": "Artichaut", "variete": "Impérial Star", "famille": "Légumes-feuilles", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0051", "espece": "Épinard", "variete": "Géant d'Hiver", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0052", "espece": "Épinard", "variete": "Monterey F1", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0053", "espece": "Oseille", "variete": "Belleville", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0054", "espece": "Mâche", "variete": "", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0055", "espece": "Laitue", "variete": "Vert d'Étampes", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0056", "espece": "Laitue", "variete": "Coquille de Louviers", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0057", "espece": "Roquette", "variete": "Sauvage", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0058", "espece": "Scarole", "variete": "Grosse Bouclée", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0059", "espece": "Laitue pommée", "variete": "D'Hiver", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0060", "espece": "Laitue pommée", "variete": "Analotta", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0061", "espece": "Laitue pommée", "variete": "Mouchetée de Salasc", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0062", "espece": "Mesclun", "variete": "Crétois", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0063", "espece": "Mizuna", "variete": "Moutarde Japonaise", "famille": "Salades", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0064", "espece": "Haricot", "variete": "Soliman", "famille": "Légumineuses", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0065", "espece": "Haricot", "variete": "Skipper", "famille": "Légumineuses", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0066", "espece": "Haricot", "variete": "Montebello", "famille": "Légumineuses", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0067", "espece": "Haricot mange-tout", "variete": "Géant à Fleurs Violettes", "famille": "Légumineuses", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0068", "espece": "Petit pois", "variete": "Express à Longue Gousse", "famille": "Légumineuses", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0069", "espece": "Fève", "variete": "Aquadulce", "famille": "Légumineuses", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0070", "espece": "Maïs", "variete": "Sweet Plainted Hills", "famille": "Légumineuses", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0071", "espece": "Chou-fleur", "variete": "Merveille de Toute Saison", "famille": "Choux", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0072", "espece": "Chou-fleur", "variete": "Tardif d'Angers", "famille": "Choux", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0073", "espece": "Chou de Bruxelles", "variete": "De Rosny", "famille": "Choux", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0074", "espece": "Chou chinois", "variete": "Récup", "famille": "Choux", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "maison", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0075", "espece": "Chou cabus", "variete": "De Brunswick", "famille": "Choux", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0076", "espece": "Kale", "variete": "Nero di Toscana", "famille": "Choux", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0077", "espece": "Blette", "variete": "Rubis Chard", "famille": "Choux", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0078", "espece": "Brocoli", "variete": "Calabrese", "famille": "Choux", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0079", "espece": "Rave", "variete": "Superschmelz", "famille": "Choux", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0080", "espece": "Betterave", "variete": "Ronde de Chioggia", "famille": "Racines", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0081", "espece": "Betterave", "variete": "Détroit Améliorée 2", "famille": "Racines", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0082", "espece": "Carotte", "variete": "Mélange", "famille": "Racines", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0083", "espece": "Carotte", "variete": "Rouge Sang", "famille": "Racines", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0084", "espece": "Carotte", "variete": "Rothild", "famille": "Racines", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0085", "espece": "Carotte", "variete": "Colmar à Cœur Rouge", "famille": "Racines", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0086", "espece": "Navet", "variete": "Jaune Boule d'Or", "famille": "Racines", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0087", "espece": "Radis noir", "variete": "Rond", "famille": "Racines", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0088", "espece": "Radis rouge", "variete": "No Name", "famille": "Racines", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0089", "espece": "Radis rose", "variete": "18 Jours", "famille": "Racines", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0090", "espece": "Poireau", "variete": "Géant d'Hiver", "famille": "Liliacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0091", "espece": "Oignon", "variete": "Tonda Musona", "famille": "Liliacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0092", "espece": "Oignon", "variete": "Jaune Stuttgart", "famille": "Liliacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0093", "espece": "Ail des ours", "variete": "", "famille": "Liliacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0094", "espece": "Ail", "variete": "Blanc ou Violet", "famille": "Liliacées", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0095", "espece": "Pomme de terre", "variete": "", "famille": "Tubercules", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0096", "espece": "Patate douce", "variete": "", "famille": "Tubercules", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0097", "espece": "Persil", "variete": "Récup", "famille": "Aromatiques", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "maison", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0098", "espece": "Persil", "variete": "Géant d'Italie", "famille": "Aromatiques", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0099", "espece": "Basilic", "variete": "Prospera F1", "famille": "Aromatiques", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0100", "espece": "Origan", "variete": "Classic", "famille": "Aromatiques", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0101", "espece": "Aneth", "variete": "Greensleeves", "famille": "Aromatiques", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0102", "espece": "Tulsi", "variete": "Tempérée", "famille": "Aromatiques", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0103", "espece": "Cresson de Para", "variete": "Lemon Drops", "famille": "Aromatiques", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0104", "espece": "Tournesol", "variete": "Géant", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0105", "espece": "Zinnia", "variete": "Forecast", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0106", "espece": "Zinnia", "variete": "Graffiti", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0107", "espece": "Zinnia", "variete": "Chaton", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0108", "espece": "Rose trémière", "variete": "Blanche", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0109", "espece": "Rose trémière", "variete": "Saumon Pâle", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0110", "espece": "Œillet d'Inde", "variete": "Récup Double Nain", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "maison", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0111", "espece": "Bourrache", "variete": "Blanche", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0112", "espece": "Aubépine", "variete": "Récup", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "maison", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0113", "espece": "Allium décoratif", "variete": "", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}, {"id": "seed0114", "espece": "Nigelle de Damas", "variete": "", "famille": "Fleurs", "fournisseur": "", "dateAchat": "", "datePeremption": "", "qteInit": null, "qteReste": null, "tauxFab": null, "stockage": "", "origine": "commercial", "notes": "", "createdAt": "2025-01-01T00:00:00.000Z"}];
+  // Fusionner sans doublons (par id)
+  var existingIds = new Set(existing.map(function(l){ return l.id; }));
+  var toAdd = imported.filter(function(l){ return !existingIds.has(l.id); });
+  var merged = existing.concat(toAdd);
+  localStorage.setItem('gs_lots', JSON.stringify(merged));
+  localStorage.setItem(IMPORT_KEY, '1');
+  console.log('[Graines] ' + toAdd.length + ' lots importés.');
+})();
+</script>
+
 </body>
 </html>
