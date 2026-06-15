@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sélection Variétale — Jardin Vivant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="/js/selection-rules.js"></script>
+<script src="/js/selection-scoring.js"></script>
+<script src="/js/selection-recommandations.js"></script>
+<script src="/js/selection-tendances.js"></script>
+<script src="/js/selection-comparateur.js"></script>
+<style>
+:root {
+  --bg:#0a120b;--bg2:#0f1c10;--surface:#1a2e1c;--border:#2a4030;--border2:#3a5040;
+  --text:#e8f5ea;--text-dim:#8fb898;--text-muted:#4a6b52;
+  --green:#4ade80;--green-light:rgba(74,222,128,0.1);--green-mid:#22c55e;
+  --amber:#fbbf24;--amber-light:rgba(251,191,36,0.1);
+  --red:#f87171;--red-light:rgba(248,113,113,0.1);--blue:#60a5fa;--blue-light:rgba(96,165,250,0.1);
+  --accent:#a3e635;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Karla',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(74,222,128,.05) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(163,230,53,.04) 0%,transparent 50%);pointer-events:none;z-index:0}
+
+header{background:#0f1c10;border-bottom:1px solid var(--border);padding:20px 20px 16px;position:relative;z-index:10}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:8px;flex-wrap:wrap}
+.back-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:6px 12px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer;letter-spacing:.05em;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.header-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:400;margin-top:6px;color:var(--accent)}
+.header-sub{font-size:.72rem;opacity:.7;letter-spacing:.05em;margin-top:2px}
+.header-stats{display:flex;gap:18px;margin-top:14px;flex-wrap:wrap}
+.hstat{text-align:center}
+.hstat-val{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;display:block;line-height:1}
+.hstat-lbl{font-size:.6rem;opacity:.7;letter-spacing:.08em;text-transform:uppercase}
+
+main{max-width:1000px;margin:0 auto;padding:20px 16px 50px;position:relative;z-index:1}
+
+.stitle{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:400;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border)}
+.section{margin-bottom:24px}
+.empty{text-align:center;padding:24px;color:var(--text-muted);font-size:.8rem}
+
+.faits-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.fait-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:.78rem;color:var(--text-dim);line-height:1.5}
+
+.filters-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filters-row select{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-family:'Karla',sans-serif;font-size:.8rem;color:var(--text);outline:none;-webkit-appearance:none}
+
+.tab-nav{display:flex;gap:4px;margin-bottom:16px;background:var(--bg2);padding:3px;border-radius:8px;border:1px solid var(--border)}
+.tnav{flex:1;padding:8px 6px;border:none;background:transparent;color:var(--text-muted);font-family:'Karla',sans-serif;font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s;font-weight:500}
+.tnav.active{background:var(--bg);color:var(--accent);border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tab-section{display:none}.tab-section.active{display:block}
+
+.weights-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.weights-panel summary{cursor:pointer;font-size:.8rem;color:var(--text-dim);letter-spacing:.03em;outline:none}
+.weights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.weight-field{display:flex;flex-direction:column;gap:4px}
+.weight-field label{font-size:.68rem;color:var(--text-muted);display:flex;justify-content:space-between}
+.weight-field label span{color:var(--accent);font-weight:600}
+.weight-field input[type=range]{accent-color:var(--accent)}
+.reset-btn{background:var(--bg2);border:1px solid var(--border2);color:var(--text-muted);padding:7px 14px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer;margin-top:14px}
+.reset-btn:hover{color:var(--accent);border-color:var(--accent)}
+
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.78rem;min-width:680px}
+thead tr{background:var(--bg2);border-bottom:1px solid var(--border)}
+th{padding:9px 10px;text-align:left;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);font-weight:500;cursor:pointer;white-space:nowrap;user-select:none}
+th:hover{color:var(--green)}
+th.active{color:var(--accent)}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--green-light)}
+td{padding:9px 10px;color:var(--text-dim);white-space:nowrap}
+td:first-child{color:var(--text);font-weight:500}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:14px;font-size:.65rem;font-weight:600;border:1px solid;white-space:nowrap}
+
+.cmp-checklist{display:flex;flex-direction:column;gap:6px}
+.cmp-check{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--text-dim);cursor:pointer;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px}
+.cmp-check input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
+.add-btn{background:var(--green-mid);color:#0a120b;border:none;border-radius:8px;padding:10px 18px;font-family:'Karla',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;letter-spacing:.03em}
+.add-btn:hover{background:var(--green)}
+.chart-wrap{position:relative}
+
+.selection-phrases{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.phrase-item{font-size:.78rem;color:var(--text-dim);line-height:1.5;padding-left:14px;border-left:2px solid var(--border2)}
+
+.top-list{display:flex;flex-direction:column;gap:6px}
+.top-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s}
+.top-item:hover{border-color:var(--green-mid)}
+.top-name{font-weight:500;font-size:.85rem}
+.top-sub{font-size:.65rem;color:var(--text-muted)}
+.top-val{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;text-align:right;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <a href="/recoltes.html" class="back-btn">← Récoltes</a>
+    <a href="/variete.html" class="back-btn" style="background:rgba(163,230,53,.12);border-color:rgba(163,230,53,.3);color:var(--accent)">🌱 Variétés</a>
+  </div>
+  <div class="header-title">🧬 Sélection Variétale</div>
+  <div class="header-sub">Synthèse · Comparateur · Tendances</div>
+  <div class="header-stats" id="headerStats"></div>
+</header>
+
+<main>
+  <div class="section" id="faitsMarquants"></div>
+
+  <div class="tab-nav">
+    <button class="tnav active" onclick="showTab('synthese',this)">📊 Synthèse</button>
+    <button class="tnav" onclick="showTab('comparateur',this)">⚖️ Comparateur</button>
+    <button class="tnav" onclick="showTab('tendances',this)">📈 Tendances</button>
+  </div>
+
+  <div class="tab-section active" id="tab-synthese">
+    <div id="weightsPanelContainer"></div>
+    <div class="filters-row">
+      <select id="filtreLieu" onchange="onFiltreChange()">
+        <option value="">Tous les lieux</option>
+        <option value="serre">🏠 Serre</option>
+        <option value="bacs">🪴 Bacs</option>
+        <option value="jardin">🌳 Jardin</option>
+      </select>
+      <select id="filtreEspece" onchange="onFiltreChange()">
+        <option value="">Toutes les espèces</option>
+      </select>
+    </div>
+    <div id="syntheseTableContainer"></div>
+  </div>
+
+  <div class="tab-section" id="tab-comparateur"></div>
+
+  <div class="tab-section" id="tab-tendances"></div>
+</main>
+
+<script>
+// ── STOCKAGE ─────────────────────────────────────────────────
+const STORAGE_KEY_REC = 'jardin_recoltes_v2';
+const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
+const STORAGE_KEY_OBS = 'jardin_observations_v1';
+const STORAGE_KEY_CFG = 'jardin_scoring_config_v1';
+
+function loadJSON(key, fallback) {
+  try { const v = JSON.parse(localStorage.getItem(key) || 'null'); return v !== null ? v : fallback; }
+  catch(e) { return fallback; }
+}
+
+let weights = loadWeights();
+function loadWeights() {
+  const saved = loadJSON(STORAGE_KEY_CFG, null);
+  return (saved && saved.weights)
+    ? Object.assign({}, SelectionRules.SCORING_WEIGHTS_DEFAULT, saved.weights)
+    : Object.assign({}, SelectionRules.SCORING_WEIGHTS_DEFAULT);
+}
+function saveWeights() {
+  try { localStorage.setItem(STORAGE_KEY_CFG, JSON.stringify({ weights })); } catch(e) {}
+}
+
+// ── HELPERS ──────────────────────────────────────────────────
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escJsAttr(s) { return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function fmtKg(g) { if (g === null || g === undefined) return '—'; return g >= 1000 ? (g/1000).toFixed(2)+' kg' : Math.round(g)+' g'; }
+
+const LIEU_ICONS = { serre:'🏠', bacs:'🪴', jardin:'🌳' };
+
+const RECO_COLORS = {
+  conserver:  { color:'var(--green)', bg:'rgba(74,222,128,.1)',  border:'rgba(74,222,128,.3)',  emoji:'✅' },
+  a_retester: { color:'var(--blue)',  bg:'rgba(96,165,250,.1)',  border:'rgba(96,165,250,.3)',  emoji:'🔍' },
+  remplacer:  { color:'var(--amber)', bg:'rgba(251,191,36,.1)',  border:'rgba(251,191,36,.3)',  emoji:'🔁' },
+  abandonner: { color:'var(--red)',   bg:'rgba(248,113,113,.1)', border:'rgba(248,113,113,.3)', emoji:'🗑️' },
+};
+const CONFIANCE_LABELS = { elevee:'Élevée', moyenne:'Moyenne', faible:'Faible' };
+const CONFIANCE_COLORS = { elevee:'var(--green)', moyenne:'var(--amber)', faible:'var(--text-muted)' };
+
+// ── CALCUL PRINCIPAL ─────────────────────────────────────────
+let allResults = [];
+
+function computeAll() {
+  const recoltes     = loadJSON(STORAGE_KEY_REC, []);
+  const calendrier   = loadJSON(STORAGE_KEY_CAL, []);
+  const observations = loadJSON(STORAGE_KEY_OBS, []);
+
+  const cycles = SelectionRules.buildCycles(recoltes, calendrier, observations);
+  const scored = SelectionScoring.scoreVarietes(cycles, { weights, parLieu:false });
+  const recos  = SelectionRecommandations.genererRecommandations(scored, {});
+
+  recos.forEach(r => { r.tendance = SelectionTendances.detecterTendance(r.cyclesRef); });
+  allResults = recos;
+}
+
+function valides() { return allResults.filter(r => r.scoreGlobal !== null); }
+function getEspeces() {
+  return [...new Set(valides().map(r => r.espece))].filter(Boolean).sort((a,b)=>a.localeCompare(b,'fr'));
+}
+
+// ── HEADER ───────────────────────────────────────────────────
+function renderHeaderStats() {
+  const v = valides();
+  const counts = { conserver:0, a_retester:0, remplacer:0, abandonner:0 };
+  v.forEach(r => { if (counts[r.recommandation] !== undefined) counts[r.recommandation]++; });
+  document.getElementById('headerStats').innerHTML = `
+    <div class="hstat"><span class="hstat-val">${v.length}</span><span class="hstat-lbl">variétés analysées</span></div>
+    <div class="hstat"><span class="hstat-val" style="color:var(--green)">${counts.conserver}</span><span class="hstat-lbl">conserver</span></div>
+    <div class="hstat"><span class="hstat-val" style="color:var(--blue)">${counts.a_retester}</span><span class="hstat-lbl">à retester</span></div>
+    <div class="hstat"><span class="hstat-val" style="color:var(--amber)">${counts.remplacer}</span><span class="hstat-lbl">remplacer</span></div>
+    <div class="hstat"><span class="hstat-val" style="color:var(--red)">${counts.abandonner}</span><span class="hstat-lbl">abandonner</span></div>`;
+}
+
+// ── FAITS MARQUANTS ──────────────────────────────────────────
+function renderFaitsMarquants() {
+  const v = valides();
+  if (!v.length) {
+    return '<div class="empty">Aucune récolte exploitable pour le moment. Renseignez le journal des récoltes pour voir apparaître les analyses.</div>';
+  }
+
+  const faits = [];
+
+  const top = [...v].sort((a,b)=>b.scoreGlobal-a.scoreGlobal)[0];
+  if (top) faits.push(`🏆 <strong>${esc(top.vegetal)}</strong> est la variété la mieux notée (${top.scoreGlobal}/100).`);
+
+  const aRevoir = v.filter(r => r.recommandation==='remplacer' || r.recommandation==='abandonner');
+  if (aRevoir.length) {
+    faits.push(`⚠️ ${aRevoir.length} variété${aRevoir.length>1?'s':''} recommandée${aRevoir.length>1?'s':''} pour remplacement ou abandon.`);
+  }
+
+  const progression = v.filter(r => r.tendance.type==='progression');
+  if (progression.length) {
+    const detail = progression.length===1 ? ` : <strong>${esc(progression[0].vegetal)}</strong>` : '';
+    faits.push(`📈 ${progression.length} variété${progression.length>1?'s':''} en progression sur plusieurs saisons${detail}.`);
+  }
+
+  const maladieVarietes = {};
+  v.forEach(r => (r.cyclesRef||[]).forEach(c => (c.maladies||[]).forEach(m => {
+    if (!maladieVarietes[m]) maladieVarietes[m] = new Set();
+    maladieVarietes[m].add(r.vegetal);
+  })));
+  const topMaladie = Object.entries(maladieVarietes).sort((a,b)=>b[1].size-a[1].size)[0];
+  if (topMaladie) {
+    const [nom, set] = topMaladie;
+    faits.push(`🍄 « ${esc(nom)} » est le problème sanitaire le plus répandu (${set.size} variété${set.size>1?'s':''} concernée${set.size>1?'s':''}).`);
+  }
+
+  return `<div class="faits-grid">${faits.slice(0,4).map(f=>`<div class="fait-card">${f}</div>`).join('')}</div>`;
+}
+
+// ── PONDÉRATIONS ─────────────────────────────────────────────
+function renderWeightsPanel() {
+  const cles = Object.keys(SelectionRules.SCORING_WEIGHTS_DEFAULT);
+  return `<details class="weights-panel">
+    <summary>⚙️ Pondérations du score (avancé)</summary>
+    <div class="weights-grid">
+      ${cles.map(cle => `
+        <div class="weight-field">
+          <label>${SelectionRules.CRITERES_LABELS[cle]||cle} <span id="wval-${cle}">${weights[cle]}</span></label>
+          <input type="range" min="0" max="30" step="1" value="${weights[cle]}"
+            oninput="document.getElementById('wval-${cle}').textContent=this.value"
+            onchange="updateWeight('${cle}', this.value)">
+        </div>`).join('')}
+    </div>
+    <button class="reset-btn" onclick="resetWeights()">↺ Réinitialiser les valeurs par défaut</button>
+  </details>`;
+}
+
+function updateWeight(cle, val) {
+  weights[cle] = parseInt(val, 10);
+  saveWeights();
+  computeAll();
+  renderHeaderStats();
+  document.getElementById('faitsMarquants').innerHTML = renderFaitsMarquants();
+  renderSyntheseTable();
+}
+
+function resetWeights() {
+  weights = Object.assign({}, SelectionRules.SCORING_WEIGHTS_DEFAULT);
+  saveWeights();
+  document.getElementById('weightsPanelContainer').innerHTML = renderWeightsPanel();
+  computeAll();
+  renderHeaderStats();
+  document.getElementById('faitsMarquants').innerHTML = renderFaitsMarquants();
+  renderSyntheseTable();
+}
+
+// ── TABLEAU DE SYNTHÈSE ──────────────────────────────────────
+let filterLieu = '';
+let filterEspece = '';
+let sortField = 'scoreGlobal';
+let sortAsc = false;
+
+function onFiltreChange() {
+  filterLieu   = document.getElementById('filtreLieu').value;
+  filterEspece = document.getElementById('filtreEspece').value;
+  renderSyntheseTable();
+}
+
+function populateEspeceFilter() {
+  const sel = document.getElementById('filtreEspece');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Toutes les espèces</option>' +
+    getEspeces().map(e=>`<option value="${esc(e)}">${esc(e)}</option>`).join('');
+  if (getEspeces().includes(current)) sel.value = current;
+}
+
+function filteredResults() {
+  return valides().filter(r => {
+    if (filterLieu && !r.lieux.includes(filterLieu)) return false;
+    if (filterEspece && r.espece !== filterEspece) return false;
+    return true;
+  });
+}
+
+function sortByCol(field) {
+  if (sortField === field) sortAsc = !sortAsc;
+  else { sortField = field; sortAsc = (field==='vegetal' || field==='espece'); }
+  renderSyntheseTable();
+}
+
+const COLONNES = [
+  { key:'vegetal', label:'Variété' },
+  { key:'espece', label:'Espèce' },
+  { key:'lieux', label:'Lieu(x)' },
+  { key:'nbCycles', label:'Cycles' },
+  { key:'poidsTotalMoyen', label:'Rendement moy.' },
+  { key:'poidsTotalMax', label:'Meilleur' },
+  { key:'poidsTotalMin', label:'Pire' },
+  { key:'scoreGlobal', label:'Score' },
+  { key:'confiance', label:'Confiance' },
+  { key:'recommandation', label:'Recommandation' },
+];
+
+function renderSyntheseTable() {
+  let data = filteredResults();
+
+  data = [...data].sort((a,b) => {
+    let va = a[sortField], vb = b[sortField];
+    if (sortField === 'lieux') { va = va.join(','); vb = vb.join(','); }
+    if (typeof va === 'string') {
+      const c = va.localeCompare(vb, 'fr');
+      return sortAsc ? c : -c;
+    }
+    va = (va === null || va === undefined) ? -Infinity : va;
+    vb = (vb === null || vb === undefined) ? -Infinity : vb;
+    return sortAsc ? va - vb : vb - va;
+  });
+
+  const rows = data.map(r => {
+    const reco = RECO_COLORS[r.recommandation] || RECO_COLORS.a_retester;
+    const confColor = CONFIANCE_COLORS[r.confiance] || 'var(--text-muted)';
+    const lieuxTxt = r.lieux.map(l => LIEU_ICONS[l]||l).join(' ');
+    return `<tr onclick="location.href='/variete.html?v=${encodeURIComponent(r.vegetal)}'">
+      <td>${esc(r.vegetal)}</td>
+      <td>${esc(r.espece)}</td>
+      <td>${lieuxTxt}</td>
+      <td>${r.nbCycles}</td>
+      <td>${fmtKg(r.poidsTotalMoyen)}</td>
+      <td>${fmtKg(r.poidsTotalMax)}</td>
+      <td>${fmtKg(r.poidsTotalMin)}</td>
+      <td><strong style="color:${reco.color}">${r.scoreGlobal}</strong>/100</td>
+      <td><span class="badge" style="color:${confColor};border-color:${confColor};background:${confColor}1a">${CONFIANCE_LABELS[r.confiance]}</span></td>
+      <td><span class="badge" style="color:${reco.color};border-color:${reco.border};background:${reco.bg}">${reco.emoji} ${r.recommandationLabel}</span></td>
+    </tr>`;
+  }).join('');
+
+  const thead = `<tr>${COLONNES.map(c=>
+    `<th class="${sortField===c.key?'active':''}" onclick="sortByCol('${c.key}')">${c.label}${sortField===c.key?(sortAsc?' ▲':' ▼'):''}</th>`
+  ).join('')}</tr>`;
+
+  document.getElementById('syntheseTableContainer').innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>${thead}</thead>
+        <tbody>${rows || `<tr><td colspan="${COLONNES.length}"><div class="empty">Aucune variété pour ces filtres.</div></td></tr>`}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── COMPARATEUR ──────────────────────────────────────────────
+let comparateurEspece = '';
+let comparateurSelection = new Set();
+let cmpChart = null;
+
+function renderComparateur() {
+  const especes = getEspeces();
+  if (!especes.length) return '<div class="empty">Aucune variété disponible pour comparaison.</div>';
+
+  return `
+  <div class="filters-row">
+    <select id="cmp-espece" onchange="onCmpEspeceChange(this.value)">
+      <option value="">— Choisir une espèce —</option>
+      ${especes.map(e=>`<option value="${esc(e)}" ${e===comparateurEspece?'selected':''}>${esc(e)}</option>`).join('')}
+    </select>
+  </div>
+  <div id="cmp-varietes"></div>
+  <div id="cmp-result"></div>`;
+}
+
+function onCmpEspeceChange(espece) {
+  comparateurEspece = espece;
+  comparateurSelection = new Set();
+  renderCmpVarietes();
+  document.getElementById('cmp-result').innerHTML = '';
+}
+
+function renderCmpVarietes() {
+  const el = document.getElementById('cmp-varietes');
+  if (!comparateurEspece) { el.innerHTML = ''; return; }
+
+  const candidats = valides().filter(r => r.espece === comparateurEspece);
+  el.innerHTML = `
+    <div class="cmp-checklist">
+      ${candidats.map(r => `
+        <label class="cmp-check">
+          <input type="checkbox" ${comparateurSelection.has(r.vegetal)?'checked':''}
+            onchange="toggleCmpVariete('${escJsAttr(r.vegetal)}',this.checked)">
+          ${esc(r.vegetal)} <span style="color:var(--text-muted);font-size:.65rem">(${r.scoreGlobal}/100)</span>
+        </label>`).join('')}
+    </div>
+    <button class="add-btn" style="margin-top:12px" onclick="lancerComparaison()">
+      Comparer (${comparateurSelection.size} sélectionnée${comparateurSelection.size>1?'s':''})
+    </button>`;
+}
+
+function toggleCmpVariete(veg, checked) {
+  if (checked) comparateurSelection.add(veg); else comparateurSelection.delete(veg);
+  renderCmpVarietes();
+}
+
+function lancerComparaison() {
+  const selection = valides().filter(r => comparateurSelection.has(r.vegetal));
+  const result = SelectionComparateur.comparerVarietes(selection, { labels: SelectionRules.CRITERES_LABELS });
+  const el = document.getElementById('cmp-result');
+
+  if (!result) {
+    el.innerHTML = '<div class="empty">Sélectionnez au moins 2 variétés à comparer.</div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="chart-wrap" style="height:280px;margin:18px 0"><canvas id="cmpRadar"></canvas></div>
+    <div class="selection-phrases">${result.phrases.map(p=>`<div class="phrase-item">${esc(p)}</div>`).join('')}</div>`;
+
+  renderRadar(result.classement);
+}
+
+function renderRadar(classement) {
+  const criteres = Object.keys(SelectionRules.CRITERES_LABELS);
+  const colors = ['#4ade80','#60a5fa','#fbbf24','#f87171','#a3e635','#c47c2b'];
+
+  if (cmpChart) { cmpChart.destroy(); cmpChart = null; }
+  cmpChart = new Chart(document.getElementById('cmpRadar').getContext('2d'), {
+    type: 'radar',
+    data: {
+      labels: criteres.map(c => SelectionRules.CRITERES_LABELS[c]),
+      datasets: classement.map((r,i) => ({
+        label: r.vegetal,
+        data: criteres.map(c => r.sousScores[c] ?? 0),
+        borderColor: colors[i % colors.length],
+        backgroundColor: colors[i % colors.length] + '22',
+        borderWidth: 2, pointRadius: 2,
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      scales: { r: {
+        min:0, max:100,
+        ticks: { display:false, stepSize:25 },
+        grid: { color:'rgba(255,255,255,.06)' },
+        angleLines: { color:'rgba(255,255,255,.06)' },
+        pointLabels: { color:'#8fb898', font:{size:9} }
+      }},
+      plugins: { legend: { position:'bottom', labels:{ color:'#8fb898', font:{size:10} } } }
+    }
+  });
+}
+
+// ── TENDANCES ────────────────────────────────────────────────
+function renderTendances() {
+  const v = valides();
+  if (!v.length) return '<div class="empty">Aucune donnée disponible.</div>';
+
+  const groupes = { progression:[], regression:[], instable:[], stable:[], indetermine:[] };
+  v.forEach(r => groupes[r.tendance.type].push(r));
+
+  const sections = [
+    { key:'progression', label:'📈 En progression', color:'var(--green)' },
+    { key:'regression',  label:'📉 En régression',  color:'var(--red)' },
+    { key:'instable',    label:'🌊 Instables',      color:'var(--amber)' },
+  ];
+
+  let html = '';
+  sections.forEach(s => {
+    if (!groupes[s.key].length) return;
+    const items = [...groupes[s.key]].sort((a,b)=>b.scoreGlobal-a.scoreGlobal).map(r => {
+      const pente = r.tendance.penteRelative !== null ? Math.round(r.tendance.penteRelative*100)+'%/saison' : '—';
+      return `<div class="top-item" onclick="location.href='/variete.html?v=${encodeURIComponent(r.vegetal)}'">
+        <div style="flex:1">
+          <div class="top-name">${esc(r.vegetal)}</div>
+          <div class="top-sub">${esc(r.espece)} · ${r.nbCycles} cycles · ${pente}</div>
+        </div>
+        <div class="top-val" style="color:${s.color}">${r.scoreGlobal}/100</div>
+      </div>`;
+    }).join('');
+    html += `<div class="section"><div class="stitle" style="color:${s.color}">${s.label}</div><div class="top-list">${items}</div></div>`;
+  });
+
+  const reste = groupes.stable.length + groupes.indetermine.length;
+  if (reste) {
+    html += `<div class="empty">+ ${reste} variété${reste>1?'s':''} stable${reste>1?'s':''} ou avec un historique encore insuffisant (au moins 2 saisons nécessaires) pour détecter une tendance.</div>`;
+  }
+  if (!html) html = '<div class="empty">Pas assez d\'historique pour détecter des tendances.</div>';
+  return html;
+}
+
+// ── ONGLETS ──────────────────────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tnav').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+
+  if (name === 'comparateur') document.getElementById('tab-comparateur').innerHTML = renderComparateur();
+  if (name === 'tendances')   document.getElementById('tab-tendances').innerHTML   = renderTendances();
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+computeAll();
+document.getElementById('weightsPanelContainer').innerHTML = renderWeightsPanel();
+populateEspeceFilter();
+renderHeaderStats();
+document.getElementById('faitsMarquants').innerHTML = renderFaitsMarquants();
+renderSyntheseTable();
+</script>
+</body>
+</html>
