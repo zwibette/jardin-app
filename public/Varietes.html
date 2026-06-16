@@ -9,6 +9,7 @@
 <script src="/js/selection-rules.js"></script>
 <script src="/js/selection-scoring.js"></script>
 <script src="/js/selection-recommandations.js"></script>
+<script src="/js/selection-anomalies.js"></script>
 <script src="/js/selection-tendances.js"></script>
 <script src="/js/selection-comparateur.js"></script>
 <style>
@@ -241,6 +242,15 @@ function renderFaitsMarquants() {
   if (topMaladie) {
     const [nom, set] = topMaladie;
     faits.push(`🍄 « ${esc(nom)} » est le problème sanitaire le plus répandu (${set.size} variété${set.size>1?'s':''} concernée${set.size>1?'s':''}).`);
+  }
+
+  if (window.SelectionAnomalies) {
+    const anomalies = window.SelectionAnomalies.scannerAnomalies(loadJSON(STORAGE_KEY_REC, []));
+    if (anomalies.length) {
+      const pluriel = anomalies.length > 1;
+      const liste = anomalies.slice(0, 2).map(a => `<a href="/variete.html?v=${encodeURIComponent(a.recolte.vegetal)}" style="color:var(--amber)">${esc(a.recolte.vegetal)}</a> (${fmtKg(a.recolte.poids)})`).join(', ');
+      faits.push(`⚠️ ${anomalies.length} poids suspect${pluriel?'s':''} détecté${pluriel?'s':''} dans le journal : ${liste}.`);
+    }
   }
 
   return `<div class="faits-grid">${faits.slice(0,4).map(f=>`<div class="fait-card">${f}</div>`).join('')}</div>`;
