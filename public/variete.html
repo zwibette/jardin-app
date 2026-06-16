@@ -9,6 +9,7 @@
 <script src="/js/selection-rules.js"></script>
 <script src="/js/selection-scoring.js"></script>
 <script src="/js/selection-recommandations.js"></script>
+<script src="/js/selection-anomalies.js"></script>
 <style>
 :root {
   --bg:#0a120b;--bg2:#0f1c10;--surface:#1a2e1c;--border:#2a4030;--border2:#3a5040;
@@ -228,6 +229,16 @@ td{padding:10px 12px;color:var(--text-dim)}
 .selection-phrases{display:flex;flex-direction:column;gap:5px}
 .phrase-item{font-size:.78rem;color:var(--text-dim);line-height:1.5;padding-left:14px;border-left:2px solid var(--border2)}
 .selection-meta{font-size:.65rem;color:var(--text-muted);margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+
+/* ── ANOMALIE SAISIE ── */
+.anomalie-toast{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);border-radius:8px;padding:10px 14px;font-size:.78rem;color:var(--amber);display:flex;align-items:flex-start;gap:8px;margin-top:10px}
+.anomalie-toast button{background:none;border:none;color:var(--amber);cursor:pointer;font-size:.9rem;line-height:1;flex-shrink:0;padding:0}
+
+/* ── IA SÉLECTION ── */
+.ia-selection-btn{background:var(--bg2);border:1px solid var(--border);color:var(--text-muted);padding:6px 14px;border-radius:6px;font-family:'Karla',sans-serif;font-size:.72rem;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
+.ia-selection-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ia-selection-btn.loading{opacity:.6;pointer-events:none}
+.ia-selection-body{font-size:.83rem;line-height:1.8;color:var(--text-dim);padding-top:12px;border-top:1px solid var(--border);margin-top:12px;display:none}
 
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
@@ -735,6 +746,97 @@ function saveFicheSaison() {
   setTimeout(()=>{ status.style.display='none'; }, 2000);
 }
 
+// ── VÉRIFICATION ANOMALIE À LA SAISIE ───────────────────────
+function verifierAnomalieRecolte(poids, vegetal, lieu) {
+  if (!window.SelectionAnomalies) return null;
+  const historique = loadRecoltes()
+    .filter(r => r.vegetal === vegetal && r.lieu === lieu)
+    .map(r => r.poids);
+  const res = window.SelectionAnomalies.detecterAnomaliePoids(poids, historique);
+  return res.anomalie ? window.SelectionAnomalies.messageAnomalie(res) : null;
+}
+
+function dismissAnomalieToast(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+// ── ANALYSE IA SÉLECTION ─────────────────────────────────────
+async function lancerIASelection() {
+  const btn  = document.getElementById('iaSelectionBtn');
+  const body = document.getElementById('iaSelectionBody');
+  if (!btn || !body) return;
+
+  btn.classList.add('loading');
+  btn.querySelector('span').textContent = '⟳';
+  body.style.display = 'block';
+  body.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--text-muted);font-size:.78rem">
+    <div style="width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0"></div>
+    Analyse en cours…
+  </div>`;
+
+  const vs = computeSelectionVarietale();
+  if (!vs) {
+    body.innerHTML = '<span style="color:var(--text-muted);font-size:.78rem">Données insuffisantes pour l\'analyse.</span>';
+    btn.classList.remove('loading');
+    return;
+  }
+
+  const scores = Object.entries(vs.sousScores)
+    .filter(([,v]) => v !== null)
+    .map(([k,v]) => `${SelectionRules.CRITERES_LABELS[k]||k} : ${v}/100`)
+    .join(', ');
+  const observations = vs.cyclesRef.filter(c => c.observation).map(c =>
+    `${c.saisonLabel} — maladies: ${(c.maladies||[]).join(', ')||'aucune'}, ravageurs: ${(c.ravageurs||[]).join(', ')||'aucuns'}${c.noteGout?', goût '+c.noteGout+'/5':''}${c.echec?', ECHEC':''}${c.commentaire?' — '+c.commentaire:''}`
+  ).join('\n');
+
+  const sysPrompt = `Tu es un expert agronome conseillant un jardinier à Montpellier (zone 9b, méditerranéen). Serre aquaponique MyFood City, bacs surélevés, potager pleine terre.
+
+=== ANALYSE DE SÉLECTION VARIÉTALE ===
+Variété : ${vegetal}
+Espèce : ${vs.espece}
+Lieu(x) : ${vs.lieux.join(', ')}
+Score global : ${vs.scoreGlobal}/100
+Recommandation système : ${vs.recommandationLabel}
+Niveau de confiance : ${vs.confiance}
+Cycles testés : ${vs.nbCycles} sur ${vs.nbAnnees} an(s)
+
+Sous-scores disponibles : ${scores}
+
+Observations qualitatives par saison :
+${observations||'Aucune observation saisie.'}
+
+Réponds en français avec des titres h3. Max 350 mots. Sois direct et concret.`;
+
+  const question = `Analyse cette variété sous l'angle de la sélection variétale :
+1. Confirmes-tu la recommandation "${vs.recommandationLabel}" ? Pourquoi ?
+2. Quels sont ses points forts et ses faiblesses principaux ?
+3. Si "Remplacer" ou "Abandonner", quelle stratégie recommandes-tu (attendre encore une saison ? tester telle variété alternative réputée en méditerranéen ?) ?
+4. Si "Conserver", comment optimiser ses performances pour la prochaine saison ?`;
+
+  try {
+    const res = await fetch('/api/conseils', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: sysPrompt, question }),
+    });
+    const txt = await res.text();
+    if (!txt.trim()) throw new Error('Réponse vide');
+    const data = JSON.parse(txt);
+    if (!data.success) throw new Error(data.error || 'Erreur API');
+    body.innerHTML = mdToHtml(data.text || '');
+    btn.querySelector('span').textContent = '✦';
+    btn.textContent = '';
+    btn.innerHTML = '<span>✦</span> Actualiser l\'analyse';
+  } catch(e) {
+    const surcharge = e.message?.includes('503') || e.message?.includes('UNAVAILABLE');
+    body.innerHTML = `<span style="color:${surcharge?'var(--amber)':'var(--red)'};font-size:.78rem">
+      ${surcharge ? '⏳ IA surchargée, réessayez dans quelques secondes.' : '❌ ' + e.message}
+    </span>`;
+  }
+  btn.classList.remove('loading');
+}
+
 // ── SÉLECTION VARIÉTALE INTELLIGENTE ────────────────────────────
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -799,6 +901,12 @@ function renderSelectionCard(vs) {
       ${vs.nbCycles} cycle${vs.nbCycles>1?'s':''} testé${vs.nbCycles>1?'s':''} sur ${vs.nbAnnees} année${vs.nbAnnees>1?'s':''} · ${lieuxTxt} · comparé aux autres « ${escHtml(vs.espece)} »
     </div>
     ${vs.cyclesRef.length>1?`<div class="chart-wrap" style="height:90px;margin-top:12px"><canvas id="chartSelectionTendance"></canvas></div>`:''}
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+      <button class="ia-selection-btn" id="iaSelectionBtn" onclick="lancerIASelection()">
+        <span>✦</span> Analyse IA approfondie
+      </button>
+    </div>
+    <div class="ia-selection-body" id="iaSelectionBody"></div>
   </div>`;
 }
 
@@ -1227,6 +1335,24 @@ function render(recoltes, vegetal, calEntry, famille) {
   }
 
   renderChartSelectionTendance(varieteScore);
+
+  // Signaler les anomalies de poids détectées dans l'historique de cette variété
+  if (window.SelectionAnomalies) {
+    const anomalies = window.SelectionAnomalies.scannerAnomalies(allRecoltes);
+    const varAnomalie = anomalies.find(a => a.recolte.vegetal === vegetal);
+    if (varAnomalie) {
+      const msg = window.SelectionAnomalies.messageAnomalie(varAnomalie);
+      const banner = document.createElement('div');
+      banner.id = 'anomalieBanner';
+      banner.className = 'anomalie-toast';
+      banner.innerHTML = `<span>⚠️</span>
+        <span><strong>Saisie suspecte</strong> — ${msg}<br>
+        <span style="font-size:.7rem">Récolte concernée : ${fmtKg(varAnomalie.recolte.poids)} le ${fmtDate(varAnomalie.recolte.date)} (${varAnomalie.recolte.lieu})</span></span>
+        <button onclick="dismissAnomalieToast('anomalieBanner')" title="Ignorer">✕</button>`;
+      const card = document.querySelector('.selection-card');
+      if (card) card.insertAdjacentElement('afterend', banner);
+    }
+  }
 }
 
 // ── PANEL PARAMÈTRES ──────────────────────────────────────────
