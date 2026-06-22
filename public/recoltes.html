@@ -2044,13 +2044,23 @@ function getSaisonFromDate(dateStr) {
   return { type:'ete', label:`Été ${y}`, id:`ete-${y}` };
 }
 
-function getDatePlantationPourRecolte(recolteVegetal) {
+function getDatePlantationPourRecolte(recolteVegetal, recolteDate) {
   const cal = getCalCache();
   const norm = s => s.toLowerCase().replace(/[^a-z]/g, '');
   const nv = norm(recolteVegetal);
-  let entry = cal.find(c => norm(c.culture) === nv);
-  if (!entry) entry = cal.find(c => { const nc = norm(c.culture); return nc.length > 8 && nv.startsWith(nc); });
-  return entry?.plantation || entry?.semis || null;
+  const candidats = cal.filter(c => {
+    const nc = norm(c.culture);
+    return nc === nv || (nc.length > 8 && nv.startsWith(nc));
+  });
+  if (!candidats.length) return null;
+  const dateRef = recolteDate ? new Date(recolteDate) : null;
+  // Prendre la plantation la plus récente qui précède la récolte
+  const valides = candidats
+    .map(c => c.plantation || c.semis)
+    .filter(Boolean)
+    .filter(d => !dateRef || new Date(d) <= dateRef)
+    .sort();
+  return valides.length ? valides[valides.length - 1] : null;
 }
 
 const PERPETUELLES_CONNUES = new Set([
@@ -2094,8 +2104,14 @@ function recoltePerpetuelleDansSaison(r, saisonId) {
 
 function getSaisonRecolte(r) {
   if (isPerpetuelle(r.vegetal)) return getSaisonFromDate(r.date);
-  const datePlant = getDatePlantationPourRecolte(r.vegetal);
-  return getSaisonFromDate(datePlant || r.date);
+  const datePlant = getDatePlantationPourRecolte(r.vegetal, r.date);
+  // N'utiliser la date de plantation que si elle précède la récolte d'au plus 18 mois
+  // Sinon, la récolte appartient à sa propre saison (ex: récolte 2026 sur culture planifiée en 2025)
+  if (datePlant) {
+    const diffDays = (new Date(r.date) - new Date(datePlant)) / 86400000;
+    if (diffDays >= 0 && diffDays <= 540) return getSaisonFromDate(datePlant);
+  }
+  return getSaisonFromDate(r.date);
 }
 
 function getRecoltesFiltered() {
