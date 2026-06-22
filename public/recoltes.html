@@ -1957,26 +1957,43 @@ const FAMILLES = {
   'Feuille chêne rouge perez':'SALADES','Batavia verte perez':'SALADES','Batavia rouge perez':'SALADES',
   'Rougette de Montpellier perez':'SALADES','Oseille':'SALADES','Mizuna':'SALADES','Roquette':'SALADES',
   'Mâche perez':'SALADES','Laitue romaine d\'Avignon':'SALADES','Sucrine perez':'SALADES','Pourpier doré':'SALADES',
+  'Reine des glaces':'SALADES','Batavia peyramal':'SALADES','Laitue salasc':'SALADES',
   'Blette perez':'BLETTES & ÉPINARDS','Poirée rubis char':'BLETTES & ÉPINARDS','Blette lucullus':'BLETTES & ÉPINARDS',
   'Nero di toscana':'BLETTES & ÉPINARDS','Épinards malabar':'BLETTES & ÉPINARDS','Épinards perez bac':'BLETTES & ÉPINARDS',
+  'Épinards':'BLETTES & ÉPINARDS',
   'Chou pak choï perez':'CHOUX','Chou pe tsaï perez':'CHOUX','Chou rave perez':'CHOUX',
   'Chou fleur précoce perez':'CHOUX','Chou tatsoï':'CHOUX','Brocoli perez':'CHOUX','Brocoli jet sessantina':'CHOUX',
+  'Moutarde chinoise':'CHOUX',
   'Betterave chiogga':'LÉGUMES RACINES','Betterave perez':'LÉGUMES RACINES','Fenouil perez':'LÉGUMES RACINES',
   'Céleri perez':'LÉGUMES RACINES','Radis noirs':'LÉGUMES RACINES','Carotte Toulon':'LÉGUMES RACINES',
+  'Betterave detroit':'LÉGUMES RACINES','Radis rouge':'LÉGUMES RACINES',
+  'Pomme de terre celtiane':'LÉGUMES RACINES','Pomme de terre nicola':'LÉGUMES RACINES',
+  'Patate douce':'LÉGUMES RACINES','Poireau':'LÉGUMES RACINES',
   'Tomate cerise sweet baby':'TOMATES','Tomate cerise poire rouge':'TOMATES','Tomate matt\'s wild':'TOMATES',
   'Tomate green zebra':'TOMATES','Tomate cœur de bœuf':'TOMATES','Tomate rose de Berne 19':'TOMATES',
   'Tomate cerise poire jaune':'TOMATES','Tomate cerise poivron':'TOMATES',
+  'Tomate cerise sakura':'TOMATES','Tomate ananas':'TOMATES','Tomate andine cornue':'TOMATES',
+  'Tomate joie de la table':'TOMATES','Tomate noire de Crimée':'TOMATES','Tomate black zebra':'TOMATES',
+  'Tomate russe':'TOMATES','Tomate chocolate strip':'TOMATES','Tomate raisin vert':'TOMATES','Tomate pearly':'TOMATES',
   'Aubergine Barbentane':'AUBERGINES','Aubergine slimjim':'AUBERGINES','Aubergine pickling':'AUBERGINES',
   'Aubergine blanche dourga':'AUBERGINES',
   'Poivron balconi':'POIVRONS & PIMENTS','Poivron Padrón perez':'POIVRONS & PIMENTS',
   'Piment biquinho rouge':'POIVRONS & PIMENTS','Piment cherry bomb':'POIVRONS & PIMENTS',
+  'Poivron marseillais':'POIVRONS & PIMENTS','Poivron lake':'POIVRONS & PIMENTS','Poivron ferenc':'POIVRONS & PIMENTS',
+  'Piment flame':'POIVRONS & PIMENTS','Tomatillo':'POIVRONS & PIMENTS',
   'Courgette zuboda':'COURGETTES','Courgette ronde de nice':'COURGETTES','Potimarron bright summer':'COURGETTES',
-  'Butternut':'COURGETTES','Chayote':'COURGETTES',
+  'Butternut':'COURGETTES','Chayote':'COURGETTES','Courgette bolognaise':'COURGETTES',
   'Concombre F1 Citaro':'CONCOMBRES','Concombre généreux':'CONCOMBRES','Cornichon diamant':'CONCOMBRES',
+  'Concombre marketmore':'CONCOMBRES','Concombre long de chine':'CONCOMBRES',
+  'Concombre diva':'CONCOMBRES','Concombre lemon':'CONCOMBRES',
   'Melon artemis':'MELONS','Pastèque baby sugar':'MELONS',
+  'Melon charentais':'MELONS','Melon vert':'MELONS','Melon léopard':'MELONS',
   'Mange-tout norli':'LÉGUMES D\'ÉTÉ','Artichaut impérial':'LÉGUMES D\'ÉTÉ',
+  'Petits pois longue cosse':'LÉGUMES D\'ÉTÉ','Cyclanthère':'LÉGUMES D\'ÉTÉ',
   'Basilic prospéra':'AROMATIQUES','Basilic perpétuel':'AROMATIQUES','Persil perez':'AROMATIQUES',
   'Persil géant d\'Italie':'AROMATIQUES','Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
+  'Fraises':'FRUITS','Fraises charlotte':'FRUITS','Fraises rugen':'FRUITS',
+  'Framboisier marastad':'FRUITS','Abricot du Roussillon':'FRUITS','Nectarine':'FRUITS',
 };
 
 const STORAGE_KEY_CAL = 'jardin_calendrier_v1';
@@ -2042,6 +2059,7 @@ const PERPETUELLES_CONNUES = new Set([
   'artichaut imperial','topinambour','rhubarbe','epinards malabar','poiree rubis char',
   'blette perez','blette lucullus','celeri perez','framboisier','groseillier','baie de goji','kiwai',
   'figuier','abricotier','pommier',
+  'fraises','fraises charlotte','fraises rugen','framboisier marastad',
 ]);
 
 function isPerpetuelle(vegetal) {
@@ -2138,6 +2156,99 @@ function computeTopRendements(recFiltrees) {
     .sort((a, b) => b.rPied - a.rPied);
 }
 
+// ── HISTORIQUE ÉTÉ 2023 — potager_2023.pdf ───────────────────
+const RECOLTES_2023 = [
+  { id:'y23_1',  vegetal:'Concombre marketmore',      lieu:'jardin', poids:1610, date:'2023-06-09', note:null, famille:'CONCOMBRES' },
+  { id:'y23_2',  vegetal:'Petits pois longue cosse',  lieu:'jardin', poids:419,  date:'2023-05-11', note:null, famille:'LÉGUMES D\'ÉTÉ' },
+  { id:'y23_3',  vegetal:'Tomate cerise sakura',       lieu:'serre',  poids:3357, date:'2023-07-20', note:null, famille:'TOMATES' },
+  { id:'y23_4',  vegetal:'Tomate cœur de bœuf',        lieu:'serre',  poids:1500, date:'2023-07-25', note:null, famille:'TOMATES' },
+  { id:'y23_5',  vegetal:'Tomate cœur de bœuf',        lieu:'jardin', poids:1730, date:'2023-08-05', note:null, famille:'TOMATES' },
+  { id:'y23_6',  vegetal:'Courgette bolognaise',        lieu:'jardin', poids:1256, date:'2023-07-16', note:null, famille:'COURGETTES' },
+  { id:'y23_7',  vegetal:'Betterave detroit',           lieu:'jardin', poids:315,  date:'2023-07-11', note:null, famille:'LÉGUMES RACINES' },
+  { id:'y23_8',  vegetal:'Pomme de terre celtiane',     lieu:'jardin', poids:1530, date:'2023-07-11', note:null, famille:'LÉGUMES RACINES' },
+  { id:'y23_9',  vegetal:'Cyclanthère',                 lieu:'jardin', poids:85,   date:'2023-08-15', note:null, famille:'LÉGUMES D\'ÉTÉ' },
+  { id:'y23_10', vegetal:'Fraises charlotte',           lieu:'jardin', poids:20,   date:'2023-05-01', note:null, famille:'FRUITS' },
+  { id:'y23_11', vegetal:'Fraises rugen',               lieu:'jardin', poids:161,  date:'2023-05-20', note:null, famille:'FRUITS' },
+  { id:'y23_12', vegetal:'Framboisier marastad',        lieu:'jardin', poids:85,   date:'2023-06-15', note:null, famille:'FRUITS' },
+  { id:'y23_13', vegetal:'Abricot du Roussillon',       lieu:'jardin', poids:600,  date:'2023-07-10', note:4,    famille:'FRUITS' },
+  { id:'y23_14', vegetal:'Laitue romaine d\'Avignon',   lieu:'jardin', poids:120,  date:'2023-05-11', note:null, famille:'SALADES' },
+];
+
+// ── HISTORIQUE HIVER 2024-2025 — Récoltes_2025.pdf ───────────
+const RECOLTES_2025_HIVER = [
+  { id:'y25h_1',  vegetal:'Reine des glaces',           lieu:'serre',  poids:652,  date:'2025-03-30', note:3, famille:'SALADES' },
+  { id:'y25h_2',  vegetal:'Batavia verte perez',         lieu:'serre',  poids:1747, date:'2025-04-05', note:4, famille:'SALADES' },
+  { id:'y25h_3',  vegetal:'Batavia verte perez',         lieu:'jardin', poids:1242, date:'2025-06-01', note:4, famille:'SALADES' },
+  { id:'y25h_4',  vegetal:'Feuille chêne rouge perez',   lieu:'serre',  poids:1335, date:'2025-04-10', note:4, famille:'SALADES' },
+  { id:'y25h_5',  vegetal:'Sucrine perez',               lieu:'serre',  poids:1536, date:'2025-04-25', note:4, famille:'SALADES' },
+  { id:'y25h_6',  vegetal:'Batavia peyramal',            lieu:'serre',  poids:425,  date:'2025-05-10', note:4, famille:'SALADES' },
+  { id:'y25h_7',  vegetal:'Laitue salasc',               lieu:'serre',  poids:460,  date:'2025-05-15', note:4, famille:'SALADES' },
+  { id:'y25h_8',  vegetal:'Rougette de Montpellier perez', lieu:'serre', poids:380, date:'2025-07-10', note:3, famille:'SALADES' },
+  { id:'y25h_9',  vegetal:'Oseille',                    lieu:'serre',  poids:1413, date:'2025-04-15', note:4, famille:'SALADES' },
+  { id:'y25h_10', vegetal:'Blette perez',                lieu:'serre',  poids:2924, date:'2025-04-01', note:5, famille:'BLETTES & ÉPINARDS' },
+  { id:'y25h_11', vegetal:'Blette perez',                lieu:'jardin', poids:2273, date:'2025-07-01', note:4, famille:'BLETTES & ÉPINARDS' },
+  { id:'y25h_12', vegetal:'Poirée rubis char',           lieu:'serre',  poids:293,  date:'2025-05-20', note:3, famille:'BLETTES & ÉPINARDS' },
+  { id:'y25h_13', vegetal:'Épinards perez bac',          lieu:'serre',  poids:345,  date:'2025-05-01', note:3, famille:'BLETTES & ÉPINARDS' },
+  { id:'y25h_14', vegetal:'Chou pak choï perez',         lieu:'serre',  poids:3385, date:'2025-03-20', note:5, famille:'CHOUX' },
+  { id:'y25h_15', vegetal:'Moutarde chinoise',           lieu:'serre',  poids:553,  date:'2025-05-01', note:4, famille:'CHOUX' },
+  { id:'y25h_16', vegetal:'Fenouil perez',               lieu:'serre',  poids:675,  date:'2025-05-06', note:5, famille:'LÉGUMES RACINES' },
+  { id:'y25h_17', vegetal:'Betterave chiogga',           lieu:'serre',  poids:903,  date:'2025-05-25', note:4, famille:'LÉGUMES RACINES' },
+  { id:'y25h_18', vegetal:'Betterave chiogga',           lieu:'jardin', poids:233,  date:'2025-07-10', note:3, famille:'LÉGUMES RACINES' },
+  { id:'y25h_19', vegetal:'Radis noirs',                 lieu:'serre',  poids:15,   date:'2025-04-20', note:2, famille:'LÉGUMES RACINES' },
+  { id:'y25h_20', vegetal:'Radis rouge',                 lieu:'serre',  poids:71,   date:'2025-04-20', note:3, famille:'LÉGUMES RACINES' },
+  { id:'y25h_21', vegetal:'Mange-tout norli',            lieu:'jardin', poids:783,  date:'2025-05-20', note:4, famille:'LÉGUMES D\'ÉTÉ' },
+  { id:'y25h_22', vegetal:'Pomme de terre nicola',       lieu:'jardin', poids:1840, date:'2025-06-27', note:4, famille:'LÉGUMES RACINES' },
+  { id:'y25h_23', vegetal:'Pomme de terre celtiane',     lieu:'jardin', poids:1930, date:'2025-07-15', note:5, famille:'LÉGUMES RACINES' },
+  { id:'y25h_24', vegetal:'Fraises',                    lieu:'jardin', poids:648,  date:'2025-05-15', note:3, famille:'FRUITS' },
+];
+
+// ── HISTORIQUE ÉTÉ 2025 — Récoltes_2025.pdf ──────────────────
+const RECOLTES_2025_ETE = [
+  { id:'y25e_1',  vegetal:'Tomate cerise sweet baby',    lieu:'jardin', poids:1143, date:'2025-07-20', note:4, famille:'TOMATES' },
+  { id:'y25e_2',  vegetal:'Tomate matt\'s wild',          lieu:'jardin', poids:163,  date:'2025-08-01', note:3, famille:'TOMATES' },
+  { id:'y25e_3',  vegetal:'Tomate cerise poire jaune',   lieu:'jardin', poids:47,   date:'2025-07-25', note:3, famille:'TOMATES' },
+  { id:'y25e_4',  vegetal:'Tomate cerise poire rouge',   lieu:'jardin', poids:111,  date:'2025-07-25', note:3, famille:'TOMATES' },
+  { id:'y25e_5',  vegetal:'Tomate green zebra',          lieu:'jardin', poids:445,  date:'2025-08-10', note:4, famille:'TOMATES' },
+  { id:'y25e_6',  vegetal:'Tomate pearly',               lieu:'jardin', poids:140,  date:'2025-08-01', note:3, famille:'TOMATES' },
+  { id:'y25e_7',  vegetal:'Tomate cerise poivron',       lieu:'jardin', poids:158,  date:'2025-08-05', note:3, famille:'TOMATES' },
+  { id:'y25e_8',  vegetal:'Tomate raisin vert',          lieu:'jardin', poids:328,  date:'2025-08-15', note:4, famille:'TOMATES' },
+  { id:'y25e_9',  vegetal:'Tomate black zebra',          lieu:'jardin', poids:199,  date:'2025-08-10', note:3, famille:'TOMATES' },
+  { id:'y25e_10', vegetal:'Tomate cœur de bœuf',         lieu:'jardin', poids:25,   date:'2025-07-15', note:2, famille:'TOMATES' },
+  { id:'y25e_11', vegetal:'Tomate ananas',               lieu:'jardin', poids:286,  date:'2025-08-01', note:4, famille:'TOMATES' },
+  { id:'y25e_12', vegetal:'Tomate andine cornue',        lieu:'jardin', poids:24,   date:'2025-07-25', note:2, famille:'TOMATES' },
+  { id:'y25e_13', vegetal:'Tomate rose de Berne 19',     lieu:'jardin', poids:210,  date:'2025-08-10', note:4, famille:'TOMATES' },
+  { id:'y25e_14', vegetal:'Tomate russe',                lieu:'jardin', poids:50,   date:'2025-07-30', note:3, famille:'TOMATES' },
+  { id:'y25e_15', vegetal:'Tomate chocolate strip',      lieu:'jardin', poids:246,  date:'2025-08-05', note:3, famille:'TOMATES' },
+  { id:'y25e_16', vegetal:'Tomate joie de la table',     lieu:'jardin', poids:1059, date:'2025-08-20', note:5, famille:'TOMATES' },
+  { id:'y25e_17', vegetal:'Tomate noire de Crimée',      lieu:'jardin', poids:144,  date:'2025-08-15', note:3, famille:'TOMATES' },
+  { id:'y25e_18', vegetal:'Aubergine Barbentane',        lieu:'serre',  poids:201,  date:'2025-07-20', note:3, famille:'AUBERGINES' },
+  { id:'y25e_19', vegetal:'Aubergine Barbentane',        lieu:'jardin', poids:120,  date:'2025-08-01', note:2, famille:'AUBERGINES' },
+  { id:'y25e_20', vegetal:'Aubergine slimjim',           lieu:'serre',  poids:1014, date:'2025-07-25', note:4, famille:'AUBERGINES' },
+  { id:'y25e_21', vegetal:'Aubergine blanche dourga',    lieu:'serre',  poids:1046, date:'2025-08-15', note:4, famille:'AUBERGINES' },
+  { id:'y25e_22', vegetal:'Aubergine pickling',          lieu:'serre',  poids:1930, date:'2025-08-10', note:5, famille:'AUBERGINES' },
+  { id:'y25e_23', vegetal:'Poivron marseillais',         lieu:'serre',  poids:661,  date:'2025-08-01', note:4, famille:'POIVRONS & PIMENTS' },
+  { id:'y25e_24', vegetal:'Poivron ferenc',              lieu:'serre',  poids:1403, date:'2025-08-20', note:4, famille:'POIVRONS & PIMENTS' },
+  { id:'y25e_25', vegetal:'Poivron Padrón perez',        lieu:'serre',  poids:865,  date:'2025-08-15', note:4, famille:'POIVRONS & PIMENTS' },
+  { id:'y25e_26', vegetal:'Poivron Padrón perez',        lieu:'jardin', poids:183,  date:'2025-08-20', note:3, famille:'POIVRONS & PIMENTS' },
+  { id:'y25e_27', vegetal:'Poivron lake',                lieu:'serre',  poids:994,  date:'2025-09-10', note:4, famille:'POIVRONS & PIMENTS' },
+  { id:'y25e_28', vegetal:'Tomatillo',                   lieu:'jardin', poids:431,  date:'2025-08-01', note:3, famille:'POIVRONS & PIMENTS' },
+  { id:'y25e_29', vegetal:'Piment flame',                lieu:'serre',  poids:252,  date:'2025-09-01', note:4, famille:'POIVRONS & PIMENTS' },
+  { id:'y25e_30', vegetal:'Courgette zuboda',            lieu:'jardin', poids:1062, date:'2025-06-25', note:4, famille:'COURGETTES' },
+  { id:'y25e_31', vegetal:'Concombre long de chine',     lieu:'serre',  poids:778,  date:'2025-07-01', note:4, famille:'CONCOMBRES' },
+  { id:'y25e_32', vegetal:'Concombre diva',              lieu:'serre',  poids:1478, date:'2025-07-05', note:4, famille:'CONCOMBRES' },
+  { id:'y25e_33', vegetal:'Concombre généreux',          lieu:'jardin', poids:1526, date:'2025-07-20', note:5, famille:'CONCOMBRES' },
+  { id:'y25e_34', vegetal:'Concombre lemon',             lieu:'jardin', poids:302,  date:'2025-07-25', note:4, famille:'CONCOMBRES' },
+  { id:'y25e_35', vegetal:'Concombre marketmore',        lieu:'jardin', poids:299,  date:'2025-08-01', note:3, famille:'CONCOMBRES' },
+  { id:'y25e_36', vegetal:'Cornichon diamant',           lieu:'serre',  poids:318,  date:'2025-07-15', note:3, famille:'CONCOMBRES' },
+  { id:'y25e_37', vegetal:'Cornichon diamant',           lieu:'jardin', poids:19,   date:'2025-08-01', note:2, famille:'CONCOMBRES' },
+  { id:'y25e_38', vegetal:'Melon artemis',               lieu:'jardin', poids:572,  date:'2025-08-15', note:4, famille:'MELONS' },
+  { id:'y25e_39', vegetal:'Melon charentais',            lieu:'jardin', poids:1109, date:'2025-08-20', note:3, famille:'MELONS' },
+  { id:'y25e_40', vegetal:'Melon vert',                  lieu:'jardin', poids:1450, date:'2025-09-01', note:4, famille:'MELONS' },
+  { id:'y25e_41', vegetal:'Melon léopard',               lieu:'jardin', poids:260,  date:'2025-09-15', note:3, famille:'MELONS' },
+  { id:'y25e_42', vegetal:'Potimarron bright summer',    lieu:'jardin', poids:703,  date:'2025-09-20', note:4, famille:'COURGETTES' },
+  { id:'y25e_43', vegetal:'Patate douce',               lieu:'jardin', poids:2125, date:'2025-10-15', note:4, famille:'LÉGUMES RACINES' },
+];
+
 // ── RÉCOLTES INITIALES ────────────────────────────────────────
 const RECOLTES_INITIALES = [
   { id:'h1',  vegetal:'Feuille chêne rouge perez', lieu:'serre',  poids:1748, date:'2026-01-15', note:4, famille:'SALADES' },
@@ -2172,13 +2283,36 @@ const RECOLTES_INITIALES = [
   { id:'h30', vegetal:'Basilic prospéra',          lieu:'bacs',   poids:10,   date:'2026-05-14', note:null, famille:'AROMATIQUES' },
   { id:'h31', vegetal:'Persil perez',              lieu:'serre',  poids:240,  date:'2026-02-01', note:4, famille:'AROMATIQUES' },
   { id:'h32', vegetal:'Livèche',                   lieu:'bacs',   poids:10,   date:'2026-05-14', note:null, famille:'AROMATIQUES' },
+  ...RECOLTES_2025_ETE,
+  ...RECOLTES_2025_HIVER,
+  ...RECOLTES_2023,
 ];
 
 // ── STORAGE ───────────────────────────────────────────────────
 const STORAGE_KEY = 'jardin_recoltes_v2';
+const SCHEMA_VERSION = 2;
+const SCHEMA_KEY = 'jardin_recoltes_schema';
 
 function loadRecoltes() {
-  try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); if (saved && saved.length > 0) return saved; } catch(e) {}
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    const savedVersion = parseInt(localStorage.getItem(SCHEMA_KEY) || '0');
+    if (saved && saved.length > 0) {
+      if (savedVersion < SCHEMA_VERSION) {
+        const existingIds = new Set(saved.map(r => r.id));
+        const toAdd = RECOLTES_INITIALES.filter(r => !existingIds.has(r.id));
+        if (toAdd.length > 0) {
+          const merged = [...saved, ...toAdd];
+          localStorage.setItem(SCHEMA_KEY, SCHEMA_VERSION);
+          saveRecoltes(merged);
+          return merged;
+        }
+        localStorage.setItem(SCHEMA_KEY, SCHEMA_VERSION);
+      }
+      return saved;
+    }
+  } catch(e) {}
+  localStorage.setItem(SCHEMA_KEY, SCHEMA_VERSION);
   saveRecoltes(RECOLTES_INITIALES);
   return [...RECOLTES_INITIALES];
 }
@@ -2194,7 +2328,10 @@ async function syncFromSheets() {
     const data = await r.json();
     if (data.success) {
       if (data.recoltes && data.recoltes.length > 0) {
-        recoltes = data.recoltes; saveRecoltes(recoltes);
+        const existingIds = new Set(data.recoltes.map(r => r.id));
+        const toAdd = RECOLTES_INITIALES.filter(r => !existingIds.has(r.id));
+        recoltes = toAdd.length > 0 ? [...data.recoltes, ...toAdd] : data.recoltes;
+        saveRecoltes(recoltes); localStorage.setItem(SCHEMA_KEY, SCHEMA_VERSION);
         buildSaisonSelect(); renderAll(); showSyncBadge('✓ Sync Sheets');
       } else { await syncToSheets(); }
     }
