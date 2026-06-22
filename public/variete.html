@@ -423,12 +423,63 @@ const FAMILLES = {
   'Mange-tout norli':'LÉGUMES ETE','Artichaut impérial':'LÉGUMES ETE',
   'Basilic prospéra':'AROMATIQUES','Basilic perpétuel':'AROMATIQUES','Persil perez':'AROMATIQUES',
   "Persil géant d'Italie":'AROMATIQUES','Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
+  // Salades supplémentaires
+  'Reine des glaces':'SALADES','Batavia peyramal':'SALADES','Laitue salasc':'SALADES',
+  // Légumes racines supplémentaires
+  'Betterave detroit':'LÉGUMES RACINES','Radis rouge':'LÉGUMES RACINES',
+  'Pomme de terre celtiane':'LÉGUMES RACINES','Pomme de terre nicola':'LÉGUMES RACINES',
+  'Patate douce':'LÉGUMES RACINES','Poireau':'LÉGUMES RACINES',
+  // Tomates supplémentaires
+  'Tomate sakura':'TOMATES','Tomate ananas':'TOMATES','Tomate andine cornue':'TOMATES',
+  'Tomate joie de la table':'TOMATES','Tomate noire de crimée':'TOMATES','Tomate black zebra':'TOMATES',
+  'Tomate russe':'TOMATES','Tomate chocolate strip':'TOMATES','Tomate raisin vert':'TOMATES',
+  'Tomate pearly':'TOMATES',
+  // Poivrons / Piments supplémentaires
+  'Poivron marseillais':'POIVRONS & PIMENTS','Poivron lake':'POIVRONS & PIMENTS',
+  'Poivron ferenc':'POIVRONS & PIMENTS','Tomatillo':'POIVRONS & PIMENTS','Piment flame':'POIVRONS & PIMENTS',
+  // Courgettes supplémentaires
+  'Courgette bolognaise':'COURGETTES',
+  // Concombres supplémentaires
+  'Concombre marketmore':'CONCOMBRES','Concombre long de chine':'CONCOMBRES',
+  'Concombre diva':'CONCOMBRES','Concombre lemon':'CONCOMBRES',
+  // Melons supplémentaires
+  'Melon charentais':'MELONS','Melon vert':'MELONS','Melon léopard':'MELONS',
+  // Légumes d'été supplémentaires
+  'Petits pois longue cosse':'LÉGUMES ETE','Cyclanthère':'LÉGUMES ETE','Moutarde chinoise':'LÉGUMES ETE',
+  // Fruits
+  'Fraises':'FRUITS','Fraises charlotte':'FRUITS','Fraises rugen':'FRUITS',
+  'Framboisier marastad':'FRUITS','Abricot du roussillon':'FRUITS','Nectarine':'FRUITS',
 };
 
 // ── HELPERS ───────────────────────────────────────────────────
 function loadRecoltes() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch(e) { return []; } }
 function loadCalendrier() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY_CAL)||'[]'); } catch(e) { return []; } }
 function normKey(s) { return s.toLowerCase().replace(/[^a-z]/g,''); }
+
+function getSaisonFromDate(dateStr) {
+  if (!dateStr) return null;
+  const [y, m] = dateStr.split('-').map(Number);
+  if (!y || !m) return null;
+  // Hiver : nov–mars (chevauchement d'années)
+  const isHiver = m >= 11 || m <= 3;
+  const anneeDebut = isHiver && m >= 11 ? y : y - 1;
+  const label = isHiver
+    ? `Hiver ${anneeDebut}-${String(anneeDebut + 1).slice(2)}`
+    : `Été ${y}`;
+  const sortKey = isHiver ? anneeDebut * 10 + 0 : y * 10 + 1;
+  return { label, sortKey };
+}
+
+function groupBySaison(recoltes) {
+  const map = {};
+  for (const r of recoltes) {
+    const s = getSaisonFromDate(r.date);
+    if (!s) continue;
+    if (!map[s.label]) map[s.label] = { label: s.label, sortKey: s.sortKey, recoltes: [] };
+    map[s.label].recoltes.push(r);
+  }
+  return Object.values(map).sort((a, b) => a.sortKey - b.sortKey);
+}
 
 function getCultureEntries(veg) {
   const cal = loadCalendrier();
@@ -1276,6 +1327,27 @@ function render(recoltes, vegetal, calEntry, famille) {
         ${byJardin>0?`<div class="lieu-card"><div class="lieu-icon">🌳</div><div class="lieu-val jardin">${fmtKg(byJardin)}</div><div class="lieu-lbl">Jardin</div><div class="lieu-pct">${(byJardin/total*100).toFixed(0)}%</div></div>`:''}
       </div>
     </div>`:''}
+
+    ${(()=>{
+      const saisonsData = groupBySaison(recoltes);
+      if (saisonsData.length <= 1) return '';
+      const rows = saisonsData.map(s => {
+        const t = s.recoltes.reduce((sum,r)=>sum+r.poids,0);
+        const pct = total > 0 ? (t/total*100).toFixed(0) : 0;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+          <div style="flex:1;font-size:.78rem;color:var(--text-muted)">${s.label}</div>
+          <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--green)">${fmtKg(t)}</div>
+          <div style="width:60px;text-align:right;font-size:.7rem;color:var(--text-muted)">${pct}%</div>
+          <div style="width:80px;background:rgba(255,255,255,.08);border-radius:4px;height:6px;overflow:hidden">
+            <div style="width:${pct}%;background:var(--green);height:100%;border-radius:4px"></div>
+          </div>
+        </div>`;
+      }).join('');
+      return `<div class="section">
+        <div class="stitle">📅 Par saison</div>
+        ${rows}
+      </div>`;
+    })()}
 
     <div class="section">
       <div class="stitle">Graphiques</div>
