@@ -1241,74 +1241,149 @@ function buildMainNoRecoltes(veg, calEntry, famille) {
   ${buildEditPanel(veg)}`;
 }
 
+// ── HELPERS SAISON ────────────────────────────────────────────
+// Retourne le calEntry dont la plantation/semis est la plus récente
+// et antérieure à la première récolte de ce groupe
+function getCalEntryPourSaison(veg, lieu, recoltesGroupe) {
+  const entries = getCultureEntries(veg).filter(e => !lieu || e.lieu === lieu);
+  if (!entries.length) return null;
+  const firstDate = recoltesGroupe.map(r=>r.date).sort()[0];
+  // Entrées valides : plantation <= première récolte
+  const valides = entries.filter(e => {
+    const d = e.plantation || e.semis;
+    return !d || !firstDate || d <= firstDate;
+  }).sort((a,b) => {
+    const da = a.plantation || a.semis || '0';
+    const db = b.plantation || b.semis || '0';
+    return db.localeCompare(da);
+  });
+  return valides[0] || entries[0];
+}
+
+function getSaisonLabel(dateStr) {
+  const s = getSaisonFromDate(dateStr);
+  return s ? s.label : '';
+}
+
+function getSaisonSortKey(dateStr) {
+  const s = getSaisonFromDate(dateStr);
+  return s ? s.sortKey : 0;
+}
+
+// Groupe les récoltes par saison (basé sur la date de récolte uniquement)
+function groupRecoltesParSaison(recoltes) {
+  const map = {};
+  for (const r of recoltes) {
+    const label = getSaisonLabel(r.date);
+    const sortKey = getSaisonSortKey(r.date);
+    if (!label) continue;
+    if (!map[label]) map[label] = { label, sortKey, recoltes: [] };
+    map[label].recoltes.push(r);
+  }
+  return Object.values(map).sort((a,b) => b.sortKey - a.sortKey); // plus récent en premier
+}
+
 // ── RENDU PRINCIPAL ───────────────────────────────────────────
 function render(recoltes, vegetal, calEntry, famille) {
-  const total     = recoltes.reduce((s,r)=>s+r.poids,0);
-  const bySerre   = recoltes.filter(r=>r.lieu==='serre').reduce((s,r)=>s+r.poids,0);
-  const byBacs    = recoltes.filter(r=>r.lieu==='bacs').reduce((s,r)=>s+r.poids,0);
-  const byJardin  = recoltes.filter(r=>r.lieu==='jardin').reduce((s,r)=>s+r.poids,0);
-  const lieux     = [...new Set(recoltes.map(r=>r.lieu))];
-  const multiLieu = lieux.length>1;
-
   const main = document.getElementById('mainContent');
   const varieteScore = computeSelectionVarietale();
 
-  const allNbPlants = lieux.reduce((s,l) => s + (getNbPlants(vegetal,l)||0), 0);
-  const rPiedGlobal = allNbPlants > 0 ? Math.round(total / allNbPlants) : null;
-  const rendGlobal  = rPiedGlobal ? rendementColor(rPiedGlobal, famille) : null;
+  const lieux = [...new Set(recoltes.map(r=>r.lieu))];
+  const multiLieu = lieux.length > 1;
+  const totalToutesAnnes = recoltes.reduce((s,r)=>s+r.poids,0);
+
+  // Grouper par saison (date réelle)
+  const saisonsData = groupRecoltesParSaison(recoltes);
+  const saisonCourante = saisonsData[0]; // la plus récente
+  const saisonsPassees = saisonsData.slice(1);
 
   const LIEUX_CFG = [
     { key:'serre',  icon:'🏠', label:'Serre'  },
     { key:'bacs',   icon:'🪴', label:'Bacs'   },
     { key:'jardin', icon:'🌳', label:'Jardin' },
   ];
-  const lieuxPresents = LIEUX_CFG.filter(lc => recoltes.some(r => r.lieu === lc.key));
 
-  function bannerLieuRow(lc) {
-    const recLieu   = recoltes.filter(r => r.lieu === lc.key);
-    const poidsLieu = recLieu.reduce((s,r)=>s+r.poids,0);
-    const nbL       = getNbPlants(vegetal, lc.key);
-    const rPiedL    = nbL ? Math.round(poidsLieu / nbL) : null;
-    const rendL     = rPiedL ? rendementColor(rPiedL, famille) : null;
-    const notesL    = recLieu.filter(r=>r.note);
-    const avgNoteL  = notesL.length ? notesL.reduce((s,r)=>s+r.note,0)/notesL.length : 0;
-    const emojiRend = rendL ? (rendL.cls==='excellent'?'🏆':rendL.cls==='bon'?'✅':rendL.cls==='moyen'?'⚠️':'📉') : '';
-    return `<div class="banner-lieu-row">
-      <div class="banner-lieu-icon">${lc.icon}</div>
-      <div class="banner-lieu-poids ${lc.key}">${fmtKg(poidsLieu)}</div>
-      <div class="banner-lieu-metas">
-        ${nbL?`<div class="lmeta"><span class="lmeta-val">${nbL}</span><span class="lmeta-lbl">plants</span></div>`:''}
-        ${rPiedL&&rendL?`<div class="lmeta">
-          <span class="lmeta-val" style="color:var(--green)">${rPiedL}g/plt</span>
-          <span class="rendement-pill ${rendL.cls}" style="font-size:.55rem;padding:2px 7px;margin-top:3px">${emojiRend} ${rendL.label}</span>
-        </div>`:''}
-        ${avgNoteL?`<div class="lmeta"><span class="lmeta-val">${avgNoteL.toFixed(1)}<span style="font-size:.6rem;color:var(--text-muted)">/5</span></span><span class="lmeta-lbl">note (${notesL.length})</span></div>`:''}
-        <div class="lmeta"><span class="lmeta-val">${recLieu.length}</span><span class="lmeta-lbl">récoltes</span></div>
-      </div>
-    </div>`;
+  // ── Bloc d'une saison (bandeau principal ou ligne historique) ─
+  function renderSaisonBanner(sData, isMain) {
+    const total = sData.recoltes.reduce((s,r)=>s+r.poids,0);
+    const lxPresents = LIEUX_CFG.filter(lc => sData.recoltes.some(r=>r.lieu===lc.key));
+
+    function lieuRow(lc) {
+      const recLieu = sData.recoltes.filter(r=>r.lieu===lc.key);
+      const poids   = recLieu.reduce((s,r)=>s+r.poids,0);
+      // nb plants de l'entrée calendrier correspondant À CETTE SAISON
+      const entry   = getCalEntryPourSaison(vegetal, lc.key, recLieu);
+      const nb      = entry?.nbPlants || null;
+      const rPied   = nb ? Math.round(poids / nb) : null;
+      const rend    = rPied ? rendementColor(rPied, famille) : null;
+      const notesL  = recLieu.filter(r=>r.note);
+      const avgNote = notesL.length ? notesL.reduce((s,r)=>s+r.note,0)/notesL.length : 0;
+      const emojiR  = rend ? (rend.cls==='excellent'?'🏆':rend.cls==='bon'?'✅':rend.cls==='moyen'?'⚠️':'📉') : '';
+      return `<div class="banner-lieu-row">
+        <div class="banner-lieu-icon">${lc.icon}</div>
+        <div class="banner-lieu-poids ${lc.key}">${fmtKg(poids)}</div>
+        <div class="banner-lieu-metas">
+          ${nb?`<div class="lmeta"><span class="lmeta-val">${nb}</span><span class="lmeta-lbl">plants</span></div>`:''}
+          ${rPied&&rend?`<div class="lmeta">
+            <span class="lmeta-val" style="color:var(--green)">${rPied}g/plt</span>
+            <span class="rendement-pill ${rend.cls}" style="font-size:.55rem;padding:2px 7px;margin-top:3px">${emojiR} ${rend.label}</span>
+          </div>`:''}
+          ${avgNote?`<div class="lmeta"><span class="lmeta-val">${avgNote.toFixed(1)}<span style="font-size:.6rem;color:var(--text-muted)">/5</span></span><span class="lmeta-lbl">note</span></div>`:''}
+          <div class="lmeta"><span class="lmeta-val">${recLieu.length}</span><span class="lmeta-lbl">récoltes</span></div>
+        </div>
+      </div>`;
+    }
+
+    if (isMain) {
+      const nbSaisons = saisonsData.length;
+      return `<div class="total-banner">
+        <div class="banner-row1">
+          <div>
+            <div class="total-val">${fmtKg(total)}</div>
+            <div class="total-lbl">${sData.label}${nbSaisons>1?` · cumulé toutes saisons : ${fmtKg(totalToutesAnnes)}`:''}</div>
+          </div>
+          <div class="banner-row1-right">
+            <div style="font-size:.68rem;color:var(--accent);padding:3px 8px;border-radius:12px;background:rgba(163,230,53,.1);border:1px solid rgba(163,230,53,.25)">${sData.label}</div>
+          </div>
+        </div>
+        <div class="banner-lieux">${lxPresents.map(lc=>lieuRow(lc)).join('')}</div>
+      </div>`;
+    } else {
+      // Format compact pour historique
+      return `<details style="background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden">
+        <summary style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--text-dim);list-style:none">
+          <span style="flex:1;font-weight:500;color:var(--text-muted)">${sData.label}</span>
+          <span style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--green)">${fmtKg(total)}</span>
+          <span style="font-size:.7rem;color:var(--text-muted)">${sData.recoltes.length} récolte${sData.recoltes.length>1?'s':''}</span>
+          <span style="font-size:.7rem;color:var(--text-muted)">▼</span>
+        </summary>
+        <div style="padding:0 14px 12px">
+          <div class="banner-lieux" style="padding-top:10px;border-top:1px solid var(--border)">
+            ${lxPresents.map(lc=>lieuRow(lc)).join('')}
+          </div>
+          <div style="margin-top:10px">
+            <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+              <thead><tr style="border-bottom:1px solid var(--border)">
+                <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase">Date</th>
+                <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase">Lieu</th>
+                <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase">Poids</th>
+                <th style="padding:5px 8px;text-align:left;color:var(--text-muted);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase">Note</th>
+              </tr></thead>
+              <tbody>${[...sData.recoltes].sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`<tr style="border-bottom:1px solid rgba(255,255,255,.04)">
+                <td style="padding:5px 8px;color:var(--text-dim)">${fmtDate(r.date)}</td>
+                <td style="padding:5px 8px"><span class="badge badge-${r.lieu}">${lieuLabel(r.lieu)}</span></td>
+                <td style="padding:5px 8px;font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--green)">${fmtKg(r.poids)}</td>
+                <td style="padding:5px 8px"><span class="stars">${stars(r.note)}</span></td>
+              </tr>`).join('')}</tbody>
+            </table>
+          </div>
+        </div>
+      </details>`;
+    }
   }
 
   main.innerHTML = `
-    <div class="total-banner">
-      <div class="banner-row1">
-        <div>
-          <div class="total-val">${fmtKg(total)}</div>
-          <div class="total-lbl">Total récolté — ${lieux.length} lieu${lieux.length>1?'x':''}</div>
-        </div>
-        <div class="banner-row1-right">
-          ${allNbPlants?`<div style="font-size:.72rem;color:var(--text-muted)">${allNbPlants} plants au total</div>`:''}
-          ${rPiedGlobal&&rendGlobal?`<div style="display:flex;align-items:center;gap:6px">
-            <span style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--green)">${rPiedGlobal}g/plant</span>
-            <span class="rendement-pill ${rendGlobal.cls}" style="font-size:.6rem">
-              ${rendGlobal.cls==='excellent'?'🏆':rendGlobal.cls==='bon'?'✅':rendGlobal.cls==='moyen'?'⚠️':'📉'} ${rendGlobal.label}
-            </span>
-          </div>`:''}
-        </div>
-      </div>
-      <div class="banner-lieux">
-        ${lieuxPresents.map(lc => bannerLieuRow(lc)).join('')}
-      </div>
-    </div>
+    ${saisonCourante ? renderSaisonBanner(saisonCourante, true) : ''}
 
     ${renderSelectionCard(varieteScore)}
 
@@ -1319,35 +1394,10 @@ function render(recoltes, vegetal, calEntry, famille) {
 
     ${renderFicheSaison()}
 
-    ${multiLieu?`<div class="section">
-      <div class="stitle">Répartition par lieu</div>
-      <div class="lieux-grid">
-        ${bySerre>0?`<div class="lieu-card"><div class="lieu-icon">🏠</div><div class="lieu-val serre">${fmtKg(bySerre)}</div><div class="lieu-lbl">Serre</div><div class="lieu-pct">${(bySerre/total*100).toFixed(0)}%</div></div>`:''}
-        ${byBacs>0?`<div class="lieu-card"><div class="lieu-icon">🪴</div><div class="lieu-val bacs">${fmtKg(byBacs)}</div><div class="lieu-lbl">Bacs</div><div class="lieu-pct">${(byBacs/total*100).toFixed(0)}%</div></div>`:''}
-        ${byJardin>0?`<div class="lieu-card"><div class="lieu-icon">🌳</div><div class="lieu-val jardin">${fmtKg(byJardin)}</div><div class="lieu-lbl">Jardin</div><div class="lieu-pct">${(byJardin/total*100).toFixed(0)}%</div></div>`:''}
-      </div>
-    </div>`:''}
-
-    ${(()=>{
-      const saisonsData = groupBySaison(recoltes);
-      if (saisonsData.length <= 1) return '';
-      const rows = saisonsData.map(s => {
-        const t = s.recoltes.reduce((sum,r)=>sum+r.poids,0);
-        const pct = total > 0 ? (t/total*100).toFixed(0) : 0;
-        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-          <div style="flex:1;font-size:.78rem;color:var(--text-muted)">${s.label}</div>
-          <div style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--green)">${fmtKg(t)}</div>
-          <div style="width:60px;text-align:right;font-size:.7rem;color:var(--text-muted)">${pct}%</div>
-          <div style="width:80px;background:rgba(255,255,255,.08);border-radius:4px;height:6px;overflow:hidden">
-            <div style="width:${pct}%;background:var(--green);height:100%;border-radius:4px"></div>
-          </div>
-        </div>`;
-      }).join('');
-      return `<div class="section">
-        <div class="stitle">📅 Par saison</div>
-        ${rows}
-      </div>`;
-    })()}
+    ${saisonsPassees.length ? `<div class="section">
+      <div class="stitle">Saisons précédentes</div>
+      ${saisonsPassees.map(s => renderSaisonBanner(s, false)).join('')}
+    </div>` : ''}
 
     <div class="section">
       <div class="stitle">Graphiques</div>
@@ -1358,11 +1408,11 @@ function render(recoltes, vegetal, calEntry, famille) {
     </div>
 
     <div class="section">
-      <div class="stitle">Détail des récoltes</div>
+      <div class="stitle">Toutes les récoltes</div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Date</th><th>Lieu</th><th>Poids</th><th>Note</th></tr></thead>
-          <tbody>${recoltes.map(r=>`<tr>
+          <tbody>${recoltes.sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`<tr>
             <td>${fmtDate(r.date)}</td>
             <td><span class="badge badge-${r.lieu}">${lieuLabel(r.lieu)}</span></td>
             <td style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700">${fmtKg(r.poids)}</td>
@@ -1384,26 +1434,26 @@ function render(recoltes, vegetal, calEntry, famille) {
   }
   ps.style.cssText = 'display:block;margin-bottom:24px';
 
+  const sorted=[...recoltes].sort((a,b)=>a.date.localeCompare(b.date));
   if (multiLieu) {
+    const LIEU_COLORS={serre:'#3a6ea5',bacs:'#c47c2b',jardin:'#3d7a4f'};
+    const LIEU_LABELS={serre:'Serre',bacs:'Bacs',jardin:'Jardin'};
+    // Donut
     const ld=[],ll=[],lc=[];
-    if(bySerre>0){ld.push(bySerre);ll.push('Serre');lc.push('#3a6ea5');}
-    if(byBacs>0){ld.push(byBacs);ll.push('Bacs');lc.push('#c47c2b');}
-    if(byJardin>0){ld.push(byJardin);ll.push('Jardin');lc.push('#3d7a4f');}
+    lieux.forEach(l=>{const t=recoltes.filter(r=>r.lieu===l).reduce((s,r)=>s+r.poids,0);if(t>0){ld.push(t);ll.push(LIEU_LABELS[l]||l);lc.push(LIEU_COLORS[l]||'#888');}});
     new Chart(document.getElementById('chartDonut').getContext('2d'),{
       type:'doughnut',data:{labels:ll,datasets:[{data:ld,backgroundColor:lc,borderWidth:0}]},
       options:{responsive:true,maintainAspectRatio:false,animation:false,
         plugins:{legend:{position:'bottom',labels:{color:'#8fb898',font:{size:10}}},
           tooltip:{callbacks:{label:c=>c.label+': '+fmtKg(c.parsed)}}}}
     });
-  }
-  const sorted=[...recoltes].sort((a,b)=>a.date.localeCompare(b.date));
-  if (multiLieu) {
-    const lcfg=[{key:'serre',label:'Serre',color:'#3a6ea5'},{key:'bacs',label:'Bacs',color:'#c47c2b'},{key:'jardin',label:'Jardin',color:'#3d7a4f'}];
+    // Évolution multi-lieu
     const labels=[...new Set(sorted.map(r=>r.date))];
-    const datasets=lcfg.map(lc=>{const bl=sorted.filter(r=>r.lieu===lc.key);if(!bl.length)return null;return{label:lc.label,data:labels.map(d=>{const m=bl.find(r=>r.date===d);return m?m.poids:null;}),borderColor:lc.color,backgroundColor:lc.color+'20',borderWidth:2,pointRadius:4,pointBackgroundColor:lc.color,fill:false,tension:0.3,spanGaps:true};}).filter(Boolean);
+    const datasets=lieux.map(l=>{const bl=sorted.filter(r=>r.lieu===l);if(!bl.length)return null;return{label:LIEU_LABELS[l]||l,data:labels.map(d=>{const m=bl.find(r=>r.date===d);return m?m.poids:null;}),borderColor:LIEU_COLORS[l]||'#888',backgroundColor:(LIEU_COLORS[l]||'#888')+'20',borderWidth:2,pointRadius:4,fill:false,tension:0.3,spanGaps:true};}).filter(Boolean);
     new Chart(document.getElementById('chartEvol').getContext('2d'),{type:'line',data:{labels:labels.map(d=>{const[,m,j]=d.split('-');return j+'/'+m;}),datasets},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{position:'bottom',labels:{color:'#8fb898',font:{size:10}}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtKg(c.parsed.y)}}},scales:{x:{ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(255,255,255,.04)'}}}}});
   } else {
-    new Chart(document.getElementById('chartEvol').getContext('2d'),{type:'bar',data:{labels:sorted.map(r=>{const[,m,j]=r.date.split('-');return j+'/'+m;}),datasets:[{data:sorted.map(r=>r.poids),backgroundColor:lieux[0]==='serre'?'#3a6ea5':lieux[0]==='bacs'?'#c47c2b':'#3d7a4f',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtKg(c.parsed.y)}}},scales:{x:{ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(255,255,255,.04)'}}}}});
+    const color=lieux[0]==='serre'?'#3a6ea5':lieux[0]==='bacs'?'#c47c2b':'#3d7a4f';
+    new Chart(document.getElementById('chartEvol').getContext('2d'),{type:'bar',data:{labels:sorted.map(r=>{const[,m,j]=r.date.split('-');return j+'/'+m;}),datasets:[{data:sorted.map(r=>r.poids),backgroundColor:color,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtKg(c.parsed.y)}}},scales:{x:{ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(255,255,255,.04)'}}}}});
   }
 
   renderChartSelectionTendance(varieteScore);
