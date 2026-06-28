@@ -129,7 +129,6 @@ main{max-width:900px;margin:0 auto;padding:20px 16px 40px;position:relative;z-in
 .del-modal-label{font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;font-weight:500}
 .del-modal-input{width:100%;background:var(--bg2);border:2px solid var(--border2);border-radius:8px;padding:10px 12px;font-family:'Karla',sans-serif;font-size:.9rem;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:6px}
 .del-modal-input:focus{border-color:var(--red)}
-.del-modal-input.valid{border-color:var(--red)}
 .del-modal-hint{font-size:.62rem;color:var(--text-muted);margin-bottom:16px;min-height:16px;transition:color .2s}
 .del-modal-hint.match{color:var(--red)}
 .del-modal-actions{display:flex;gap:8px}
@@ -423,30 +422,21 @@ const FAMILLES = {
   'Mange-tout norli':'LÉGUMES ETE','Artichaut impérial':'LÉGUMES ETE',
   'Basilic prospéra':'AROMATIQUES','Basilic perpétuel':'AROMATIQUES','Persil perez':'AROMATIQUES',
   "Persil géant d'Italie":'AROMATIQUES','Livèche':'AROMATIQUES','Ciboulette perez':'AROMATIQUES',
-  // Salades supplémentaires
   'Reine des glaces':'SALADES','Batavia peyramal':'SALADES','Laitue salasc':'SALADES',
-  // Légumes racines supplémentaires
   'Betterave detroit':'LÉGUMES RACINES','Radis rouge':'LÉGUMES RACINES',
   'Pomme de terre celtiane':'LÉGUMES RACINES','Pomme de terre nicola':'LÉGUMES RACINES',
   'Patate douce':'LÉGUMES RACINES','Poireau':'LÉGUMES RACINES',
-  // Tomates supplémentaires
   'Tomate sakura':'TOMATES','Tomate ananas':'TOMATES','Tomate andine cornue':'TOMATES',
   'Tomate joie de la table':'TOMATES','Tomate noire de crimée':'TOMATES','Tomate black zebra':'TOMATES',
   'Tomate russe':'TOMATES','Tomate chocolate strip':'TOMATES','Tomate raisin vert':'TOMATES',
   'Tomate pearly':'TOMATES',
-  // Poivrons / Piments supplémentaires
   'Poivron marseillais':'POIVRONS & PIMENTS','Poivron lake':'POIVRONS & PIMENTS',
   'Poivron ferenc':'POIVRONS & PIMENTS','Tomatillo':'POIVRONS & PIMENTS','Piment flame':'POIVRONS & PIMENTS',
-  // Courgettes supplémentaires
   'Courgette bolognaise':'COURGETTES',
-  // Concombres supplémentaires
   'Concombre marketmore':'CONCOMBRES','Concombre long de chine':'CONCOMBRES',
   'Concombre diva':'CONCOMBRES','Concombre lemon':'CONCOMBRES',
-  // Melons supplémentaires
   'Melon charentais':'MELONS','Melon vert':'MELONS','Melon léopard':'MELONS',
-  // Légumes d'été supplémentaires
   'Petits pois longue cosse':'LÉGUMES ETE','Cyclanthère':'LÉGUMES ETE','Moutarde chinoise':'LÉGUMES ETE',
-  // Fruits
   'Fraises':'FRUITS','Fraises charlotte':'FRUITS','Fraises rugen':'FRUITS',
   'Framboisier marastad':'FRUITS','Abricot du roussillon':'FRUITS','Nectarine':'FRUITS',
 };
@@ -460,7 +450,6 @@ function getSaisonFromDate(dateStr) {
   if (!dateStr) return null;
   const [y, m] = dateStr.split('-').map(Number);
   if (!y || !m) return null;
-  // Hiver : nov–mars (chevauchement d'années)
   const isHiver = m >= 11 || m <= 3;
   const anneeDebut = isHiver && m >= 11 ? y : y - 1;
   const label = isHiver
@@ -611,12 +600,46 @@ function refreshPhenoBlock() {
 function loadObservations() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY_OBS)||'[]'); } catch(e) { return []; } }
 function saveObservations(arr) { try { localStorage.setItem(STORAGE_KEY_OBS, JSON.stringify(arr)); } catch(e) {} }
 
+// ── CORRECTION BUG : recherche avec fallback sans lieu ────────
+// Si la recherche exacte (veg+lieu+saison) échoue, on cherche sans
+// contrainte de lieu pour couvrir les cas où _ficheLieu diffère
+// de celui utilisé lors de la sauvegarde.
 function findObservationLocal(veg, lieu, saisonId) {
-  return loadObservations().find(o => o.vegetal===veg && o.lieu===lieu && o.saisonId===saisonId) || null;
+  if (!saisonId) return null;
+  const obs = loadObservations();
+  // 1. Correspondance exacte
+  const exact = obs.find(o => o.vegetal === veg && o.lieu === lieu && o.saisonId === saisonId);
+  if (exact) return exact;
+  // 2. Fallback : même végétal + même saison, peu importe le lieu
+  return obs.find(o => o.vegetal === veg && o.saisonId === saisonId) || null;
+}
+
+// ── CORRECTION BUG : récupérer les tags depuis l'état interne
+// ET depuis l'input en cours (si l'utilisateur n'a pas appuyé Entrée) ──
+function getTagsFromDOM(type) {
+  const arr = type === 'maladies' ? [..._ficheMaladies] : [..._ficheRavageurs];
+  const inp = document.getElementById('fiche-' + type + '-input');
+  if (inp) {
+    const v = inp.value.trim().toLowerCase();
+    if (v && !arr.includes(v)) arr.push(v);
+  }
+  return arr;
 }
 
 function getSaisonActuelle() {
-  return window.SelectionRules ? window.SelectionRules.getSaisonFromDate(todayStr()) : null;
+  // Priorité : SelectionRules (production), fallback : implémentation locale
+  if (window.SelectionRules && window.SelectionRules.getSaisonFromDate) {
+    return window.SelectionRules.getSaisonFromDate(todayStr());
+  }
+  // Fallback local — retourne un objet avec id pour findObservationLocal
+  const d = todayStr();
+  const [y, m] = d.split('-').map(Number);
+  const isHiver = m >= 9 || m <= 1 || (m === 2 && parseInt(d.split('-')[2]) <= 1);
+  const anneeDebut = isHiver && m >= 9 ? y : y - 1;
+  if (isHiver) {
+    return { id: `hiver-${anneeDebut}-${anneeDebut+1}`, label: `Hiver ${anneeDebut}–${anneeDebut+1}` };
+  }
+  return { id: `ete-${y}`, label: `Été ${y}` };
 }
 
 function getTagsConnus(type) {
@@ -678,7 +701,11 @@ function renderFicheSaison() {
     _ficheLieu = lieuxOptions.includes(_currentLieu) ? _currentLieu : lieuxOptions[0];
   }
 
-  const existing = findObservationLocal(vegetal, _ficheLieu, saison?.id || '');
+  // Utilise findObservationLocal avec fallback — corrige le bug de rechargement
+  const saisonId = saison?.id || '';
+  const existing = findObservationLocal(vegetal, _ficheLieu, saisonId);
+
+  // Réinitialiser les tableaux depuis les données sauvegardées
   _ficheMaladies  = existing?.maladies  ? [...existing.maladies]  : [];
   _ficheRavageurs = existing?.ravageurs ? [...existing.ravageurs] : [];
 
@@ -772,15 +799,17 @@ function saveFicheSaison() {
   const commentaire = document.getElementById('fiche-commentaire').value.trim();
 
   const obs = loadObservations();
-  const idx = obs.findIndex(o => o.vegetal===vegetal && o.lieu===_ficheLieu && o.saisonId===saison.id);
+  const saisonId = saison.id || saison.label;
+  const idx = obs.findIndex(o => o.vegetal===vegetal && o.lieu===_ficheLieu && o.saisonId===saisonId);
 
   const entry = {
     id: idx!==-1 ? obs[idx].id : 'o'+Date.now(),
-    vegetal, lieu:_ficheLieu, saisonId: saison.id,
+    vegetal, lieu:_ficheLieu, saisonId,
     nbFruits:  nbFruitsVal ? parseInt(nbFruitsVal,10) : null,
     surfaceM2: surfaceVal  ? parseFloat(surfaceVal)   : null,
-    maladies:  [..._ficheMaladies],
-    ravageurs: [..._ficheRavageurs],
+    // CORRECTION : utilise getTagsFromDOM pour capturer aussi la saisie en cours
+    maladies:  getTagsFromDOM('maladies'),
+    ravageurs: getTagsFromDOM('ravageurs'),
     echec, echecMotif: echec ? echecMotif : '',
     noteGout:  goutVal ? parseInt(goutVal,10) : null,
     noteFaciliteCulture: faciliteVal ? parseInt(faciliteVal,10) : null,
@@ -790,6 +819,10 @@ function saveFicheSaison() {
 
   if (idx!==-1) obs[idx] = entry; else obs.push(entry);
   saveObservations(obs);
+
+  // Mettre à jour les tableaux en mémoire avec ce qui vient d'être sauvegardé
+  _ficheMaladies  = [...entry.maladies];
+  _ficheRavageurs = [...entry.ravageurs];
 
   status.style.color = 'var(--green)';
   status.textContent = '✓ Fiche enregistrée';
@@ -896,7 +929,7 @@ function escHtml(s) {
 function saisonSortKey(saisonId) {
   if (!saisonId) return 0;
   if (saisonId.startsWith('ete-')) return parseInt(saisonId.split('-')[1],10)*100 + 2;
-  const parts = saisonId.split('-'); // hiver-Y-Y+1
+  const parts = saisonId.split('-');
   return parseInt(parts[1],10)*100 + 9;
 }
 
@@ -1143,11 +1176,9 @@ function confirmerSuppression() {
   if (val.toLowerCase() !== vegetal.toLowerCase()) return;
 
   try {
-    // 1. Supprimer les récoltes
     const recs = loadRecoltes().filter(r => r.vegetal !== vegetal);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recs));
 
-    // 2. Supprimer du calendrier (toutes les entrées correspondantes)
     const cal = loadCalendrier().filter(c =>
       normKey(c.culture) !== normKey(vegetal) &&
       !normKey(c.culture).includes(normKey(vegetal)) &&
@@ -1155,21 +1186,18 @@ function confirmerSuppression() {
     );
     localStorage.setItem(STORAGE_KEY_CAL, JSON.stringify(cal));
 
-    // 3. Supprimer les stades
     try {
       const st = JSON.parse(localStorage.getItem(STORAGE_KEY_STADES)||'{}');
       delete st[vegetal];
       localStorage.setItem(STORAGE_KEY_STADES, JSON.stringify(st));
     } catch(e) {}
 
-    // 4. Supprimer le cache IA
     try {
       const ia = JSON.parse(localStorage.getItem(STORAGE_KEY_IA)||'{}');
       delete ia[vegetal];
       localStorage.setItem(STORAGE_KEY_IA, JSON.stringify(ia));
     } catch(e) {}
 
-    // 5. Sync Sheets si disponible (best-effort)
     try {
       fetch('/api/sheets', {
         method: 'POST',
@@ -1178,7 +1206,6 @@ function confirmerSuppression() {
       });
     } catch(e) {}
 
-    // 6. Redirection vers récoltes
     closeDelModal();
     window.location.href = '/recoltes.html';
 
@@ -1200,7 +1227,6 @@ if (!vegetal) {
   const lieuMaj     = lieuxRec.length ? lieuxRec.sort((a,b)=>lieuxRec.filter(v=>v===b).length-lieuxRec.filter(v=>v===a).length)[0] : null;
   _currentLieu      = lieuMaj || getCultureEntry(vegetal)?.lieu || '';
   const calEntry    = getCultureEntry(vegetal, _currentLieu);
-  // Famille : priorité au calendrier, puis dictionnaire statique, puis récolte
   const famille     = calEntry?.famille || FAMILLES[vegetal] || recoltes[0]?.famille || '';
 
   document.getElementById('headerTitle').textContent   = vegetal;
@@ -1208,7 +1234,6 @@ if (!vegetal) {
   document.getElementById('predictTitle').textContent   = `🌱 Les besoins de ton plant de ${vegetal} en ce moment`;
   document.title = vegetal+' — Jardin Vivant';
 
-  // Afficher la zone danger
   document.getElementById('dangerZone').style.display = 'block';
 
   initStades(vegetal, calEntry);
@@ -1242,13 +1267,10 @@ function buildMainNoRecoltes(veg, calEntry, famille) {
 }
 
 // ── HELPERS SAISON ────────────────────────────────────────────
-// Retourne le calEntry dont la plantation/semis est la plus récente
-// et antérieure à la première récolte de ce groupe
 function getCalEntryPourSaison(veg, lieu, recoltesGroupe) {
   const entries = getCultureEntries(veg).filter(e => !lieu || e.lieu === lieu);
   if (!entries.length) return null;
   const firstDate = recoltesGroupe.map(r=>r.date).sort()[0];
-  // Entrées valides : plantation <= première récolte
   const valides = entries.filter(e => {
     const d = e.plantation || e.semis;
     return !d || !firstDate || d <= firstDate;
@@ -1270,7 +1292,6 @@ function getSaisonSortKey(dateStr) {
   return s ? s.sortKey : 0;
 }
 
-// Groupe les récoltes par saison (basé sur la date de récolte uniquement)
 function groupRecoltesParSaison(recoltes) {
   const map = {};
   for (const r of recoltes) {
@@ -1280,7 +1301,7 @@ function groupRecoltesParSaison(recoltes) {
     if (!map[label]) map[label] = { label, sortKey, recoltes: [] };
     map[label].recoltes.push(r);
   }
-  return Object.values(map).sort((a,b) => b.sortKey - a.sortKey); // plus récent en premier
+  return Object.values(map).sort((a,b) => b.sortKey - a.sortKey);
 }
 
 // ── RENDU PRINCIPAL ───────────────────────────────────────────
@@ -1292,9 +1313,8 @@ function render(recoltes, vegetal, calEntry, famille) {
   const multiLieu = lieux.length > 1;
   const totalToutesAnnes = recoltes.reduce((s,r)=>s+r.poids,0);
 
-  // Grouper par saison (date réelle)
   const saisonsData = groupRecoltesParSaison(recoltes);
-  const saisonCourante = saisonsData[0]; // la plus récente
+  const saisonCourante = saisonsData[0];
   const saisonsPassees = saisonsData.slice(1);
 
   const LIEUX_CFG = [
@@ -1303,7 +1323,6 @@ function render(recoltes, vegetal, calEntry, famille) {
     { key:'jardin', icon:'🌳', label:'Jardin' },
   ];
 
-  // ── Bloc d'une saison (bandeau principal ou ligne historique) ─
   function renderSaisonBanner(sData, isMain) {
     const total = sData.recoltes.reduce((s,r)=>s+r.poids,0);
     const lxPresents = LIEUX_CFG.filter(lc => sData.recoltes.some(r=>r.lieu===lc.key));
@@ -1311,7 +1330,6 @@ function render(recoltes, vegetal, calEntry, famille) {
     function lieuRow(lc) {
       const recLieu = sData.recoltes.filter(r=>r.lieu===lc.key);
       const poids   = recLieu.reduce((s,r)=>s+r.poids,0);
-      // nb plants de l'entrée calendrier correspondant À CETTE SAISON
       const entry   = getCalEntryPourSaison(vegetal, lc.key, recLieu);
       const nb      = entry?.nbPlants || null;
       const rPied   = nb ? Math.round(poids / nb) : null;
@@ -1349,7 +1367,6 @@ function render(recoltes, vegetal, calEntry, famille) {
         <div class="banner-lieux">${lxPresents.map(lc=>lieuRow(lc)).join('')}</div>
       </div>`;
     } else {
-      // Format compact pour historique
       return `<details style="background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden">
         <summary style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--text-dim);list-style:none">
           <span style="flex:1;font-weight:500;color:var(--text-muted)">${sData.label}</span>
@@ -1438,7 +1455,6 @@ function render(recoltes, vegetal, calEntry, famille) {
   if (multiLieu) {
     const LIEU_COLORS={serre:'#3a6ea5',bacs:'#c47c2b',jardin:'#3d7a4f'};
     const LIEU_LABELS={serre:'Serre',bacs:'Bacs',jardin:'Jardin'};
-    // Donut
     const ld=[],ll=[],lc=[];
     lieux.forEach(l=>{const t=recoltes.filter(r=>r.lieu===l).reduce((s,r)=>s+r.poids,0);if(t>0){ld.push(t);ll.push(LIEU_LABELS[l]||l);lc.push(LIEU_COLORS[l]||'#888');}});
     new Chart(document.getElementById('chartDonut').getContext('2d'),{
@@ -1447,7 +1463,6 @@ function render(recoltes, vegetal, calEntry, famille) {
         plugins:{legend:{position:'bottom',labels:{color:'#8fb898',font:{size:10}}},
           tooltip:{callbacks:{label:c=>c.label+': '+fmtKg(c.parsed)}}}}
     });
-    // Évolution multi-lieu
     const labels=[...new Set(sorted.map(r=>r.date))];
     const datasets=lieux.map(l=>{const bl=sorted.filter(r=>r.lieu===l);if(!bl.length)return null;return{label:LIEU_LABELS[l]||l,data:labels.map(d=>{const m=bl.find(r=>r.date===d);return m?m.poids:null;}),borderColor:LIEU_COLORS[l]||'#888',backgroundColor:(LIEU_COLORS[l]||'#888')+'20',borderWidth:2,pointRadius:4,fill:false,tension:0.3,spanGaps:true};}).filter(Boolean);
     new Chart(document.getElementById('chartEvol').getContext('2d'),{type:'line',data:{labels:labels.map(d=>{const[,m,j]=d.split('-');return j+'/'+m;}),datasets},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{position:'bottom',labels:{color:'#8fb898',font:{size:10}}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtKg(c.parsed.y)}}},scales:{x:{ticks:{color:'#9e9488',font:{size:9}},grid:{display:false}},y:{ticks:{color:'#9e9488',font:{size:9},callback:v=>fmtKg(v)},grid:{color:'rgba(255,255,255,.04)'}}}}});
@@ -1458,7 +1473,6 @@ function render(recoltes, vegetal, calEntry, famille) {
 
   renderChartSelectionTendance(varieteScore);
 
-  // Signaler les anomalies de poids détectées dans l'historique de cette variété
   if (window.SelectionAnomalies) {
     const anomalies = window.SelectionAnomalies.scannerAnomalies(allRecoltes);
     const varAnomalie = anomalies.find(a => a.recolte.vegetal === vegetal);
