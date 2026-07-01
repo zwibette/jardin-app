@@ -2642,7 +2642,7 @@ function renderTopLieu(lieuFilter, containerId, accentColor) {
     const barPct = rPied !== null
       ? (rPied / maxRPied * 100).toFixed(0)
       : (p / maxPoids * 100).toFixed(0);
-    return `<div class="top-item" onclick="window.location='/variete.html?v=${encodeURIComponent(v)}'" style="cursor:pointer;border-color:${i===0?color+'40':'var(--border)'}">
+    return `<div class="top-item" data-v="${v.replace(/"/g,'&quot;')}" style="cursor:pointer;border-color:${i===0?color+'40':'var(--border)'}" onclick="goVariete(this)">
       <div class="top-rank ${ranks[i]}">${i+1}</div>
       <div style="flex:1"><div class="top-name">${v}${lBadge}</div><div class="top-sub">${fam}${rendLabel}</div>
       <div class="bar-wrap"><div class="bar-fill" style="width:${barPct}%;background:${color}"></div></div></div>
@@ -2752,6 +2752,10 @@ function showAnalyse(name, btn) {
   if (name==='famille') renderChartFamille();
   else if (name==='lieu') { renderChartLieu(); renderChartEvolution(); }
   else if (name==='mois') renderChartMois();
+}
+
+function goVariete(el) {
+  window.location = '/variete.html?v=' + encodeURIComponent(el.dataset.v);
 }
 
 function renderAll() { renderStats(); renderChartFamille(); renderTop(); populateFamFilter(); renderTable(); }
