@@ -292,7 +292,17 @@ const CULTURES_DEFAUT = [
 function loadCalendrier() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_CAL) || 'null');
-    if (saved && saved.length > 0) return saved;
+    if (saved && saved.length > 0) {
+      // Fusionner les défauts manquants sans jamais écraser les entrées existantes
+      const savedIds = new Set(saved.map(c => c.id));
+      const missing = CULTURES_DEFAUT.filter(c => !savedIds.has(c.id));
+      if (missing.length) {
+        const merged = [...saved, ...missing];
+        saveCalendrier(merged);
+        return merged;
+      }
+      return saved;
+    }
   } catch(e) {}
   saveCalendrier(CULTURES_DEFAUT);
   return [...CULTURES_DEFAUT];
