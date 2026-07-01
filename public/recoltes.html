@@ -2375,7 +2375,9 @@ let sortField = 'date', sortAsc = false;
 // Source unique : les cultures du calendrier (onglet Planifier)
 function getVegetauxConnus() {
   const cal = getCalCache();
-  return [...new Set(cal.map(c => c.culture))].sort((a, b) => a.localeCompare(b, 'fr'));
+  const depuisCal = cal.map(c => c.culture);
+  const depuisFamilles = Object.keys(FAMILLES);
+  return [...new Set([...depuisCal, ...depuisFamilles])].sort((a, b) => a.localeCompare(b, 'fr'));
 }
 
 function getCalEntryPourVegetal(vegetal) {
@@ -2861,7 +2863,17 @@ const CULTURES_DEFAUT = [
 function calLoadCalendrier() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY_CAL) || 'null');
-    if (saved && saved.length > 0) return saved;
+    if (saved && saved.length > 0) {
+      // Fusionner les défauts manquants sans jamais écraser les entrées existantes
+      const savedIds = new Set(saved.map(c => c.id));
+      const missing = CULTURES_DEFAUT.filter(c => !savedIds.has(c.id));
+      if (missing.length) {
+        const merged = [...saved, ...missing];
+        calSaveCalendrier(merged);
+        return merged;
+      }
+      return saved;
+    }
   } catch(e) {}
   calSaveCalendrier(CULTURES_DEFAUT);
   return [...CULTURES_DEFAUT];
