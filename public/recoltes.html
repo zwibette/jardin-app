@@ -2376,8 +2376,8 @@ let sortField = 'date', sortAsc = false;
 function getVegetauxConnus() {
   const cal = getCalCache();
   const depuisCal = cal.map(c => c.culture);
-  const depuisFamilles = Object.keys(FAMILLES);
-  return [...new Set([...depuisCal, ...depuisFamilles])].sort((a, b) => a.localeCompare(b, 'fr'));
+  const depuisRecoltes = recoltes.map(r => r.vegetal);
+  return [...new Set([...depuisCal, ...depuisRecoltes])].sort((a, b) => a.localeCompare(b, 'fr'));
 }
 
 function getCalEntryPourVegetal(vegetal) {
