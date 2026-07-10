@@ -2374,10 +2374,20 @@ let sortField = 'date', sortAsc = false;
 // ── AUTOCOMPLETE ──────────────────────────────────────────────
 // Source unique : les cultures du calendrier (onglet Planifier)
 function getVegetauxConnus() {
+  const norm = s => s.toLowerCase().replace(/[éèêëàâîïôùûüç]/g, c => ({é:'e',è:'e',ê:'e',ë:'e',à:'a',â:'a',î:'i',ï:'i',ô:'o',ù:'u',û:'u',ü:'u',ç:'c'}[c]||c)).replace(/[^a-z0-9 ]/g,' ').trim();
   const cal = getCalCache();
-  const depuisCal = cal.map(c => c.culture);
-  const depuisRecoltes = recoltes.map(r => r.vegetal);
-  return [...new Set([...depuisCal, ...depuisRecoltes])].sort((a, b) => a.localeCompare(b, 'fr'));
+  const candidats = [...cal.map(c => c.culture), ...recoltes.map(r => r.vegetal)];
+
+  // Dédoublonnage par nom normalisé : on garde la variante avec le plus de récoltes enregistrées
+  const groupes = new Map(); // normKey -> { nom, count }
+  candidats.forEach(nom => {
+    const key = norm(nom);
+    const count = recoltes.filter(r => r.vegetal === nom).length;
+    const existant = groupes.get(key);
+    if (!existant || count > existant.count) groupes.set(key, { nom, count });
+  });
+
+  return [...groupes.values()].map(g => g.nom).sort((a, b) => a.localeCompare(b, 'fr'));
 }
 
 function getCalEntryPourVegetal(vegetal) {
