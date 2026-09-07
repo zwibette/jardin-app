@@ -88,6 +88,7 @@ function isPerpetuelle(vegetal, calEntry) {
 }
 
 // ── SAISONS (logique identique à recoltes.html) ─────────────────
+// Été : 2 février → 15 novembre. Hiver : 16 novembre → 1er février (inclus).
 function getSaisonFromDate(dateStr) {
   if (!dateStr) return null;
   const d = new Date(dateStr);
@@ -96,7 +97,7 @@ function getSaisonFromDate(dateStr) {
   const j = d.getDate();
   const y = d.getFullYear();
 
-  if (m >= 9) return { type: 'hiver', label: `Hiver ${y}–${y + 1}`, id: `hiver-${y}-${y + 1}` };
+  if ((m === 11 && j >= 16) || m === 12) return { type: 'hiver', label: `Hiver ${y}–${y + 1}`, id: `hiver-${y}-${y + 1}` };
   if (m === 1 || (m === 2 && j <= 1)) return { type: 'hiver', label: `Hiver ${y - 1}–${y}`, id: `hiver-${y - 1}-${y}` };
   return { type: 'ete', label: `Été ${y}`, id: `ete-${y}` };
 }
