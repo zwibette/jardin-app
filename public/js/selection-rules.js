@@ -88,7 +88,12 @@ function isPerpetuelle(vegetal, calEntry) {
 }
 
 // ── SAISONS (logique identique à recoltes.html) ─────────────────
-// Été : 2 février → 15 novembre. Hiver : 16 novembre → 1er février (inclus).
+// Classe les cycles de culture par saison, en fonction de leur date de
+// plantation (ou de récolte pour les pérennes) : ne pas modifier ce seuil,
+// il détermine le rattachement des cultures déjà enregistrées (ex. semis
+// d'automne = saison "Hiver"). Le seul ajustement demandé (rester sur "Été"
+// par défaut à l'écran jusqu'au 15 nov.) est géré côté UI dans recoltes.html,
+// pas dans ce classement.
 function getSaisonFromDate(dateStr) {
   if (!dateStr) return null;
   const d = new Date(dateStr);
@@ -97,7 +102,7 @@ function getSaisonFromDate(dateStr) {
   const j = d.getDate();
   const y = d.getFullYear();
 
-  if ((m === 11 && j >= 16) || m === 12) return { type: 'hiver', label: `Hiver ${y}–${y + 1}`, id: `hiver-${y}-${y + 1}` };
+  if (m >= 9) return { type: 'hiver', label: `Hiver ${y}–${y + 1}`, id: `hiver-${y}-${y + 1}` };
   if (m === 1 || (m === 2 && j <= 1)) return { type: 'hiver', label: `Hiver ${y - 1}–${y}`, id: `hiver-${y - 1}-${y}` };
   return { type: 'ete', label: `Été ${y}`, id: `ete-${y}` };
 }
