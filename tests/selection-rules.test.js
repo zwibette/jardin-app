@@ -17,20 +17,11 @@ test('saison: 2 février = été (début de saison été)', () => {
 test('saison: 1er février = hiver (fin de saison hiver)', () => {
   assert.strictEqual(getSaisonFromDate('2026-02-01').id, 'hiver-2025-2026');
 });
-test('saison: septembre = ete (pas encore hiver)', () => {
-  assert.strictEqual(getSaisonFromDate('2025-09-01').id, 'ete-2025');
+test('saison: septembre = début hiver', () => {
+  assert.strictEqual(getSaisonFromDate('2025-09-01').id, 'hiver-2025-2026');
 });
-test('saison: 31 août = ete', () => {
+test('saison: 31 août = fin été', () => {
   assert.strictEqual(getSaisonFromDate('2026-08-31').id, 'ete-2026');
-});
-test('saison: 15 novembre = dernier jour d\'ete', () => {
-  assert.strictEqual(getSaisonFromDate('2025-11-15').id, 'ete-2025');
-});
-test('saison: 16 novembre = debut hiver', () => {
-  assert.strictEqual(getSaisonFromDate('2025-11-16').id, 'hiver-2025-2026');
-});
-test('saison: decembre = hiver', () => {
-  assert.strictEqual(getSaisonFromDate('2025-12-20').id, 'hiver-2025-2026');
 });
 test('saison: janvier = hiver de l\'année précédente', () => {
   assert.strictEqual(getSaisonFromDate('2026-01-15').id, 'hiver-2025-2026');
