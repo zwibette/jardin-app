@@ -2032,17 +2032,33 @@ function isCultureTerminee(c) {
 }
 
 // ── SAISONS ───────────────────────────────────────────────────
-const _saisonAujourdhui = getSaisonFromDate(new Date().toISOString().slice(0,10));
+// getSaisonFromDate classe les cultures/récoltes par saison (basé sur la date
+// de plantation) : NE PAS MODIFIER, sous peine de reclasser les cultures déjà
+// enregistrées (ex. semis d'automne rattachés à "Hiver").
+// getSaisonAffichageDefaut ne sert qu'à choisir l'onglet affiché par défaut à
+// l'ouverture de la page, pour ne pas basculer sur "Hiver" dès le 1er
+// septembre alors que les récoltes d'été se poursuivent jusqu'au 15 novembre.
+const _saisonAujourdhui = getSaisonAffichageDefaut(new Date().toISOString().slice(0,10));
 let currentSaison = _saisonAujourdhui ? _saisonAujourdhui.id : 'toutes';
 
 function getSaisonFromDate(dateStr) {
   if (!dateStr) return null;
   const d = new Date(dateStr);
   const m = d.getMonth() + 1, j = d.getDate(), y = d.getFullYear();
-  // Hiver : 16 novembre → 1er février (inclus). Été : 2 février → 15 novembre.
-  if ((m === 11 && j >= 16) || m === 12) return { type:'hiver', label:`Hiver ${y}–${y+1}`, id:`hiver-${y}-${y+1}` };
+  if (m >= 9) return { type:'hiver', label:`Hiver ${y}–${y+1}`, id:`hiver-${y}-${y+1}` };
   if (m === 1 || (m === 2 && j <= 1)) return { type:'hiver', label:`Hiver ${y-1}–${y}`, id:`hiver-${y-1}-${y}` };
   return { type:'ete', label:`Été ${y}`, id:`ete-${y}` };
+}
+
+function getSaisonAffichageDefaut(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  const m = d.getMonth() + 1, j = d.getDate(), y = d.getFullYear();
+  // Du 1er septembre au 15 novembre : on reste sur l'été en cours par défaut.
+  if (m >= 9 && !((m === 11 && j >= 16) || m === 12)) {
+    return { type:'ete', label:`Été ${y}`, id:`ete-${y}` };
+  }
+  return getSaisonFromDate(dateStr);
 }
 
 function getDatePlantationPourRecolte(recolteVegetal, recolteDate) {
@@ -2087,16 +2103,16 @@ function isPerpetuelle(vegetal) {
 }
 
 function recoltePerpetuelleDansSaison(r, saisonId) {
-  const d = new Date(r.date), m = d.getMonth() + 1, j = d.getDate(), annee = d.getFullYear();
+  const d = new Date(r.date), m = d.getMonth() + 1, annee = d.getFullYear();
   if (saisonId.startsWith('ete-')) {
     const anneeEte = parseInt(saisonId.split('-')[1]);
     if (annee !== anneeEte) return false;
-    return m >= 3 && (m < 11 || (m === 11 && j <= 15));
+    return m >= 3 && m <= 10;
   }
   if (saisonId.startsWith('hiver-')) {
     const parts = saisonId.split('-');
     const anneeN = parseInt(parts[1]), anneeN1 = parseInt(parts[2]);
-    if (annee === anneeN  && (m === 12 || (m === 11 && j >= 16))) return true;
+    if (annee === anneeN  && m >= 11) return true;
     if (annee === anneeN1 && m <= 2)  return true;
     return false;
   }
@@ -2129,7 +2145,7 @@ function buildSaisonSelect() {
   if (!sel) return;
   const saisonsMap = {};
   recoltes.forEach(r => { const s = getSaisonRecolte(r); if (s && !saisonsMap[s.id]) saisonsMap[s.id] = s; });
-  const saisonNow = getSaisonFromDate(new Date().toISOString().slice(0,10));
+  const saisonNow = getSaisonAffichageDefaut(new Date().toISOString().slice(0,10));
   if (saisonNow && !saisonsMap[saisonNow.id]) saisonsMap[saisonNow.id] = saisonNow;
   function sortKey(s) { return s.type === 'ete' ? parseInt(s.id.split('-')[1]) * 100 + 2 : parseInt(s.id.split('-')[1]) * 100 + 9; }
   const sorted = Object.values(saisonsMap).sort((a, b) => sortKey(b) - sortKey(a));
